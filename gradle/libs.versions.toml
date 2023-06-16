@@ -1,16 +1,19 @@
 [versions]
+kotlin = "1.8.22"
 minecraft = "1.20.1"
-yarn = "1.20.1+build.2"
+yarn = "1.20.1+build+"
+fabric-api = "0.83.1+1.20.1"
 
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 yarn-mappings = { module = "net.fabricmc:yarn", version.ref = "yarn" }
-fabric-loader = { module = "net.fabricmc:fabric-loader" }
-fabric-api = { module = "net.fabricmc.fabric-api:fabric-api" }
-fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin" }
+fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
+
+fabric-loader = { module = "net.fabricmc:fabric-loader", version = "latest.release" }
+fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version = "latest.release" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "latest.release" }
-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "latest.release" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 modrinth-minotaur = { id = "com.modrinth.minotaur", version = "latest.release" }
 loom = { id = "fabric-loom", version = "latest.release" }
