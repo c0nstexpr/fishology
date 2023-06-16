@@ -1,83 +1,100 @@
+import com.modrinth.minotaur.TaskModrinthUpload
+
 plugins {
-    id 'fabric-loom' version '1.2-SNAPSHOT'
-    id 'maven-publish'
-    id "org.jetbrains.kotlin.jvm" version "1.8.22"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.plugin.serialization)
+
+    alias(libs.plugins.modrinth.minotaur)
+    alias(libs.plugins.loom)
+    `maven-publish`
 }
 
-version = project.mod_version
-group = project.maven_group
+val modVersion: String by project
+val modId: String by project
+val modName: String by project
 
-base {
-    //noinspection GroovyAccessibility
-    archivesName = project.archives_base_name
-}
+version = modVersion
+group = "org.c0nstexpr"
 
 repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
+    maven("https://maven.fabricmc.net/")
+    mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+    minecraft(libs.minecraft)
+    mappings(libs.yarn.mappings)
+    modImplementation(libs.fabric.loader)
+    modImplementation(libs.fabric.api)
+    modImplementation(libs.fabric.kotlin)
 }
 
-processResources {
-    inputs.property "version", project.version
+tasks {
+    val javaVersion = JavaVersion.VERSION_17
 
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
+    processResources {
+        inputs.property("id", modId)
+        inputs.property("name", modName)
+        inputs.property("version", version)
+
+        filesMatching("fabric.mod.json") {
+            expand(
+                mapOf(
+                    "id" to modId,
+                    "version" to version,
+                    "name" to modName,
+                    "minecraft" to libs.versions.minecraft.get()
+                )
+            )
+        }
     }
-}
 
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = 17
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions {
-        jvmTarget = 17
+    withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        sourceCompatibility = javaVersion.toString()
+        targetCompatibility = javaVersion.toString()
+        options.release.set(javaVersion.toString().toInt())
     }
-}
 
-java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = javaVersion.toString()
+        }
+    }
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
+    jar {
+        from("LICENSE")
+    }
 
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
+    java {
+        toolchain { languageVersion.set(JavaLanguageVersion.of(javaVersion.toString())) }
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+        withSourcesJar()
+    }
+
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = javaVersion.toString()
+        }
+    }
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = javaVersion.toString()
+        }
+    }
+
+    withType<TaskModrinthUpload> {
+        onlyIf { System.getenv().contains("MODRINTH_TOKEN") }
     }
 }
 
 // configure the maven publication
 publishing {
     publications {
-        mavenJava(MavenPublication) {
-            from components.java
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
         }
-    }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
     }
 }
