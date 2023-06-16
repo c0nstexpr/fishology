@@ -30,6 +30,7 @@ dependencies {
     modImplementation(libs.fabric.kotlin)
 }
 
+
 tasks {
     val javaVersion = JavaVersion.VERSION_17
 
@@ -44,7 +45,10 @@ tasks {
                     "id" to modId,
                     "version" to version,
                     "name" to modName,
-                    "minecraft" to libs.versions.minecraft.get()
+                    "minecraft" to libs.versions.minecraft.get(),
+                    "fabricApi" to libs.versions.fabric.api.get(),
+                    "fabricLoader" to libs.versions.fabric.loader.get(),
+                    "fabricKotlin" to libs.versions.fabric.kotlin.get(),
                 )
             )
         }

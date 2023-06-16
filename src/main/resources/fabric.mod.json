@@ -12,11 +12,11 @@
 		"sources": "https://github.com/c0nstexpr/fishology"
 	},
 	"license": "MIT",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
-		"main": [
+		"client": [
 			{
-				"value": "org.c0nstexpr.Fishology",
+				"value": "org.c0nstexpr.FishologyMod",
 				"adapter": "kotlin"
 			}
 		]
@@ -24,7 +24,11 @@
 	"mixins": [
 		"fishology.mixins.json"
 	],
+	"icon": "assets/fishology/icon.jpg",
 	"depends": {
-		"minecraft": "${minecraft}"
+		"minecraft": "${minecraft}",
+		"fabric": ">=${fabricApi}",
+		"fabricloader": ">=${fabricLoader}",
+		"fabric-language-kotlin": ">=${fabricKotlin}"
 	}
 }
