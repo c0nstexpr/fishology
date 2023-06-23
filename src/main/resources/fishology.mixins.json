@@ -1,8 +1,7 @@
 {
 	"required": true,
-	"package": "org.c0nstexpr.mixin",
-	"compatibilityLevel": "JAVA_17",
-	"mixins": [
+	"package": "org.c0nstexpr.fishology.mixin",
+	"client": [
 		"ExampleMixin"
 	],
 	"injectors": {

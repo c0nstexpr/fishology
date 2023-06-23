@@ -3,6 +3,7 @@ import com.modrinth.minotaur.TaskModrinthUpload
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.kotlin.lint)
 
     alias(libs.plugins.modrinth.minotaur)
     alias(libs.plugins.loom)
@@ -30,7 +31,6 @@ dependencies {
     modImplementation(libs.fabric.kotlin)
 }
 
-
 tasks {
     val javaVersion = JavaVersion.VERSION_17
 
@@ -48,7 +48,7 @@ tasks {
                     "minecraft" to libs.versions.minecraft.get(),
                     "fabricApi" to libs.versions.fabric.api.get(),
                     "fabricLoader" to libs.versions.fabric.loader.get(),
-                    "fabricKotlin" to libs.versions.fabric.kotlin.get(),
+                    "fabricKotlin" to libs.versions.fabric.kotlin.get()
                 )
             )
         }
@@ -64,6 +64,7 @@ tasks {
     compileKotlin {
         kotlinOptions {
             jvmTarget = javaVersion.toString()
+            kotlinOptions.allWarningsAsErrors = true
         }
     }
 

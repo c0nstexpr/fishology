@@ -19,3 +19,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 modrinth-minotaur = { id = "com.modrinth.minotaur", version = "latest.release" }
 loom = { id = "fabric-loom", version = "latest.release" }
+kotlin-lint = { id = "org.jlleitschuh.gradle.ktlint", version = "latest.release" }
