@@ -2,7 +2,7 @@
 	"required": true,
 	"package": "org.c0nstexpr.fishology.mixin",
 	"client": [
-		"ExampleMixin"
+		"entity.projecttile.FishingBobberEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
