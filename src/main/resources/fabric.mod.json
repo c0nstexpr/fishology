@@ -1,34 +1,35 @@
 {
-	"schemaVersion": 1,
-	"id": "fishology",
-	"version": "${version}",
-	"name": "fishology",
-	"description": "Better fish experience",
-	"authors": [
-		"c0nstexpr"
-	],
-	"contact": {
-		"homepage": "https://github.com/c0nstexpr",
-		"sources": "https://github.com/c0nstexpr/fishology"
-	},
-	"license": "MIT",
-	"environment": "client",
-	"entrypoints": {
-		"client": [
-			{
-				"value": "org.c0nstexpr.fishology.FishologyMod",
-				"adapter": "kotlin"
-			}
-		]
-	},
-	"mixins": [
-		"fishology.mixins.json"
-	],
-	"icon": "assets/fishology/icon.jpg",
-	"depends": {
-		"minecraft": "${minecraft}",
-		"fabric": ">=${fabricApi}",
-		"fabricloader": ">=${fabricLoader}",
-		"fabric-language-kotlin": ">=${fabricKotlin}"
-	}
+  "schemaVersion": 1,
+  "id": "fishology",
+  "version": "${version}",
+  "name": "fishology",
+  "description": "Better fish experience",
+  "authors": [
+    "c0nstexpr"
+  ],
+  "contact": {
+    "homepage": "https://github.com/c0nstexpr",
+    "sources": "https://github.com/c0nstexpr/fishology"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "org.c0nstexpr.fishology.FishologyMod::init"
+      }
+    ]
+  },
+  "mixins": [
+    "fishology.mixins.json"
+  ],
+  "icon": "assets/fishology/icon.jpg",
+  "depends": {
+    "minecraft": "${minecraft}",
+    "fabric": ">=${fabricApi}",
+    "fabricloader": ">=${fabricLoader}",
+    "fabric-language-kotlin": ">=${fabricKotlin}",
+    "owo": ">=${owo}"
+  }
 }
