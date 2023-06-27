@@ -1,10 +1,11 @@
 {
-	"required": true,
-	"package": "org.c0nstexpr.fishology.mixin",
-	"client": [
-		"entity.projecttile.FishingBobberEntityMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	}
+  "required": true,
+  "package": "org.c0nstexpr.fishology.mixin",
+  "client": [
+    "entity.projecttile.FishingBobberEntityMixin",
+    "item.FishingRodItemMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }
