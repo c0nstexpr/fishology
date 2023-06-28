@@ -40,10 +40,13 @@ kotlin {
     jvmToolchain(libs.versions.jvm.map(String::toInt).get())
 }
 
+loom {
+    accessWidenerPath.set(file("src/main/resources/${modId}.accesswidener"))
+}
 
 spotless {
     java {
-        googleJavaFormat()
+        googleJavaFormat().aosp()
         formatAnnotations()
     }
 
