@@ -1,13 +1,9 @@
-import com.github.gradle.node.variant.VariantComputer
-import com.github.gradle.node.variant.computeNodeDir
-import com.github.gradle.node.variant.computeNodeExec
 import org.jetbrains.kotlin.config.LanguageVersion
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.spotless)
-    alias(libs.plugins.node)
 
     alias(libs.plugins.minotaur)
     alias(libs.plugins.loom)
@@ -44,38 +40,11 @@ kotlin {
     jvmToolchain(libs.versions.jvm.map(String::toInt).get())
 }
 
-node {
-    download.set(true)
-    version.set("latest")
-}
 
 spotless {
     java {
-        importOrder()
-        removeUnusedImports()
-        prettier(
-            mapOf(
-                "prettier" to "latest.release", "prettier-plugin-java" to "latest.release"
-            )
-        ).npmExecutable(
-            "${tasks.npmSetup.get().npmDir.get()}${
-                when {
-                    System.getProperty("os.name").lowercase().contains("windows") -> "/npm.cmd"
-
-                    else -> "/bin/npm"
-                }
-            }"
-        ).nodeExecutable(
-            computeNodeExec(
-                node, VariantComputer().computeNodeBinDir(computeNodeDir(node))
-            ).get()
-        ).config(
-            mapOf(
-                "parser" to "java", "tabWidth" to "4", "printWidth" to "100"
-            )
-        )
-        trimTrailingWhitespace()
-        endWithNewline()
+        googleJavaFormat()
+        formatAnnotations()
     }
 
     kotlin {
@@ -84,14 +53,6 @@ spotless {
 }
 
 tasks {
-    spotlessApply {
-        dependsOn(nodeSetup, npmSetup)
-    }
-
-    spotlessCheck {
-        dependsOn(nodeSetup, npmSetup)
-    }
-
     compileJava {
         options.encoding = "UTF-8"
     }
@@ -99,7 +60,7 @@ tasks {
     compileKotlin {
         kotlinOptions {
             allWarningsAsErrors = true
-            languageVersion = LanguageVersion.KOTLIN_1_9.versionString
+            languageVersion = LanguageVersion.KOTLIN_1_8.versionString
         }
     }
 
