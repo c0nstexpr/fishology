@@ -15,6 +15,7 @@ val modName: String by project
 
 version = modVersion
 group = "org.c0nstexpr"
+base.archivesName.set(modId)
 
 repositories {
     mavenCentral()
@@ -36,10 +37,6 @@ dependencies {
     include(libs.owo.sentinel)
 }
 
-kotlin {
-    jvmToolchain(libs.versions.jvm.map(String::toInt).get())
-}
-
 loom {
     accessWidenerPath.set(file("src/main/resources/${modId}.accesswidener"))
 }
@@ -55,9 +52,17 @@ spotless {
     }
 }
 
+// in case of gradle build errors like: "No matching toolchains found for requested specification"
+// check the link below
+// https://github.com/ankidroid/Anki-Android/issues/13340
+kotlin {
+    jvmToolchain(libs.versions.jvm.map(String::toInt).get())
+}
+
 tasks {
     compileJava {
-        options.encoding = "UTF-8"
+        options.encoding = Charsets.UTF_8.name()
+        options.compilerArgs.addAll(listOf("-Xlint:all", "-Werror"))
     }
 
     compileKotlin {
