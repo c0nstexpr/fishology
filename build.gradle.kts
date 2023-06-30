@@ -35,6 +35,8 @@ dependencies {
     modImplementation(libs.owo)
     annotationProcessor(libs.owo)
     include(libs.owo.sentinel)
+
+    implementation("io.ktor:ktor-events:latest.release")
 }
 
 loom {
