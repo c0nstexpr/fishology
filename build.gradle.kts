@@ -52,23 +52,20 @@ spotless {
     }
 }
 
-// in case of gradle build errors like: "No matching toolchains found for requested specification"
-// check the link below
-// https://github.com/ankidroid/Anki-Android/issues/13340
-kotlin {
-    jvmToolchain(libs.versions.jvm.map(String::toInt).get())
-}
-
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
         options.compilerArgs.addAll(listOf("-Xlint:all", "-Werror"))
+
+        sourceCompatibility = libs.versions.jvm.get()
+        targetCompatibility = libs.versions.jvm.get()
     }
 
     compileKotlin {
         kotlinOptions {
             allWarningsAsErrors = true
             languageVersion = LanguageVersion.KOTLIN_1_8.versionString
+            jvmTarget = libs.versions.jvm.get()
         }
     }
 
