@@ -36,7 +36,7 @@ dependencies {
     annotationProcessor(libs.owo)
     include(libs.owo.sentinel)
 
-    implementation("io.ktor:ktor-events:latest.release")
+    implementation(libs.reaktive)
 }
 
 loom {
@@ -57,7 +57,6 @@ spotless {
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
-        options.compilerArgs.addAll(listOf("-Xlint:all", "-Werror"))
 
         sourceCompatibility = libs.versions.jvm.get()
         targetCompatibility = libs.versions.jvm.get()

@@ -1,32 +1,17 @@
 package org.c0nstexpr.fishology
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.entity.projectile.FishingBobberEntity
-import net.minecraft.item.FishingRodItem
-import net.minecraft.util.Hand
-import org.c0nstexpr.fishology.events.BobberStateChangeEvents
+import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.observable.subscribe
+import org.c0nstexpr.fishology.events.CaughtFishEvent
+import org.c0nstexpr.fishology.events.UseRodEvent
 
-@Suppress("MemberVisibilityCanBePrivate")
-class FishologyAction(hand: Hand, item: FishingRodItem) {
-    var item: FishingRodItem = item
-        private set
-    var hand: Hand = hand
-        private set
+class FishologyAction(arg: UseRodEvent.Arg) : AbstractFishologyAction(arg), Disposable {
+    private val scope = CaughtFishEvent.observable.subscribe(onNext = ::onCaughtFish)
 
-    companion object {
+    override val isDisposed: Boolean
+        get() = scope.isDisposed
 
-    }
-
-    private fun onBobberStateChange(
-        bobber: FishingBobberEntity,
-        state: FishingBobberEntity.State
-    ) {
-        val client = MinecraftClient.getInstance()
-        val player = client.player
-
-        if (bobber.playerOwner?.uuid != player?.uuid || state != FishingBobberEntity.State.HOOKED_IN_ENTITY) return
-
-
-        client.interactionManager?.interactItem(bobber.playerOwner, bobber.owner)
+    override fun dispose() {
+        scope.dispose()
     }
 }
