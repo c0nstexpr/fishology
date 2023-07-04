@@ -18,8 +18,8 @@ group = "org.c0nstexpr"
 base.archivesName.set(modId)
 
 repositories {
-    mavenCentral()
     mavenLocal()
+    mavenCentral()
 
     maven("https://maven.fabricmc.net/")
     maven("https://maven.wispforest.io")
@@ -54,12 +54,15 @@ spotless {
     }
 }
 
+
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
 
         sourceCompatibility = libs.versions.jvm.get()
         targetCompatibility = libs.versions.jvm.get()
+
+        sourceSets.main.get().java.srcDirs(options.generatedSourceOutputDirectory.get())
     }
 
     compileKotlin {
