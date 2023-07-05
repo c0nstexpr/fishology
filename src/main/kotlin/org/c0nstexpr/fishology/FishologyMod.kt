@@ -1,21 +1,18 @@
 package org.c0nstexpr.fishology
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
-import org.c0nstexpr.fishology.disposable.eventScopedDisposable
 
 var fishology: Fishology? = null
+    private set
 
 /**
  * entry point defined in fabric.mod.json
  */
 @Suppress("unused")
 fun init() {
-    eventScopedDisposable(
-        {
-            val f = Fishology()
-            f.also { fishology = it }
-        },
-        ClientLifecycleEvents.CLIENT_STARTED to { block -> ClientLifecycleEvents.ClientStarted { block() } },
-        ClientLifecycleEvents.CLIENT_STOPPING to { block -> ClientLifecycleEvents.ClientStopping { block() } }
-    )
+    ClientLifecycleEvents.CLIENT_STARTED.register { fishology = Fishology(it) }
+    ClientLifecycleEvents.CLIENT_STOPPING.register {
+        fishology?.dispose()
+        fishology = null
+    }
 }

@@ -4,35 +4,46 @@ package org.c0nstexpr.fishology
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.subscribe
+import net.minecraft.client.MinecraftClient
 import org.c0nstexpr.fishology.config.FishologyConfigModel
 import org.c0nstexpr.fishology.config.initObserve
 import org.c0nstexpr.fishology.events.UseRodEvent
 
-class Fishology : Disposable {
+class Fishology(val client: MinecraftClient) : Disposable {
     private var action: FishologyAction? = null
-
     private var subscription: Disposable? = null
 
     val config: FishologyConfig = FishologyConfig.createAndLoad()
 
     init {
         config.initObserve(FishologyConfigModel::enabled) {
-            if (!it) return@initObserve
+            if (!it) {
+                dispose()
+                return@initObserve
+            }
 
-            subscription?.dispose()
-            subscription = UseRodEvent.observable.subscribe(onNext = ::onUseRod)
+            if (subscription == null) {
+                subscription = UseRodEvent.observable.subscribe(onNext = ::onUseRod)
+            }
         }
     }
 
     private fun onUseRod(arg: UseRodEvent.Arg) {
-        action.let {
-            if (it != null) {
-                it.dispose()
-                if (it.arg == arg) return@let
+        action.run {
+            // no existed action found, start fishing
+            if (this == null) {
+                action = FishologyAction(client, arg)
+                return@onUseRod
             }
+
+            // filtered out auto-fishing reuse action
+            if (reusingRod) return@onUseRod
+
+            // interrupt by outside input
+            dispose()
         }
 
-        action = FishologyAction(arg)
+        action = null
     }
 
     override val isDisposed: Boolean get() = subscription?.isDisposed ?: true
@@ -40,5 +51,8 @@ class Fishology : Disposable {
     override fun dispose() {
         subscription?.dispose()
         action?.dispose()
+
+        subscription = null
+        action = null
     }
 }
