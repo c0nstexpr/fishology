@@ -6,11 +6,5 @@ pluginManagement {
     }
 }
 
-dependencyResolutionManagement {
-    versionCatalogs {
-        create("libs")
-    }
-}
-
 rootProject.name = "fishology"
-include("core-api")
+include(":core-api")

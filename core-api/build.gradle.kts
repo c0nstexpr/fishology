@@ -1,3 +1,3 @@
 dependencies {
-    annotationProcessor(libs.owo)
+    // annotationProcessor(libs.owo)
 }

@@ -2,12 +2,11 @@ import org.jetbrains.kotlin.config.LanguageVersion
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.spotless)
-
-    alias(libs.plugins.minotaur)
     alias(libs.plugins.loom)
+    alias(libs.plugins.minotaur)
+    alias(libs.plugins.spotless)
 }
+
 
 val modVersion: String by project
 val modId: String by project
@@ -15,23 +14,35 @@ val modName: String by project
 
 base.archivesName.set(modId)
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-
-    maven("https://maven.fabricmc.net/")
-    maven("https://maven.wispforest.io")
-}
-
 dependencies {
     include(libs.owo.sentinel)
-
     implementation(libs.reaktive)
 }
 
+val pluginList = listOf(
+    libs.plugins.kotlin.jvm,
+    libs.plugins.loom,
+    libs.plugins.minotaur,
+    libs.plugins.spotless
+)
+
 allprojects {
+    val libs = this@Build_gradle.libs
+
     version = modVersion
     group = "org.c0nstexpr"
+
+    apply {
+        this@Build_gradle.pluginList.map { it.get().pluginId }.forEach(::plugin)
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+
+        maven("https://maven.fabricmc.net/")
+        maven("https://maven.wispforest.io")
+    }
 
     dependencies {
         minecraft(libs.minecraft)
@@ -41,18 +52,6 @@ allprojects {
         modImplementation(libs.fabric.kotlin)
 
         modImplementation(libs.owo)
-        include(libs.owo.sentinel)
-    }
-
-    spotless {
-        java {
-            googleJavaFormat().aosp()
-            formatAnnotations()
-        }
-
-        kotlin {
-            ktlint()
-        }
     }
 
     tasks {
@@ -102,6 +101,17 @@ allprojects {
             withSourcesJar()
         }
     }
+
+    if (System.getenv().contains("MODRINTH_TOKEN")) modrinth {}
 }
 
-if (System.getenv().contains("MODRINTH_TOKEN")) modrinth {}
+spotless {
+    java {
+        googleJavaFormat().aosp()
+        formatAnnotations()
+    }
+
+    kotlin {
+        ktlint()
+    }
+}

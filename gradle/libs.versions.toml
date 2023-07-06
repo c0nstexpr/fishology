@@ -21,7 +21,6 @@ reaktive = { module = "com.badoo.reaktive:reaktive", version = "latest.release" 
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 minotaur = { id = "com.modrinth.minotaur", version = "latest.release" }
 loom = { id = "fabric-loom", version = "latest.release" }
 spotless = { id = "com.diffplug.spotless", version = "latest.release" }
