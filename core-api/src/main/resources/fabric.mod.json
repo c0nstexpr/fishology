@@ -21,6 +21,9 @@
       }
     ]
   },
+  "mixins": [
+    "fishology.mixins.json"
+  ],
   "icon": "assets/fishology/icon.jpg",
   "depends": {
     "minecraft": "${minecraft}",

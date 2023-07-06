@@ -21,7 +21,7 @@ class FishingBobberEntityMixin {
     @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
     private void onTrackedDataSet(TrackedData<?> trackedData, CallbackInfo ci) {
         if (CAUGHT_FISH.equals(trackedData))
-            subject.onNext(
+            CaughtFishEvent.subject.onNext(
                     new CaughtFishEvent.Arg((FishingBobberEntity) (Object) this, caughtFish));
     }
 }
