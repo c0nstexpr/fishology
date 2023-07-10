@@ -20,6 +20,7 @@ owo-sentinel = { module = "io.wispforest:owo-sentinel", version.ref = "owo" }
 reaktive = { module = "com.badoo.reaktive:reaktive", version = "latest.release" }
 
 [plugins]
+
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 minotaur = { id = "com.modrinth.minotaur", version = "latest.release" }
 loom = { id = "fabric-loom", version = "latest.release" }

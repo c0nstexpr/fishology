@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.config.LanguageVersion
+import org.gradle.accessors.dm.LibrariesForLibs
 
 val modVersion: String by project
 val modId: String by project
@@ -7,6 +7,13 @@ val modName: String by project
 version = modVersion
 group = "org.c0nstexpr"
 
+plugins {
+    id("org.jetbrains.kotlin.jvm")
+    id("fabric-loom")
+    id("com.modrinth.minotaur")
+    id("com.diffplug.spotless")
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -14,6 +21,8 @@ repositories {
     maven("https://maven.fabricmc.net/")
     maven("https://maven.wispforest.io")
 }
+
+val Project.libs get() = project.extensions.getByName("libs") as LibrariesForLibs
 
 dependencies {
     minecraft(libs.minecraft)
@@ -31,14 +40,11 @@ tasks {
 
         sourceCompatibility = libs.versions.jvm.get()
         targetCompatibility = libs.versions.jvm.get()
-
-        sourceSets.main { java.srcDirs(options.generatedSourceOutputDirectory.get()) }
     }
 
     compileKotlin {
         kotlinOptions {
             allWarningsAsErrors = true
-            languageVersion = LanguageVersion.KOTLIN_1_8.versionString
             jvmTarget = libs.versions.jvm.get()
         }
     }
@@ -71,16 +77,15 @@ tasks {
     java {
         withSourcesJar()
     }
-}
 
-if (System.getenv().contains("MODRINTH_TOKEN")) modrinth {}
+    if (System.getenv().contains("MODRINTH_TOKEN")) modrinth {}
 }
 
 spotless {
-java {
-googleJavaFormat().aosp()
-formatAnnotations()
-}
+    java {
+        googleJavaFormat().aosp()
+        formatAnnotations()
+    }
 
-kotlin {        ktlint()    }
+    kotlin { ktlint() }
 }
