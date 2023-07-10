@@ -1,12 +1,3 @@
-pluginManagement {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        gradlePluginPortal()
-        maven("https://maven.fabricmc.net")
-    }
-}
-
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
