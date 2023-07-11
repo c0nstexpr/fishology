@@ -12,14 +12,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+@SuppressWarnings("DataFlowIssue")
 @Mixin(FishingRodItem.class)
 class FishingRodItemMixin {
-  @Inject(method = "use", at = @At("TAIL"))
-  private void use(
-      World world,
-      PlayerEntity playerEntity,
-      Hand hand,
-      CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-    UseRodEvent.subject.onNext(new UseRodEvent.Arg((FishingRodItem) (Object) this, hand));
-  }
+    @Inject(method = "use", at = @At("TAIL"))
+    private void use(
+            World world,
+            PlayerEntity playerEntity,
+            Hand hand,
+            CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+        UseRodEvent.subject.onNext(new UseRodEvent.Arg((FishingRodItem) (Object) this, hand));
+    }
 }

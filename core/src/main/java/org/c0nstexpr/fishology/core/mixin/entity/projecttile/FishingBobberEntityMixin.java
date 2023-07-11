@@ -13,14 +13,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @SuppressWarnings({"DataFlowIssue"})
 @Mixin(FishingBobberEntity.class)
 class FishingBobberEntityMixin {
-  @Final @Shadow private static TrackedData<Boolean> CAUGHT_FISH;
+    @Final @Shadow private static TrackedData<Boolean> CAUGHT_FISH;
 
-  @Shadow private boolean caughtFish;
+    @Shadow private boolean caughtFish;
 
-  @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
-  private void onTrackedDataSet(TrackedData<?> trackedData, CallbackInfo ci) {
-    if (CAUGHT_FISH.equals(trackedData))
-      CaughtFishEvent.subject.onNext(
-          new CaughtFishEvent.Arg((FishingBobberEntity) (Object) this, caughtFish));
-  }
+    @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
+    private void onTrackedDataSet(TrackedData<?> trackedData, CallbackInfo ci) {
+        if (CAUGHT_FISH.equals(trackedData))
+            CaughtFishEvent.subject.onNext(
+                    new CaughtFishEvent.Arg((FishingBobberEntity) (Object) this, caughtFish));
+    }
 }
