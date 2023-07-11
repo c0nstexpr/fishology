@@ -1,7 +1,5 @@
 package org.c0nstexpr.fishology.mixin.entity.projecttile;
 
-import static org.c0nstexpr.fishology.events.CaughtFishEvent.subject;
-
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import org.c0nstexpr.fishology.events.CaughtFishEvent;
@@ -12,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@SuppressWarnings({"DataFlowIssue"})
 @Mixin(FishingBobberEntity.class)
 class FishingBobberEntityMixin {
     @Final @Shadow private static TrackedData<Boolean> CAUGHT_FISH;

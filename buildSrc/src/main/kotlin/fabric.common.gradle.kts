@@ -1,18 +1,20 @@
-import org.gradle.accessors.dm.LibrariesForLibs
-
-val modVersion: String by project
-val modId: String by project
-val modName: String by project
-
-version = modVersion
-group = "org.c0nstexpr"
+import kotlinx.datetime.Clock
 
 plugins {
+    base
     id("org.jetbrains.kotlin.jvm")
     id("fabric-loom")
     id("com.modrinth.minotaur")
     id("com.diffplug.spotless")
 }
+
+val modVersion: String by project
+val modId: String by project
+val modName: String by project
+
+base.archivesName.set(modId)
+version = modVersion
+group = "org.c0nstexpr"
 
 repositories {
     mavenLocal()
@@ -22,52 +24,66 @@ repositories {
     maven("https://maven.wispforest.io")
 }
 
-val Project.libs get() = project.extensions.getByName("libs") as LibrariesForLibs
+val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+fun getLib(name: String) = libs.findLibrary(name).get()
+
+fun getVersion(name: String) = libs.findVersion(name).get().run {
+    requiredVersion.ifEmpty { strictVersion.ifEmpty { preferredVersion } }
+}
+
+val minecraftLib = getLib("minecraft")
+val yarnMappings = getLib("yarn.mappings")
+val fabricLoaderLib = getLib("fabric.loader")
+val fabricApiLib = getLib("fabric.api")
+val fabricKotlinLib = getLib("fabric.kotlin")
+val owoLib = getLib("owo")
+
+interface ModPropertyPluginExtension {
+    val properties: MapProperty<String, String>
+}
+
+val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
+extension.properties.convention(
+    mutableMapOf(
+        "id" to modId,
+        "version" to modVersion,
+        "name" to modName,
+        "minecraft" to minecraftLib.get().version!!,
+        "fabricApi" to fabricApiLib.get().version!!,
+        "fabricLoader" to fabricLoaderLib.get().version!!,
+        "fabricKotlin" to fabricKotlinLib.get().version!!,
+        "owo" to owoLib.get().version!!
+    )
+)
 
 dependencies {
-    minecraft(libs.minecraft)
-    mappings(libs.yarn.mappings)
-    modImplementation(libs.fabric.loader)
-    modImplementation(libs.fabric.api)
-    modImplementation(libs.fabric.kotlin)
+    minecraft(minecraftLib)
+    mappings(yarnMappings)
+    modImplementation(fabricLoaderLib)
+    modImplementation(fabricApiLib)
+    modImplementation(fabricKotlinLib)
 
-    modImplementation(libs.owo)
+    modImplementation(owoLib)
 }
 
 tasks {
     compileJava {
-        options.encoding = Charsets.UTF_8.name()
-
-        sourceCompatibility = libs.versions.jvm.get()
-        targetCompatibility = libs.versions.jvm.get()
+        sourceCompatibility = getVersion("jvm")
+        targetCompatibility = sourceCompatibility
     }
 
     compileKotlin {
         kotlinOptions {
             allWarningsAsErrors = true
-            jvmTarget = libs.versions.jvm.get()
+            jvmTarget = compileJava.get().targetCompatibility
         }
     }
 
     processResources {
-        inputs.property("id", modId)
-        inputs.property("name", modName)
-        inputs.property("version", version)
+        inputs.property("buildTimestamp", Clock.System.now().epochSeconds)
 
-        filesMatching("fabric.mod.json") {
-            expand(
-                mapOf(
-                    "id" to modId,
-                    "version" to version,
-                    "name" to modName,
-                    "minecraft" to libs.versions.minecraft.get(),
-                    "fabricApi" to libs.versions.fabric.api.get(),
-                    "fabricLoader" to libs.versions.fabric.loader.get(),
-                    "fabricKotlin" to libs.versions.fabric.kotlin.get(),
-                    "owo" to libs.versions.owo.get()
-                )
-            )
-        }
+        filesMatching("fabric.mod.json") { expand(extension.properties.get()) }
     }
 
     jar {
@@ -78,7 +94,9 @@ tasks {
         withSourcesJar()
     }
 
-    if (System.getenv().contains("MODRINTH_TOKEN")) modrinth {}
+    System.getenv()
+        .getOrDefault("MODRINTH_TOKEN", null)
+        ?.let { modrinth { token = it } }
 }
 
 spotless {

@@ -2,11 +2,13 @@ plugins {
     id("fabric.common")
 }
 
-val modId: String by project
-
-base.archivesName.set(modId)
+tasks.wrapper {
+    gradleVersion = "latest"
+}
 
 dependencies {
+    fabricProject(":core")
+
     include(libs.owo.sentinel)
     implementation(libs.reaktive)
 }

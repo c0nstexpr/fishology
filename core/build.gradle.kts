@@ -3,5 +3,7 @@ plugins {
 }
 
 dependencies {
+    api(libs.reaktive)
+
     annotationProcessor(libs.owo)
 }

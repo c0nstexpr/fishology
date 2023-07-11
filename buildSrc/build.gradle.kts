@@ -1,6 +1,9 @@
+import org.jetbrains.kotlin.config.LanguageVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     `kotlin-dsl`
-    alias(libs.plugins.kotlin.jvm)
+    kotlin("jvm") version "latest.release"
 }
 
 repositories {
@@ -12,28 +15,32 @@ repositories {
 }
 
 dependencies {
-    fun plugin(provider: Provider<PluginDependency>): String {
+    fun DependencyHandler.implementation(provider: Provider<PluginDependency>): Dependency? {
         val p = provider.get()
         val id = p.pluginId
         val version = p.version
 
-        return "${id}:${id}.gradle.plugin:${version}"
+        return implementation("$id:$id.gradle.plugin:$version")
     }
 
-    implementation(plugin(libs.plugins.kotlin.jvm))
-    implementation(plugin(libs.plugins.loom))
-    implementation(plugin(libs.plugins.minotaur))
-    implementation(plugin(libs.plugins.spotless))
-
-    // TODO: workaround for https://github.com/gradle/gradle/issues/15383
-    implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
+    implementation(libs.plugins.kotlin.jvm)
+    implementation(libs.plugins.loom)
+    implementation(libs.plugins.minotaur)
+    implementation(libs.plugins.spotless)
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:latest.release")
 }
 
 tasks {
+    compileJava{
+        targetCompatibility = JvmTarget.values().last().target
+    }
+
     compileKotlin {
         kotlinOptions {
+            languageVersion = LanguageVersion.LATEST_STABLE.versionString
+            apiVersion = languageVersion
             allWarningsAsErrors = true
-            jvmTarget = libs.versions.jvm.get()
+            jvmTarget = compileJava.get().targetCompatibility
         }
     }
 }

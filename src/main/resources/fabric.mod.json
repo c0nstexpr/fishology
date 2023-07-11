@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "fishology",
+  "id": "${id}",
   "version": "${version}",
-  "name": "fishology",
+  "name": "${name}",
   "description": "Better fish experience",
   "authors": [
     "c0nstexpr"
@@ -27,6 +27,7 @@
     "fabric": ">=${fabricApi}",
     "fabricloader": ">=${fabricLoader}",
     "fabric-language-kotlin": ">=${fabricKotlin}",
-    "owo": ">=${owo}"
+    "owo": ">=${owo}",
+    "fishology-core": ">=${version}"
   }
 }

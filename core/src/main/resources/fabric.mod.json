@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "fishology",
+  "id": "${id}",
   "version": "${version}",
-  "name": "fishology",
+  "name": "${name}",
   "description": "Better fish experience",
   "authors": [
     "c0nstexpr"
@@ -17,12 +17,12 @@
     "client": [
       {
         "adapter": "kotlin",
-        "value": "org.c0nstexpr.fishology.FishologyMod::init"
+        "value": "org.c0nstexpr.fishology.FishologyCoreMod::init"
       }
     ]
   },
   "mixins": [
-    "fishology.mixins.json"
+    "fishology.core.mixins.json"
   ],
   "icon": "assets/fishology/icon.jpg",
   "depends": {

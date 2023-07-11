@@ -10,20 +10,20 @@ class Fishology(val client: MinecraftClient) : Disposable {
     private var action: FishologyAction? = null
     private var subscription: Disposable? = null
 
-//    val config: FishologyConfig = FishologyConfig.createAndLoad()
-//
-//    init {
-//        config.initObserve(FishologyConfigModel::enabled) {
-//            if (!it) {
-//                dispose()
-//                return@initObserve
-//            }
-//
-//            if (subscription == null) {
-//                subscription = UseRodEvent.observable.subscribe(onNext = ::onUseRod)
-//            }
-//        }
-//    }
+    val config: FishologyConfig = FishologyConfig.createAndLoad()
+
+    init {
+        config.initObserve(FishologyConfigModel::enabled) {
+            if (!it) {
+                dispose()
+                return@initObserve
+            }
+
+            if (subscription == null) {
+                subscription = UseRodEvent.observable.subscribe(onNext = ::onUseRod)
+            }
+        }
+    }
 
     private fun onUseRod(arg: UseRodEvent.Arg) {
         action.run {
