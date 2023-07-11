@@ -1,4 +1,4 @@
-package org.c0nstexpr.fishology.config
+package org.c0nstexpr.fishology.core.config
 
 import io.wispforest.owo.config.ConfigWrapper
 import io.wispforest.owo.config.Option

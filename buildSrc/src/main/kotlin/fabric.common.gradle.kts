@@ -69,6 +69,7 @@ dependencies {
 
 tasks {
     compileJava {
+        options.encoding = Charsets.UTF_8.name()
         sourceCompatibility = getVersion("jvm")
         targetCompatibility = sourceCompatibility
     }

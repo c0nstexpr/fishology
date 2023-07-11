@@ -6,8 +6,8 @@ import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.subscribe
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
-import org.c0nstexpr.fishology.events.CaughtFishEvent
-import org.c0nstexpr.fishology.events.UseRodEvent
+import org.c0nstexpr.fishology.core.events.CaughtFishEvent
+import org.c0nstexpr.fishology.core.events.UseRodEvent
 
 class FishologyAction(val client: MinecraftClient, val arg: UseRodEvent.Arg) : Disposable {
     private val scope = CaughtFishEvent.observable.subscribe(onNext = ::onCaughtFish)

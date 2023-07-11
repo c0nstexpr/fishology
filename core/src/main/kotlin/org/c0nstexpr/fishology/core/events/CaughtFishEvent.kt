@@ -1,12 +1,11 @@
-package org.c0nstexpr.fishology.events
+package org.c0nstexpr.fishology.core.events
 
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.subject.publish.PublishSubject
-import net.minecraft.item.FishingRodItem
-import net.minecraft.util.Hand
+import net.minecraft.entity.projectile.FishingBobberEntity
 
-class UseRodEvent private constructor() {
-    data class Arg(val item: FishingRodItem, val hand: Hand)
+class CaughtFishEvent private constructor() {
+    data class Arg(val bobber: FishingBobberEntity, val caught: Boolean)
 
     companion object {
         @JvmField

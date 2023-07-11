@@ -4,7 +4,7 @@ package org.c0nstexpr.fishology
 
 import com.badoo.reaktive.disposable.Disposable
 import net.minecraft.client.MinecraftClient
-import org.c0nstexpr.fishology.events.UseRodEvent
+import org.c0nstexpr.fishology.core.events.UseRodEvent
 
 class Fishology(val client: MinecraftClient) : Disposable {
     private var action: FishologyAction? = null
