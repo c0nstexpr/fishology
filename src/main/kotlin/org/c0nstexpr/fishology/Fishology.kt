@@ -9,10 +9,9 @@ import org.c0nstexpr.fishology.config.initObserve
 import org.c0nstexpr.fishology.core.config.FishologyConfig
 import org.c0nstexpr.fishology.core.config.FishologyConfigModel
 import org.c0nstexpr.fishology.core.events.UseRodEvent
-import org.c0nstexpr.fishology.core.events.UseRodEvent.Companion.observable
 
 class Fishology(val client: MinecraftClient) : Disposable {
-    private var action: FishologyAction? = null
+    private var action: AutoFishAction? = null
     private var subscription: Disposable? = null
 
     val config: FishologyConfig = FishologyConfig.createAndLoad()
@@ -24,9 +23,7 @@ class Fishology(val client: MinecraftClient) : Disposable {
                 return@initObserve
             }
 
-            if (subscription == null) {
-                subscription = observable.subscribe(onNext = ::onUseRod)
-            }
+            if (subscription == null) subscription = UseRodEvent.afterUse.subscribe(onNext = ::onUseRod)
         }
     }
 
@@ -34,7 +31,7 @@ class Fishology(val client: MinecraftClient) : Disposable {
         action.run {
             // no existed action found, start fishing
             if (this == null) {
-                action = FishologyAction(client, arg)
+                action = AutoFishAction(client, arg)
                 return@onUseRod
             }
 

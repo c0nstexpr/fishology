@@ -4,16 +4,18 @@ package org.c0nstexpr.fishology
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.subscribe
+import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
 import org.c0nstexpr.fishology.core.events.CaughtFishEvent
 import org.c0nstexpr.fishology.core.events.UseRodEvent
 
-class FishologyAction(val client: MinecraftClient, val arg: UseRodEvent.Arg) : Disposable {
+class AutoFishAction(val client: MinecraftClient, val arg: UseRodEvent.Arg) : Disposable {
     private val scope = CaughtFishEvent.observable.subscribe(onNext = ::onCaughtFish)
 
     val item = arg.item
     val hand = arg.hand
+
 
     private fun onCaughtFish(arg: CaughtFishEvent.Arg) {
         val bobber = arg.bobber
@@ -43,10 +45,7 @@ class FishologyAction(val client: MinecraftClient, val arg: UseRodEvent.Arg) : D
         reusingRod = false
     }
 
-    override val isDisposed: Boolean
-        get() = scope.isDisposed
+    override val isDisposed: Boolean get() = scope.isDisposed
 
-    override fun dispose() {
-        scope.dispose()
-    }
+    override fun dispose() = scope.dispose()
 }

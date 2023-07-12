@@ -16,11 +16,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(FishingRodItem.class)
 class FishingRodItemMixin {
     @Inject(method = "use", at = @At("TAIL"))
-    private void use(
+    private void afterUse(
             World world,
-            PlayerEntity playerEntity,
+            PlayerEntity player,
             Hand hand,
             CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        UseRodEvent.subject.onNext(new UseRodEvent.Arg((FishingRodItem) (Object) this, hand));
+        UseRodEvent.afterSubject.onNext(
+                new UseRodEvent.Arg((FishingRodItem) (Object) this, hand, player));
+    }
+
+    @Inject(method = "use", at = @At("HEAD"))
+    private void beforeUse(
+            World world,
+            PlayerEntity player,
+            Hand hand,
+            CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+        UseRodEvent.beforeSubject.onNext(
+                new UseRodEvent.Arg((FishingRodItem) (Object) this, hand, player));
     }
 }
