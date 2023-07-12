@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "org.c0nstexpr.fishology.mixin",
+  "package": "org.c0nstexpr.fishology.core.mixin",
   "client": [
     "entity.projecttile.FishingBobberEntityMixin",
     "item.FishingRodItemMixin"

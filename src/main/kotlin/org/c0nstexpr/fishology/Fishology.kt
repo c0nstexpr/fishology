@@ -3,8 +3,13 @@
 package org.c0nstexpr.fishology
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.observable.subscribe
 import net.minecraft.client.MinecraftClient
+import org.c0nstexpr.fishology.config.initObserve
+import org.c0nstexpr.fishology.core.config.FishologyConfig
+import org.c0nstexpr.fishology.core.config.FishologyConfigModel
 import org.c0nstexpr.fishology.core.events.UseRodEvent
+import org.c0nstexpr.fishology.core.events.UseRodEvent.Companion.observable
 
 class Fishology(val client: MinecraftClient) : Disposable {
     private var action: FishologyAction? = null
@@ -20,7 +25,7 @@ class Fishology(val client: MinecraftClient) : Disposable {
             }
 
             if (subscription == null) {
-                subscription = UseRodEvent.observable.subscribe(onNext = ::onUseRod)
+                subscription = observable.subscribe(onNext = ::onUseRod)
             }
         }
     }
