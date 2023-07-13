@@ -8,7 +8,6 @@ import net.minecraft.util.Hand
 
 class UseRodEvent private constructor() {
     data class Arg(
-        val item: FishingRodItem,
         val hand: Hand,
         val player: PlayerEntity
     )

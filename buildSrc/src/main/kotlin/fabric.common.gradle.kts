@@ -1,4 +1,4 @@
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Clock.System.now
 
 plugins {
     base
@@ -6,13 +6,14 @@ plugins {
     id("fabric-loom")
     id("com.modrinth.minotaur")
     id("com.diffplug.spotless")
+    id("io.github.juuxel.loom-vineflower")
 }
 
 val modVersion: String by project
 val modId: String by project
 val modName: String by project
 
-base.archivesName.set(modId)
+base { archivesName.set(modId) }
 version = modVersion
 group = "org.c0nstexpr"
 
@@ -82,7 +83,7 @@ tasks {
     }
 
     processResources {
-        inputs.property("buildTimestamp", Clock.System.now().epochSeconds)
+        inputs.property("buildTimestamp", now().epochSeconds)
 
         filesMatching("fabric.mod.json") { expand(extension.properties.get()) }
     }

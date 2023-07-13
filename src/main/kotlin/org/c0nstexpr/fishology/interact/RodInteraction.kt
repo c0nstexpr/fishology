@@ -2,18 +2,16 @@
 
 package org.c0nstexpr.fishology.interact
 
-import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.disposable.scope.disposableScope
+import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.client.MinecraftClient
-import net.minecraft.item.FishingRodItem
+import net.minecraft.item.ItemStack
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.core.events.UseRodEvent
-import org.c0nstexpr.fishology.utils.onNextOnce
 
-class RodInteraction(val client: MinecraftClient) : Disposable {
-    private var subscription = disposableScope {
+class RodInteraction(val client: MinecraftClient) : DisposableScope by DisposableScope() {
+    init {
         UseRodEvent.afterUse.subscribeScoped(onNext = ::onAfterUseRod)
         UseRodEvent.beforeUse.subscribeScoped(onNext = ::onBeforeUseRod)
     }
@@ -26,7 +24,7 @@ class RodInteraction(val client: MinecraftClient) : Disposable {
 
     val afterUse: Observable<RodInteraction> get() = afterSubject
 
-    var item: FishingRodItem? = null
+    var itemStack: ItemStack? = null
         private set
 
     var hand: Hand? = null
@@ -35,23 +33,19 @@ class RodInteraction(val client: MinecraftClient) : Disposable {
     val player get() = client.player
 
     private fun onAfterUseRod(arg: UseRodEvent.Arg) {
-        if (arg.player.uuid != player?.uuid) return
-
-        item = arg.item
-        hand = arg.hand
-
-        beforeSubject.onNextOnce(this)
+        if (!isSamePlayer(arg)) return
+        beforeSubject.onNext(this)
     }
 
     private fun onBeforeUseRod(arg: UseRodEvent.Arg) {
-        if (arg.player.uuid != player?.uuid) return
+        if (!isSamePlayer(arg)) return
+        hand = arg.hand
+        itemStack = player!!.getStackInHand(hand)
 
-        afterSubject.onNextOnce(this)
+        afterSubject.onNext(this)
     }
 
+    private fun isSamePlayer(arg: UseRodEvent.Arg) = arg.player.uuid == player?.uuid
+
     fun use() = client.interactionManager?.interactItem(client.player, hand)
-
-    override val isDisposed get() = subscription.isDisposed
-
-    override fun dispose() = subscription.dispose()
 }

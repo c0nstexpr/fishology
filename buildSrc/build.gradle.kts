@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.plugins.loom)
     implementation(libs.plugins.minotaur)
     implementation(libs.plugins.spotless)
+    implementation(libs.plugins.vineflower)
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:latest.release")
 }
 

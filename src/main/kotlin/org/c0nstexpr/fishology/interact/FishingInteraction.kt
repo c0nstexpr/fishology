@@ -3,48 +3,52 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.disposable.scope.DisposableScope
+import com.badoo.reaktive.disposable.scope.doOnDispose
+import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.subscribe
+import com.badoo.reaktive.observable.take
 import org.c0nstexpr.fishology.core.events.CaughtFishEvent
+import org.c0nstexpr.fishology.core.events.ItemCooldownEvent
 import org.c0nstexpr.fishology.utils.Disposed
 
-class FishingInteraction(val rod: RodInteraction) : Disposable {
-    private val hook get() = rod.player?.fishHook
+class FishingInteraction(val rod: RodInteraction) : DisposableScope by DisposableScope() {
+    private var cooldownSubscription: Disposable = Disposable()
 
-    private val rodUseSubscription = rod.afterUse.subscribe {
-        if (hook != null) caughtFishSubscription.dispose()
-        else if (caughtFishSubscription.isDisposed) caughtFishSubscription =
-            CaughtFishEvent.observable.subscribe(onNext = ::onCaughtFish)
-    }
+    init {
+        var caughtFishSubscription = Disposed()
 
-    private var caughtFishSubscription = Disposed()
-
-    private fun onCaughtFish(arg: CaughtFishEvent.Arg) {
-        rod.run {
-            player.run{
-                if (
-                    this == null ||
-                    uuid != arg.bobber.playerOwner?.uuid ||
-                    !arg.caught
-                ) return
-
-                if (getStackInHand(hand)?.isOf(item) == false)  // filter out other items in hand
-                {
-                    caughtFishSubscription.dispose()
-                    return
-                }
-            }
+        rod.beforeUse.subscribeScoped {
+            if (!cooldownSubscription.isDisposed) { // from user input?
+                caughtFishSubscription.dispose()
+                cooldownSubscription.dispose()
+            } else if (caughtFishSubscription.isDisposed) caughtFishSubscription =
+                CaughtFishEvent.observable.subscribe(onNext = ::onCaughtFish)
         }
 
-        reuseRod()
+        doOnDispose(caughtFishSubscription::dispose)
     }
 
-    // TODO: when to rethrow rod?
-    private fun reuseRod() = rod.use()
+    private fun onCaughtFish(arg: CaughtFishEvent.Arg) = rod.run {
+        if (
+            player?.uuid != arg.bobber.playerOwner?.uuid ||
+            !arg.caught
+        ) return@run
 
-    override val isDisposed: Boolean get() = rodUseSubscription.isDisposed
+        prepareRecast()
+        use() // retrieve
 
-    override fun dispose() {
-        rodUseSubscription.dispose()
-        caughtFishSubscription?.dispose()
+    }
+
+    private fun prepareRecast() = rod.run {
+        itemStack?.run {
+            cooldownSubscription.dispose()
+            cooldownSubscription = ItemCooldownEvent.observable.filter { isOf(it.item) }.take(1)
+                .subscribeScoped {
+                    if (equals(player?.getStackInHand(hand))) client.execute {
+                        rod.use()
+                    }
+                }
+        }
     }
 }
