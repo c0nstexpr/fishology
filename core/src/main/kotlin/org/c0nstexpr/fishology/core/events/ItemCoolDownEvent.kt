@@ -4,7 +4,7 @@ import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.item.Item
 
-class ItemCooldownEvent private constructor() {
+class ItemCoolDownEvent private constructor() {
     data class Arg(val item: Item)
 
     companion object {
