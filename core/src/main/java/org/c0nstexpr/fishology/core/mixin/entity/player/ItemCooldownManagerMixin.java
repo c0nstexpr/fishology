@@ -1,5 +1,6 @@
 package org.c0nstexpr.fishology.core.mixin.entity.player;
 
+import org.c0nstexpr.fishology.core.FlowExtKt;
 import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.item.Item;
 
@@ -13,6 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ItemCooldownManagerMixin {
     @Inject(method = "remove", at = @At("TAIL"))
     private void onTrackedDataSet(Item item, CallbackInfo ci) {
-        ItemCoolDownEvent.subject.onNext(new ItemCoolDownEvent.Arg(item));
+        FlowExtKt.blockEmit(ItemCoolDownEvent.mutableFlow, new ItemCoolDownEvent.Arg(item));
     }
 }

@@ -4,14 +4,13 @@ package org.c0nstexpr.fishology
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.subscribe
-import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
 import org.c0nstexpr.fishology.core.events.CaughtFishEvent
 import org.c0nstexpr.fishology.core.events.UseRodEvent
 
 class AutoFishAction(val client: MinecraftClient, val arg: UseRodEvent.Arg) : Disposable {
-    private val scope = CaughtFishEvent.observable.subscribe(onNext = ::onCaughtFish)
+    private val scope = CaughtFishEvent.flow.subscribe(onNext = ::onCaughtFish)
 
     val item = arg.item
     val hand = arg.hand

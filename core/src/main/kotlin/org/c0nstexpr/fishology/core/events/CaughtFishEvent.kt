@@ -1,7 +1,7 @@
 package org.c0nstexpr.fishology.core.events
 
-import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.subject.publish.PublishSubject
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import net.minecraft.entity.projectile.FishingBobberEntity
 
 class CaughtFishEvent private constructor() {
@@ -9,8 +9,8 @@ class CaughtFishEvent private constructor() {
 
     companion object {
         @JvmField
-        internal val subject = PublishSubject<Arg>()
+        internal val mutableFlow = MutableSharedFlow<Arg>()
 
-        val observable: Observable<Arg> = subject
+        val flow = mutableFlow.asSharedFlow()
     }
 }

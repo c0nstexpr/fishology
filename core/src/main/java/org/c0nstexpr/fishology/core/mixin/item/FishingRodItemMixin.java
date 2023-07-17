@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.c0nstexpr.fishology.core.FlowExtKt;
 import org.c0nstexpr.fishology.core.events.UseRodEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,7 +21,7 @@ class FishingRodItemMixin {
             PlayerEntity player,
             Hand hand,
             CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        UseRodEvent.afterSubject.onNext(new UseRodEvent.Arg(hand, player));
+        FlowExtKt.blockEmit(UseRodEvent.afterUseMutableFlow, new UseRodEvent.Arg(hand, player));
     }
 
     @Inject(method = "use", at = @At("HEAD"))
@@ -29,6 +30,6 @@ class FishingRodItemMixin {
             PlayerEntity player,
             Hand hand,
             CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        UseRodEvent.beforeSubject.onNext(new UseRodEvent.Arg(hand, player));
+        FlowExtKt.blockEmit(UseRodEvent.beforeUseMutableFlow, new UseRodEvent.Arg(hand, player));
     }
 }

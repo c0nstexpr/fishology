@@ -9,7 +9,7 @@ class FishingInteraction(val rod: RodInteraction) : DisposableScope by Disposabl
 
 
     init {
-        CaughtFishEvent.observable.subscribeScoped(onNext = ::onCaughtFish)
+        CaughtFishEvent.flow.subscribeScoped(onNext = ::onCaughtFish)
         rod.beforeUse.subscribeScoped {
 
         }

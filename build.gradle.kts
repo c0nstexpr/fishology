@@ -10,5 +10,4 @@ dependencies {
     fabricProject(":core")
 
     include(libs.owo.sentinel)
-    implementation(libs.reaktive)
 }

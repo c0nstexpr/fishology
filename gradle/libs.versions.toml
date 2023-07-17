@@ -17,7 +17,6 @@ fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-l
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version.ref = "fabric-kotlin" }
 owo = { module = "io.wispforest:owo-lib", version.ref = "owo" }
 owo-sentinel = { module = "io.wispforest:owo-sentinel", version.ref = "owo" }
-reaktive = { module = "com.badoo.reaktive:reaktive", version = "latest.release" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "latest.release" }

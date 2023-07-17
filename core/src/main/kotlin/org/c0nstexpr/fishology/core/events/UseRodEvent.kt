@@ -1,9 +1,8 @@
 package org.c0nstexpr.fishology.core.events
 
-import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.subject.publish.PublishSubject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.FishingRodItem
 import net.minecraft.util.Hand
 
 class UseRodEvent private constructor() {
@@ -14,13 +13,13 @@ class UseRodEvent private constructor() {
 
     companion object {
         @JvmField
-        internal val afterSubject = PublishSubject<Arg>()
+        internal val afterUseMutableFlow = MutableStateFlow<Arg?>(null)
 
-        val afterUse: Observable<Arg> = afterSubject
+        val afterUseFlow = afterUseMutableFlow.asStateFlow()
 
         @JvmField
-        internal val beforeSubject = PublishSubject<Arg>()
+        internal val beforeUseMutableFlow = MutableStateFlow<Arg?>(null)
 
-        val beforeUse: Observable<Arg> = beforeSubject
+        val beforeUseFlow = beforeUseMutableFlow.asStateFlow()
     }
 }

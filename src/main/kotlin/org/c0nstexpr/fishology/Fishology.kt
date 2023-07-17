@@ -23,7 +23,7 @@ class Fishology(val client: MinecraftClient) : Disposable {
                 return@initObserve
             }
 
-            if (subscription == null) subscription = UseRodEvent.afterUse.subscribe(onNext = ::onUseRod)
+            if (subscription == null) subscription = UseRodEvent.afterUseFlow.subscribe(onNext = ::onUseRod)
         }
     }
 
