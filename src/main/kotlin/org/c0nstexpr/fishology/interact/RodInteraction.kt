@@ -2,67 +2,76 @@
 
 package org.c0nstexpr.fishology.interact
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import com.badoo.reaktive.disposable.scope.DisposableScope
+import com.badoo.reaktive.disposable.scope.doOnDispose
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.network.ClientPlayerEntity
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.FishingRodItem
+import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemStack.areEqual
-import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.core.events.ItemCoolDownEvent
 import org.c0nstexpr.fishology.core.events.UseRodEvent
-import org.c0nstexpr.fishology.utils.execute
-import java.io.Closeable
-import kotlin.coroutines.CoroutineContext
+import org.c0nstexpr.fishology.utils.coroutineScope
+import org.c0nstexpr.fishology.utils.getSlotInHand
 
-class RodInteraction(val client: MinecraftClient) : CoroutineScope by CoroutineScope(dispatcher)  {
-    val dispatcher = client.asCoroutineDispatcher()
+class RodInteraction(val client: MinecraftClient) : DisposableScope by DisposableScope() {
+    val beforeUseFlow = UseRodEvent.beforeUseFlow.filter { isSamePlayer(it) }
 
-    val beforeUse = UseRodEvent.beforeUseFlow.filter { isSamePlayer(it) }
-
-    val afterUse = UseRodEvent.afterUseFlow.filter { isSamePlayer(it) }
+    val afterUseFlow = UseRodEvent.afterUseFlow.filter { isSamePlayer(it) }
 
     val player get() = client.player
 
     private fun isSamePlayer(arg: UseRodEvent.Arg?) =
         (player != null) && (arg?.player?.uuid == player?.uuid)
 
-    private val mutableHand = MutableStateFlow<Hand?>(null)
+    class Item(val hand: Hand, player: PlayerEntity) {
+        val slotIndex = player.getSlotInHand(hand)
+        val stack: ItemStack = player.getStackInHand(hand)
+    }
 
-    val hand get() = mutableHand.value
+    var item: Item? = null
+        private set
 
-    private val job = CoroutineScope(dispatcher).launch {
-        beforeUse.collect {
-            mutableHand.emit(it?.hand)
+    init {
+        val job = client.coroutineScope.launch {
+            beforeUseFlow.collect { item = it?.let { Item(it.hand, it.player) } }
         }
+        doOnDispose(job::cancel)
     }
 
     suspend fun use() {
         val player = player ?: return
-        val itemStack = player.getStackInHand(hand)
-        val interact = { client.interactionManager?.interactItem(player, hand) }
+        val item = item ?: return
 
-        if (!player.itemCooldownManager.isCoolingDown(itemStack.item)) {
+        val interact = {
+            if (verifyStackInHand(player, item)) {
+                client.interactionManager?.interactItem(player, item.hand)
+            } else {
+                this.item = null
+            }
+        }
+
+        if (!player.itemCooldownManager.isCoolingDown(player.getStackInHand(item.hand)?.item)) {
             interact()
             return
         }
 
         ItemCoolDownEvent.flow
-            .filter { coolDowned ->
-                val stackInHand = player.getStackInHand(hand)
-
-                coolDowned.item is FishingRodItem &&
-                    itemStack != null &&
-                    stackInHand != null &&
-                    areEqual(itemStack, stackInHand)
-            }
-            .collect { withContext(dispatcher) { interact() } }
+            .filter { it.item is FishingRodItem }
+            .take(1)
+            .collect { client.coroutineScope.launch { interact() }.join() }
     }
 
-    override val coroutineContext: CoroutineContext
-        get() = TODO("Not yet implemented")
+    companion object {
+        private fun verifyStackInHand(player: ClientPlayerEntity, item: Item) = item.run {
+            (slotIndex == player.getSlotInHand(hand)) &&
+                areEqual(stack, player.inventory.getStack(slotIndex))
+        }
+    }
 }
-

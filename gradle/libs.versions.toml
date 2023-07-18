@@ -9,14 +9,19 @@ fabric-kotlin = "1.9.5+kotlin.1.8.22"
 owo = "0.11.1+1.20"
 
 [libraries]
+# fabric dependencies
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 yarn-mappings = { module = "net.fabricmc:yarn", version.ref = "yarn" }
 fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
 fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
 
+# mod dependencies
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version.ref = "fabric-kotlin" }
 owo = { module = "io.wispforest:owo-lib", version.ref = "owo" }
 owo-sentinel = { module = "io.wispforest:owo-sentinel", version.ref = "owo" }
+
+# kotlin library dependencies
+reaktive = { module = "com.badoo.reaktive:reaktive", version = "latest.release" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "latest.release" }

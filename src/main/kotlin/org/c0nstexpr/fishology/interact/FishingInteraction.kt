@@ -3,29 +3,42 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.scope.DisposableScope
+import com.badoo.reaktive.disposable.scope.doOnDispose
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import org.c0nstexpr.fishology.core.events.CaughtFishEvent
+import org.c0nstexpr.fishology.utils.coroutineScope
 
 class FishingInteraction(val rod: RodInteraction) : DisposableScope by DisposableScope() {
+    val client get() = rod.client
 
-
-    init {
-        CaughtFishEvent.flow.subscribeScoped(onNext = ::onCaughtFish)
-        rod.beforeUse.subscribeScoped {
-
+    val caughtFishFlow = CaughtFishEvent.flow.filter {
+        it.run {
+            (rod.player?.let { p -> p.uuid == bobber.playerOwner?.uuid } == true) && caught
         }
     }
 
-    private var caughtFish = false
+    val interruptionFlow = rod.beforeUseFlow.filter { state == State.Idle }
 
-    private fun onCaughtFish(arg: CaughtFishEvent.Arg) = rod.run {
-        if (
-            player?.uuid != arg.bobber.playerOwner?.uuid ||
-            !arg.caught
-        ) return@run
+    init {
+        val job = client.coroutineScope.launch { caughtFishFlow.collect { onCaughtFish() } }
+        doOnDispose(job::cancel)
+    }
 
-        caughtFish = true
+    enum class State {
+        Idle,
+        Retrieving,
+        Recasting
+    }
 
-        use()
-        use()
+    var state = State.Idle
+        private set
+
+    private suspend fun onCaughtFish() = rod.run {
+        state = State.Retrieving
+        rod.use()
+        state = State.Recasting
+        rod.use()
+        state = State.Idle
     }
 }

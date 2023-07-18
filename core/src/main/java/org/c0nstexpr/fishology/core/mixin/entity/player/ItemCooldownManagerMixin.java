@@ -1,9 +1,8 @@
 package org.c0nstexpr.fishology.core.mixin.entity.player;
 
-import org.c0nstexpr.fishology.core.FlowExtKt;
 import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.item.Item;
-
+import org.c0nstexpr.fishology.core.FlowExtKt;
 import org.c0nstexpr.fishology.core.events.ItemCoolDownEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

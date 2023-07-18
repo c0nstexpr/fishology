@@ -1,6 +1,5 @@
 package org.c0nstexpr.fishology.core.events
 
-import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import net.minecraft.item.Item
