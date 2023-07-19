@@ -23,6 +23,7 @@ repositories {
 
     maven("https://maven.fabricmc.net/")
     maven("https://maven.wispforest.io")
+    maven("https://maven.terraformersmc.com")
 }
 
 val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
@@ -39,6 +40,7 @@ val fabricLoaderLib = getLib("fabric.loader")
 val fabricApiLib = getLib("fabric.api")
 val fabricKotlinLib = getLib("fabric.kotlin")
 val owoLib = getLib("owo")
+val modmenuLib = getLib("modmenu")
 
 interface ModPropertyPluginExtension {
     val properties: MapProperty<String, String>
@@ -54,7 +56,8 @@ extension.properties.convention(
         "fabricApi" to fabricApiLib.get().version!!,
         "fabricLoader" to fabricLoaderLib.get().version!!,
         "fabricKotlin" to fabricKotlinLib.get().version!!,
-        "owo" to owoLib.get().version!!
+        "owo" to owoLib.get().version!!,
+        "modmenu" to modmenuLib.get().version!!
     )
 )
 
@@ -65,6 +68,7 @@ dependencies {
     modImplementation(fabricApiLib)
     modImplementation(fabricKotlinLib)
 
+    modImplementation(modmenuLib)
     modImplementation(owoLib)
 }
 
@@ -96,9 +100,7 @@ tasks {
         withSourcesJar()
     }
 
-    System.getenv()
-        .getOrDefault("MODRINTH_TOKEN", null)
-        ?.let { modrinth { token = it } }
+    System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let { modrinth { token = it } }
 }
 
 spotless {

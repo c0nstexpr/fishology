@@ -17,7 +17,7 @@
     "client": [
       {
         "adapter": "kotlin",
-        "value": "org.c0nstexpr.fishology.FishologyMod::init"
+        "value": "org.c0nstexpr.fishology.FishologyModKt::init"
       }
     ]
   },
@@ -28,6 +28,7 @@
     "fabricloader": ">=${fabricLoader}",
     "fabric-language-kotlin": ">=${fabricKotlin}",
     "owo": ">=${owo}",
-    "fishology-core": ">=${version}"
+    "fishology-core": ">=${version}",
+    "modmenu": ">=${modmenu}"
   }
 }

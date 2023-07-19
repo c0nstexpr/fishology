@@ -32,8 +32,9 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
                 return@initObserve
             }
 
-            if (fishingInteraction == null)
+            if (fishingInteraction == null) {
                 fishingInteraction = FishingInteraction(RodInteraction(client))
+            }
         }
 
         doOnDispose {

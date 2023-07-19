@@ -3,8 +3,7 @@
   "package": "org.c0nstexpr.fishology.core.mixin",
   "client": [
     "entity.projecttile.FishingBobberEntityMixin",
-    "item.FishingRodItemMixin",
-    "entity.player.ItemCooldownManagerMixin"
+    "item.FishingRodItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1

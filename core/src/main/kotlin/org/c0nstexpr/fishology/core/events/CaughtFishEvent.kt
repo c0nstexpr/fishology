@@ -11,6 +11,6 @@ class CaughtFishEvent private constructor() {
         @JvmField
         internal val subject = PublishSubject<Arg>()
 
-        val observable : Observable<Arg> = subject
+        val observable: Observable<Arg> = subject
     }
 }
