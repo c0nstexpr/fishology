@@ -22,6 +22,7 @@ owo-sentinel = { module = "io.wispforest:owo-sentinel", version.ref = "owo" }
 
 # kotlin library dependencies
 reaktive = { module = "com.badoo.reaktive:reaktive", version = "latest.release" }
+reaktive-coro = { module = "com.badoo.reaktive:coroutines-interop", version = "latest.release" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "latest.release" }
