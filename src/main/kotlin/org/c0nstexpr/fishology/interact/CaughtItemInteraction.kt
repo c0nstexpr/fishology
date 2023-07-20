@@ -5,7 +5,7 @@ import net.minecraft.entity.ItemEntity
 
 class CaughtItemInteraction {
 
-    fun getItem(entity: Entity){
-        val itemEntity = entity as ItemEntity
-    }
+//    fun getItem(entity: Entity) {
+//        val itemEntity = entity as ItemEntity
+//    }
 }

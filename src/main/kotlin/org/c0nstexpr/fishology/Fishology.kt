@@ -3,11 +3,11 @@ package org.c0nstexpr.fishology
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.disposable.scope.doOnDispose
 import net.minecraft.client.MinecraftClient
-import org.c0nstexpr.fishology.utils.initObserve
 import org.c0nstexpr.fishology.core.config.FishologyConfig
 import org.c0nstexpr.fishology.core.config.FishologyConfigModel
 import org.c0nstexpr.fishology.interact.AutoFishingInteraction
 import org.c0nstexpr.fishology.interact.RodInteraction
+import org.c0nstexpr.fishology.utils.initObserve
 
 class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScope() {
     val rodInteraction = RodInteraction(client)
@@ -36,8 +36,9 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
 
             logger.debug("Enabling auto fishing")
 
-            if (fishingInteraction == null)
+            if (fishingInteraction == null) {
                 fishingInteraction = AutoFishingInteraction(RodInteraction(client))
+            }
         }
 
         doOnDispose {
