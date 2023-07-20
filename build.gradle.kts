@@ -8,7 +8,4 @@ tasks.build { dependsOn(tasks.wrapper) }
 
 dependencies {
     fabricProject(":core")
-
-    include(libs.owo.sentinel)
-    implementation(libs.reaktive.coro)
 }

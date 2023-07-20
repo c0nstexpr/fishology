@@ -2,6 +2,7 @@ package org.c0nstexpr.fishology.core.mixin.entity.projecttile;
 
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.projectile.FishingBobberEntity;
+import org.c0nstexpr.fishology.core.FishologyCoreModKt;
 import org.c0nstexpr.fishology.core.events.CaughtFishEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,8 +20,10 @@ class FishingBobberEntityMixin {
 
     @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
     private void onTrackedDataSet(TrackedData<?> trackedData, CallbackInfo ci) {
-        if (CAUGHT_FISH.equals(trackedData))
+        if (CAUGHT_FISH.equals(trackedData)) {
+            FishologyCoreModKt.logger.debug("detected caught fish in mixin");
             CaughtFishEvent.subject.onNext(
                     new CaughtFishEvent.Arg((FishingBobberEntity) (Object) this, caughtFish));
+        }
     }
 }

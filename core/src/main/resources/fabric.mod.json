@@ -24,7 +24,7 @@
   "mixins": [
     "fishology.core.mixins.json"
   ],
-  "icon": "assets/fishology/icon.jpg",
+  "icon": "assets/fishology-core/icon.png",
   "depends": {
     "minecraft": "${minecraft}",
     "fabric": ">=${fabricApi}",

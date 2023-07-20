@@ -1,5 +1,3 @@
-@file:Suppress("MemberVisibilityCanBePrivate")
-
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.scope.DisposableScope
@@ -11,6 +9,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemStack.areEqual
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.core.events.UseRodEvent
+import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.getSlotInHand
 
 class RodInteraction(val client: MinecraftClient) : DisposableScope by DisposableScope() {
@@ -29,15 +28,22 @@ class RodInteraction(val client: MinecraftClient) : DisposableScope by Disposabl
     private var item: Item? = null
 
     init {
-        beforeUseObservable.subscribeScoped { item = it.let { Item(it.hand, it.player) } }
+        logger.debug("Initializing rod interaction")
+        beforeUseObservable.subscribeScoped {
+            logger.debug("detected rod use, saving rod status")
+            item = it.let { Item(it.hand, it.player) }
+        }
     }
 
     fun use(useCallback: (Boolean) -> Unit = {}) {
         val player = player ?: return
         val item = item ?: return
 
+        logger.debug("using rod")
+
         if (!verifyStackInHand(player, item)) {
             this.item = null
+            logger.debug("invalid rod status, aborting use command")
             useCallback(false)
             return
         }

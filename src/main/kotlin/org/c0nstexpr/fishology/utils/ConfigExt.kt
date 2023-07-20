@@ -1,4 +1,4 @@
-package org.c0nstexpr.fishology.config
+package org.c0nstexpr.fishology.utils
 
 import io.wispforest.owo.config.ConfigWrapper
 import io.wispforest.owo.config.Option
@@ -18,6 +18,5 @@ fun <Param, Model, Wrapper : ConfigWrapper<Model>, Type : Param> Wrapper.initObs
     prop: KProperty1<Model, Type>,
     key: Option.Key = Option.Key(prop.name),
     block: (Param) -> Unit
-) {
-    get(prop, key)?.initObserve(block)
-}
+) = get(prop, key)?.initObserve(block)
+

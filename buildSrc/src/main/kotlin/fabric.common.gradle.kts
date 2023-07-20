@@ -22,8 +22,6 @@ repositories {
     mavenCentral()
 
     maven("https://maven.fabricmc.net/")
-    maven("https://maven.wispforest.io")
-    maven("https://maven.terraformersmc.com")
 }
 
 val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
@@ -38,38 +36,23 @@ val minecraftLib = getLib("minecraft")
 val yarnMappings = getLib("yarn.mappings")
 val fabricLoaderLib = getLib("fabric.loader")
 val fabricApiLib = getLib("fabric.api")
-val fabricKotlinLib = getLib("fabric.kotlin")
-val owoLib = getLib("owo")
-val modmenuLib = getLib("modmenu")
 
-interface ModPropertyPluginExtension {
-    val properties: MapProperty<String, String>
+val extension =
+    extensions.create<ModPropertyPluginExtension>("modProperties")
+extension.properties.run {
+    put("id", modId)
+    put("version", modVersion)
+    put("name", modName)
+    put("minecraft", minecraftLib.get().version!!)
+    put("fabricApi", fabricApiLib.get().version!!)
+    put("fabricLoader", fabricLoaderLib.get().version!!)
 }
-
-val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
-extension.properties.convention(
-    mutableMapOf(
-        "id" to modId,
-        "version" to modVersion,
-        "name" to modName,
-        "minecraft" to minecraftLib.get().version!!,
-        "fabricApi" to fabricApiLib.get().version!!,
-        "fabricLoader" to fabricLoaderLib.get().version!!,
-        "fabricKotlin" to fabricKotlinLib.get().version!!,
-        "owo" to owoLib.get().version!!,
-        "modmenu" to modmenuLib.get().version!!
-    )
-)
 
 dependencies {
     minecraft(minecraftLib)
     mappings(yarnMappings)
     modImplementation(fabricLoaderLib)
     modImplementation(fabricApiLib)
-    modImplementation(fabricKotlinLib)
-
-    modImplementation(modmenuLib)
-    modImplementation(owoLib)
 }
 
 tasks {

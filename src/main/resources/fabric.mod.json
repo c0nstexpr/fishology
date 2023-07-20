@@ -21,14 +21,11 @@
       }
     ]
   },
-  "icon": "assets/fishology/icon.jpg",
+  "icon": "assets/fishology/icon.png",
   "depends": {
     "minecraft": "${minecraft}",
     "fabric": ">=${fabricApi}",
     "fabricloader": ">=${fabricLoader}",
-    "fabric-language-kotlin": ">=${fabricKotlin}",
-    "owo": ">=${owo}",
-    "fishology-core": ">=${version}",
-    "modmenu": ">=${modmenu}"
+    "fishology-core": ">=${version}"
   }
 }

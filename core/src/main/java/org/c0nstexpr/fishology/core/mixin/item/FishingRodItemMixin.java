@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.c0nstexpr.fishology.core.FishologyCoreModKt;
 import org.c0nstexpr.fishology.core.events.UseRodEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,6 +21,7 @@ class FishingRodItemMixin {
             PlayerEntity player,
             Hand hand,
             CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+        FishologyCoreModKt.logger.debug("detected rod use in mixin");
         UseRodEvent.beforeUseSubject.onNext(new UseRodEvent.Arg(hand, player));
     }
 }
