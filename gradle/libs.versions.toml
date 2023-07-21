@@ -24,6 +24,7 @@ modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 
 # kotlin library dependencies
 reaktive = { module = "com.badoo.reaktive:reaktive", version = "latest.release" }
+logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "latest.release" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "latest.release" }

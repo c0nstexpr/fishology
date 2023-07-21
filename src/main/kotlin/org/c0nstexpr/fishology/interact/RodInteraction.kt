@@ -2,6 +2,7 @@ package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.observable.filter
+import com.badoo.reaktive.observable.take
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity

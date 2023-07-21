@@ -17,6 +17,7 @@ dependencies {
     annotationProcessor(libs.owo)
 
     api(libs.reaktive)
+    implementation(libs.logging)
 }
 
 fabricProperty {

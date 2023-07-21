@@ -5,7 +5,7 @@ import com.badoo.reaktive.observable.filter
 import org.c0nstexpr.fishology.core.events.CaughtFishEvent
 import org.c0nstexpr.fishology.logger
 
-class AutoFishingInteraction(val rod: RodInteraction) : DisposableScope by DisposableScope() {
+class AutoFishingInteraction(val rod: RodInteraction, val hooked: HookedInteraction) : DisposableScope by DisposableScope() {
     init {
         logger.debug("Initializing fishing interaction")
 
@@ -21,9 +21,23 @@ class AutoFishingInteraction(val rod: RodInteraction) : DisposableScope by Dispo
 
         rod.use { success ->
             if (!success) return@use
-
-            logger.debug("rod retrieved, recast rod")
-            rod.use()
+            onCast()
         }
+    }
+
+    private fun onCast(){
+        logger.debug("rod retrieved, recast rod")
+
+        val bobberY = rod.player?.eyeY
+
+        val entity = hooked.entity
+        if(entity?.velocity?.y?.compareTo(0) == -1 && entity?.y < bobberY)
+        {
+            logger.debug("previous hooked entity is falling, recast rod")
+            rod.use()
+            return
+        }
+
+        rod.use()
     }
 }
