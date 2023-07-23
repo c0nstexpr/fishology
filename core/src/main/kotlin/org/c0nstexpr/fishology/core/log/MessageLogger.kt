@@ -1,8 +1,14 @@
 package org.c0nstexpr.fishology.core.log
 
 import io.github.oshai.kotlinlogging.*
+import io.github.oshai.kotlinlogging.slf4j.toSlf4j
 import net.minecraft.client.MinecraftClient
+import net.minecraft.text.Style
 import net.minecraft.text.Text
+import net.minecraft.text.TextColor
+import org.slf4j.event.KeyValuePair
+import org.slf4j.event.LoggingEvent
+import org.slf4j.event.SubstituteLoggingEvent
 
 class MessageLogger(
     private val logger: KLogger = KotlinLogging.logger {},
@@ -46,27 +52,61 @@ class MessageLogger(
 	private MutableText getColoredText(String key, State state) {
 		return Text.translatable(FishingRulerClient.MODID+".help."+key).setStyle(FishingRulerClient.getStyle(state));
 	}
-     */
+    */
 
     private fun sendMessage(level: Level, marker: Marker?, block: KLoggingEventBuilder.() -> Unit) {
-        val text = Text.EMPTY.
+        KLoggingEventBuilder().run {
+            block()
 
-        KLoggingEventBuilder().apply(block).let {
+            val str = StringBuilder("[$level]${marker?.run { "[${getName()}]" }}")
+
             client.player?.sendMessage(it.message)
         }
+    }
 
-        when (level) {
-            Level.TRACE -> logger.trace(block)
-            Level.DEBUG -> logger.debug(block)
-            Level.INFO -> logger.info(block)
-            Level.WARN -> logger.warn(block)
-            Level.ERROR -> logger.error(block)
-            else -> {}
+    private fun mergeMarkersAndKeyValuePairs(event: LoggingEvent, msg: String): String {
+        var sb: StringBuilder? = null
+        if (event.markers != null) {
+            sb = StringBuilder()
+            for (marker in event.markers) {
+                sb.append(marker)
+                sb.append(' ')
+            }
         }
+        if (event.keyValuePairs != null) {
+            if (sb == null) {
+                sb = StringBuilder()
+            }
+            for (kvp in event.keyValuePairs) {
+                sb.append(kvp.key)
+                sb.append('=')
+                sb.append(kvp.value)
+                sb.append(' ')
+            }
+        }
+        return if (sb != null) {
+            sb.append(msg)
+            sb.toString()
+        } else {
+            msg
+        }
+    }
+
+    private fun getColoredText(str: String, level: Level) {
+        Text.translatable(str).setStyle(Style.EMPTY.withBold())
     }
 
     companion object {
         inline fun <reified T> create(client: MinecraftClient? = null) =
             MessageLogger(T::class.qualifiedName ?: "unknown", client)
+
+        private fun levelColor(level: Level) = when (level) {
+            Level.TRACE -> TextColor.fromRgb(0x795548)
+            Level.DEBUG -> TextColor.fromRgb(0x9C27B0)
+            Level.INFO -> TextColor.fromRgb(0xFFFFFF)
+            Level.WARN -> TextColor.fromRgb(0xFFEB3B)
+            Level.ERROR -> TextColor.fromRgb(0xD32F2F)
+            else -> TextColor.fromRgb(0x2196F3)
+        }
     }
 }
