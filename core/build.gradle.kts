@@ -8,16 +8,12 @@ repositories {
 }
 
 dependencies {
-    modApi(libs.fabric.kotlin)
+    listOf(libs.fabric.kotlin, libs.modmenu, libs.owo).forEach(::modApi)
 
-    modApi(libs.modmenu)
-
-    modApi(libs.owo)
     include(libs.owo.sentinel)
     annotationProcessor(libs.owo)
 
-    api(libs.reaktive)
-    implementation(libs.logging)
+    listOf(libs.reaktive,libs.logging).forEach(::api)
 }
 
 fabricProperty {

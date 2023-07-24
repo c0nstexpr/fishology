@@ -1,13 +1,22 @@
 package org.c0nstexpr.fishology.core
 
-import io.github.oshai.kotlinlogging.KLogger
-import org.c0nstexpr.fishology.core.log.MessageLogger
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
+import org.apache.logging.log4j.kotlin.logger
+import org.c0nstexpr.fishology.core.log.MCMessageLogger
+import org.c0nstexpr.fishology.core.log.greeting
+
 
 const val modID = "fishology-core"
 const val modName = "Fishology Core"
 
-@JvmField
-val logger : KLogger = MessageLogger(modName)
+val logger = logger(modID)
 
-@Suppress("unused")
-fun init() = logger.info { "Initializing $modName" }
+fun init() {
+    ClientLifecycleEvents.CLIENT_STARTED.register {
+        val appender = MCMessageLogger.Builder().build()
+
+        logger.delegate.
+
+        logger.greeting()
+    }
+}

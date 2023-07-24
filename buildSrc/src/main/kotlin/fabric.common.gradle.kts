@@ -18,8 +18,8 @@ version = modVersion
 group = "org.c0nstexpr"
 
 repositories {
-    mavenLocal()
     mavenCentral()
+    mavenLocal()
 
     maven("https://maven.fabricmc.net/")
 }
