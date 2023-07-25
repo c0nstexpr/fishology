@@ -27,10 +27,10 @@ class FishingBobberEntityMixin {
         final FishingBobberEntity bobber = (FishingBobberEntity) (Object) this;
 
         if (CAUGHT_FISH.equals(trackedData)) {
-            FishologyCoreModKt.logger.debug("detected caught fish in mixin");
+            FishologyCoreModKt.getLogger().d("detected caught fish in mixin");
             CaughtFishEvent.subject.onNext(new CaughtFishEvent.Arg(bobber, caughtFish));
         } else if (HOOK_ENTITY_ID.equals(trackedData)) {
-            FishologyCoreModKt.logger.debug("detected hooked entity in mixin");
+            FishologyCoreModKt.getLogger().d("detected hooked entity in mixin");
             HookedEvent.subject.onNext(new HookedEvent.Arg(bobber, hookedEntity));
         }
     }

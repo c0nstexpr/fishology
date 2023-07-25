@@ -1,22 +1,28 @@
 package org.c0nstexpr.fishology.core
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
-import org.apache.logging.log4j.kotlin.logger
-import org.c0nstexpr.fishology.core.log.MCMessageLogger
-import org.c0nstexpr.fishology.core.log.greeting
+import net.minecraft.client.MinecraftClient
+import org.c0nstexpr.fishology.core.log.*
 
 
-const val modID = "fishology-core"
+const val modId = "fishology-core"
 const val modName = "Fishology Core"
 
-val logger = logger(modID)
+internal val logger = LogBuilder().apply { tag = modId }.build()
 
-fun init() {
-    ClientLifecycleEvents.CLIENT_STARTED.register {
-        val appender = MCMessageLogger.Builder().build()
+fun init() = ClientLifecycleEvents.CLIENT_STARTED.register {
+    val config = logger.mutableConfig
 
-        logger.delegate.
+    config.addMCWriter(it.inGameHud.chatHud)
 
-        logger.greeting()
+    logger.greeting()
+
+    ClientLifecycleEvents.CLIENT_STOPPING.register {
+        config.removeWriterWhere { writer -> writer is MCMessageWriter }
     }
+}
+
+fun MinecraftClient.chat(message: String) {
+    networkHandler?.sendChatMessage(message)
+    logger.i(message, tag = "${logger.tag}.chat")
 }

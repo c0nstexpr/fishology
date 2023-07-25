@@ -21,7 +21,7 @@ class FishingRodItemMixin {
             PlayerEntity player,
             Hand hand,
             CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        FishologyCoreModKt.logger.debug("detected rod use in mixin");
+        FishologyCoreModKt.getLogger().d("detected rod use in mixin");
         UseRodEvent.beforeUseSubject.onNext(new UseRodEvent.Arg(hand, player));
     }
 }

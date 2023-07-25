@@ -1,15 +1,16 @@
 package org.c0nstexpr.fishology
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import net.minecraft.client.network.ClientPlayNetworkHandler
+import org.c0nstexpr.fishology.core.log.*
+import org.c0nstexpr.fishology.core.modId
 
-const val modID = "fishology"
+const val modId = "fishology"
 const val modName = "Fishology"
 
-val logger: Logger = LoggerFactory.getLogger(modName)
+internal val logger = LogBuilder().apply { tag = modId }.build()
 
-lateinit var fishology: Fishology
+var fishology: Fishology? = null
     private set
 
 /**
@@ -18,9 +19,9 @@ lateinit var fishology: Fishology
 @Suppress("unused")
 fun init() {
     ClientLifecycleEvents.CLIENT_STARTED.register {
-        logger.info("Initializing $modName")
-
+        logger.greeting()
         fishology = Fishology(it)
-        ClientLifecycleEvents.CLIENT_STOPPING.register { fishology.dispose() }
+
+        ClientLifecycleEvents.CLIENT_STOPPING.register { fishology?.dispose() }
     }
 }

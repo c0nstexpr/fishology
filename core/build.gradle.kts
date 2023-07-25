@@ -13,7 +13,7 @@ dependencies {
     include(libs.owo.sentinel)
     annotationProcessor(libs.owo)
 
-    listOf(libs.reaktive,libs.logging).forEach(::api)
+    listOf(libs.reaktive,libs.kermit).forEach(::api)
 }
 
 fabricProperty {
