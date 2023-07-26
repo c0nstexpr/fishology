@@ -3,6 +3,10 @@ package org.c0nstexpr.fishology.interact
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.take
+import com.badoo.reaktive.single.Single
+import com.badoo.reaktive.single.singleOf
+import com.badoo.reaktive.subject.Subject
+import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -29,23 +33,24 @@ class RodInteraction(val client: MinecraftClient) : DisposableScope by Disposabl
     private var item: Item? = null
 
     init {
-        logger.debug("Initializing rod interaction")
+        logger.d("Initializing rod interaction")
         beforeUseObservable.subscribeScoped {
-            logger.debug("detected rod use, saving rod status")
+            logger.d("detected rod use, saving rod status")
             item = it.let { Item(it.hand, it.player) }
         }
     }
 
-    fun use(useCallback: (Boolean) -> Unit = {}) {
+    fun use() {
         val player = player ?: return
         val item = item ?: return
+        val subject = SingleSubject
 
-        logger.debug("using rod")
+        logger.d("using rod")
 
         if (!verifyStackInHand(player, item)) {
             this.item = null
-            logger.debug("invalid rod status, aborting use command")
-            useCallback(false)
+            logger.d("invalid rod status, aborting use command")
+            subject.onNext(false)
             return
         }
 

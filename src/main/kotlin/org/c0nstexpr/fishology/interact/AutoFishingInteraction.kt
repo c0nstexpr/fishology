@@ -1,43 +1,48 @@
 package org.c0nstexpr.fishology.interact
 
-import com.badoo.reaktive.disposable.scope.DisposableScope
-import com.badoo.reaktive.observable.filter
+import com.badoo.reaktive.disposable.SerialDisposable
+import com.badoo.reaktive.maybe.Maybe
+import com.badoo.reaktive.maybe.toMaybe
+import com.badoo.reaktive.observable.*
+import com.badoo.reaktive.single.*
+import net.minecraft.entity.Entity
 import org.c0nstexpr.fishology.core.events.CaughtFishEvent
+import org.c0nstexpr.fishology.core.events.EntityFallingEvent
 import org.c0nstexpr.fishology.logger
+import org.c0nstexpr.fishology.utils.asSingle
 
-class AutoFishingInteraction(val rod: RodInteraction, val hooked: HookedInteraction) : DisposableScope by DisposableScope() {
-    init {
-        logger.debug("Initializing fishing interaction")
+class AutoFishingInteraction(
+    var player: Entity,
+    val useRod: () -> Single<Unit>,
+    var hooked: Entity
+) {
+    val caughtFish = run {
+        val retrieveDisposable = SerialDisposable()
 
         CaughtFishEvent.observable.filter {
-            it.run {
-                (rod.player?.let { p -> p.uuid == bobber.playerOwner?.uuid } == true) && caught
+            it.run { (this@AutoFishingInteraction.player.uuid == bobber.playerOwner?.uuid) && caught }
+        }
+            .map {
+                logger.d("detected caught")
+                retrieveDisposable.set(onCaughtFish().subscribe())
             }
-        }.subscribeScoped { onCaughtFish() }
+            .doOnBeforeDispose { retrieveDisposable.dispose() }
     }
 
-    private fun onCaughtFish() {
-        logger.debug("detected fish was caught, retrieving rod")
+    private fun onCaughtFish(): Single<Unit> {
+        logger.d("retrieving rod")
+        val recastDisposable = SerialDisposable()
 
-        rod.use { success ->
-            if (!success) return@use
-            onCast()
-        }
+        return useRod().map { recastDisposable.set(onRecast().subscribe()) }
+            .doOnBeforeDispose { recastDisposable.dispose() }
     }
 
-    private fun onCast(){
-        logger.debug("rod retrieved, recast rod")
+    private fun onRecast(): Single<Unit> {
+        logger.d("wait for recasting rod")
 
-        val bobberY = rod.player?.eyeY
-
-        val entity = hooked.entity
-        if(entity?.velocity?.y?.compareTo(0) == -1 && entity?.y < bobberY)
-        {
-            logger.debug("previous hooked entity is falling, recast rod")
-            rod.use()
-            return
+        return EntityFallingEvent.observable.filter { it.entity.id == hooked.id }.any().map {
+            logger.d("hooked entity is falling, recast rod")
+            useRod()
         }
-
-        rod.use()
     }
 }

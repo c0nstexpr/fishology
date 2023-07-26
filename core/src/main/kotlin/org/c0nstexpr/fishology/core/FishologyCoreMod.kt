@@ -1,7 +1,6 @@
 package org.c0nstexpr.fishology.core
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
-import net.minecraft.client.MinecraftClient
 import org.c0nstexpr.fishology.core.log.*
 
 
@@ -20,9 +19,4 @@ fun init() = ClientLifecycleEvents.CLIENT_STARTED.register {
     ClientLifecycleEvents.CLIENT_STOPPING.register {
         config.removeWriterWhere { writer -> writer is MCMessageWriter }
     }
-}
-
-fun MinecraftClient.chat(message: String) {
-    networkHandler?.sendChatMessage(message)
-    logger.i(message, tag = "${logger.tag}.chat")
 }
