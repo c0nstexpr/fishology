@@ -11,4 +11,6 @@ public class FishologyConfigModel {
     public boolean enabled = true;
 
     public Severity logLevel = Severity.Warn;
+
+    public boolean enableChatOnCaught = true;
 }

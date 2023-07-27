@@ -13,9 +13,8 @@ import org.c0nstexpr.fishology.utils.initObserve
 
 class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScope() {
     val rodInteraction = RodInteraction(client)
-
-    var fishingInteraction: AutoFishingInteraction? = null
-        private set
+    val fishingInteraction = AutoFishingInteraction(client.player,
+        { rodInteraction.use() })
 
     val config: FishologyConfig = FishologyConfig.createAndLoad()
 
@@ -29,9 +28,6 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
         config.initObserve(FishologyConfigModel::enabled) {
             if (!it) {
                 logger.d("Disabling auto fishing")
-
-                fishingInteraction?.dispose()
-                fishingInteraction = null
 
                 return@initObserve
             }

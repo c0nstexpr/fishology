@@ -1,5 +1,6 @@
 {
-  "fishology.caught_on_chat": "我钓到了",
-  "text.config.fishology-core.title": "fishology",
-  "text.config.fishology-core.option.enabled": "启用自动钓鱼"
+  "text.config.fishology-core.title": "fishology-core",
+  "text.config.fishology-core.option.enabled": "启用自动钓鱼",
+  "text.config.fishology-core.option.logLevel": "日志等级",
+  "text.config.fishology-core.option.enableChatOnCaught": "钓到物品时发送聊天消息"
 }

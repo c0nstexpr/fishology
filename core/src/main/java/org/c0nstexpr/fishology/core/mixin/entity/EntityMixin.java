@@ -5,6 +5,7 @@ import net.minecraft.util.math.Vec3d;
 
 import org.c0nstexpr.fishology.core.FishologyCoreModKt;
 import org.c0nstexpr.fishology.core.events.EntityFallingEvent;
+import org.c0nstexpr.fishology.core.events.EntityRemovedEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,5 +22,13 @@ public class EntityMixin {
             FishologyCoreModKt.getLogger().d("detected entity falling in mixin");
             EntityFallingEvent.subject.onNext(new EntityFallingEvent.Arg(entity));
         }
+    }
+
+    @Inject(method = "onRemoved", at = @At("TAIL"))
+    private void onRemoved(CallbackInfo ci) {
+        final Entity entity = (Entity) (Object) this;
+
+        FishologyCoreModKt.getLogger().d("detected entity removed in mixin");
+        EntityRemovedEvent.subject.onNext(new EntityRemovedEvent.Arg(entity));
     }
 }

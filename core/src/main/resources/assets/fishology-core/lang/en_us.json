@@ -1,5 +1,6 @@
 {
-  "fishology.caught_on_chat": "I caught a",
-  "text.config.fishology-core.title": "fishology",
-  "text.config.fishology-core.option.enabled": "Enable auto fishing"
+  "text.config.fishology-core.title": "fishology-core",
+  "text.config.fishology-core.option.enabled": "Enable auto fishing",
+  "text.config.fishology-core.option.logLevel": "log output level filter",
+  "text.config.fishology-core.option.enableChatOnCaught": "send chat message on caught"
 }

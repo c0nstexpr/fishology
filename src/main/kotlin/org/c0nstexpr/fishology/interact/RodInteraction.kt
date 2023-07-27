@@ -2,10 +2,14 @@ package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.observable.filter
+import com.badoo.reaktive.observable.firstOrComplete
+import com.badoo.reaktive.observable.firstOrDefault
 import com.badoo.reaktive.observable.take
 import com.badoo.reaktive.single.Single
+import com.badoo.reaktive.single.SingleObserver
 import com.badoo.reaktive.single.singleOf
 import com.badoo.reaktive.subject.Subject
+import com.badoo.reaktive.subject.behavior.BehaviorSubject
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
@@ -16,6 +20,7 @@ import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.core.events.UseRodEvent
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.getSlotInHand
+import org.c0nstexpr.fishology.utils.onNextComplete
 
 class RodInteraction(val client: MinecraftClient) : DisposableScope by DisposableScope() {
     val beforeUseObservable = UseRodEvent.beforeUseObservable.filter { isSamePlayer(it) }
@@ -40,24 +45,25 @@ class RodInteraction(val client: MinecraftClient) : DisposableScope by Disposabl
         }
     }
 
-    fun use() {
-        val player = player ?: return
-        val item = item ?: return
-        val subject = SingleSubject
+    fun use(): Single<Boolean> {
+        val falseValue = singleOf(false)
+        val player = player ?: return falseValue
+        val item = item ?: return falseValue
 
         logger.d("using rod")
 
         if (!verifyStackInHand(player, item)) {
             this.item = null
             logger.d("invalid rod status, aborting use command")
-            subject.onNext(false)
-            return
+            return falseValue
         }
 
+        val subject = BehaviorSubject(false)
         client.execute {
             client.interactionManager?.interactItem(player, item.hand)
-            useCallback(true)
+            subject.onNextComplete(true)
         }
+        return subject.filter { it }.firstOrDefault(false)
     }
 
     companion object {

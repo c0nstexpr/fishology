@@ -11,7 +11,10 @@ import org.c0nstexpr.fishology.core.events.HookedEvent
 import org.c0nstexpr.fishology.core.modId
 import org.c0nstexpr.fishology.logger
 
-class HookedInteraction(val client: MinecraftClient) : DisposableScope by DisposableScope() {
+class HookedInteraction(
+    val client: MinecraftClient,
+    val enableChat: Boolean
+) : DisposableScope by DisposableScope() {
     init {
         HookedEvent.observable.filter { it.bobber.id == bobber?.id }
             .subscribeScoped { entity = it.hooked }
@@ -25,9 +28,10 @@ class HookedInteraction(val client: MinecraftClient) : DisposableScope by Dispos
 
     var entity: Entity? = null
         private set(value) {
-            if (value != null) client.chat(
+            if (value != null && enableChat) client.chat(
                 Text.translatable("${modId}.caught_on_chat")
-                    .append(value.displayName).string,
+                    .append(value.displayName)
+                    .string,
                 logger
             )
 
