@@ -1,9 +1,11 @@
 package org.c0nstexpr.fishology.core.mixin.entity.projecttile;
 
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import org.c0nstexpr.fishology.core.FishologyCoreModKt;
+import org.c0nstexpr.fishology.core.events.BobberOwnedEvent;
 import org.c0nstexpr.fishology.core.events.CaughtFishEvent;
 import org.c0nstexpr.fishology.core.events.HookedEvent;
 import org.spongepowered.asm.mixin.Final;
@@ -33,5 +35,14 @@ class FishingBobberEntityMixin {
             FishologyCoreModKt.getLogger().d("detected hooked entity in mixin");
             HookedEvent.subject.onNext(new HookedEvent.Arg(bobber, hookedEntity));
         }
+    }
+
+    @Inject(method = "setOwner", at = @At("TAIL"))
+    private void setOwner(Entity entity, CallbackInfo ci) {
+        final FishingBobberEntity bobber = (FishingBobberEntity) (Object) this;
+
+        if (!(entity instanceof ClientPlayerEntity)) return;
+
+        BobberOwnedEvent.subject.onNext(new BobberOwnedEvent.Arg(bobber));
     }
 }

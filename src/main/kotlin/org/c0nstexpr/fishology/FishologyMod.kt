@@ -19,9 +19,15 @@ var fishology: Fishology? = null
 @Suppress("unused")
 fun init() {
     ClientLifecycleEvents.CLIENT_STARTED.register {
+        val config = logger.mutableConfig
+
+        config.addMCWriter(it.inGameHud.chatHud)
         logger.greeting()
         fishology = Fishology(it)
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register { fishology?.dispose() }
+        ClientLifecycleEvents.CLIENT_STOPPING.register {
+            fishology?.dispose()
+            config.removeWriterWhere { writer -> writer is MCMessageWriter }
+        }
     }
 }

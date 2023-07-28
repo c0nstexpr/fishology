@@ -1,78 +1,59 @@
 package org.c0nstexpr.fishology.interact
 
-import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.disposable.SerialDisposable
+import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.maybe.subscribe
 import com.badoo.reaktive.observable.*
-import com.badoo.reaktive.single.Single
-import com.badoo.reaktive.single.single
-import com.badoo.reaktive.single.subscribe
-import com.badoo.reaktive.subject.behavior.BehaviorSubject
 import com.badoo.reaktive.subject.publish.PublishSubject
+import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import org.c0nstexpr.fishology.core.events.CaughtFishEvent
 import org.c0nstexpr.fishology.core.events.EntityFallingEvent
 import org.c0nstexpr.fishology.core.events.EntityRemovedEvent
 import org.c0nstexpr.fishology.logger
-import org.c0nstexpr.fishology.utils.onNextComplete
+import org.c0nstexpr.fishology.utils.addScope
 
 class AutoFishingInteraction(
-    var player: Entity,
-    val useRod: () -> Single<Boolean>,
-    var hooked: Entity
+        val useRod: (callback: (Boolean) -> Unit) -> Unit
 ) : DisposableScope by DisposableScope() {
     private val cycleSubject = PublishSubject<Boolean>()
-
     val cycle: Observable<Boolean> = cycleSubject
 
-    init {
-        val serialDisposable = SerialDisposable()
+    var hooked: Entity? = null
+    var player: ClientPlayerEntity? = null
 
+    init {
         CaughtFishEvent.observable.filter {
-            it.run { (player.uuid == bobber.playerOwner?.uuid) && caught }
-        }.subscribeScoped {
-            serialDisposable.set(onCaughtFish().subscribe { cycleSubject.onNext(it) })
-        }
+            it.run { (player?.fishHook?.uuid == bobber.uuid) && caught }
+        }.subscribeScoped { onCaughtFish { cycleSubject.onNext(it) } }
     }
 
-    private fun onCaughtFish(): Single<Boolean> {
+    private val tmpDisposable = CompositeDisposable()
+
+    private fun onCaughtFish(callback: (Boolean) -> Unit) {
         logger.d("try to retrieve rod")
 
-        return single { emitter ->
-            emitter.setDisposable(
-                DisposableScope().apply {
-                    useRod().subscribeScoped {
-                        if (it) onRecast().subscribeScoped { emitter.onSuccess(it) }
-                        else emitter.onSuccess(false)
-                    }
-                }
-            )
+        useRod {
+            if (it) onRecast(callback)
+            else callback(false)
         }
     }
 
-    private fun onRecast(): Single<Boolean> {
+    private fun onRecast(callback: (Boolean) -> Unit) {
         logger.d("try to recast rod")
 
-        val subject = BehaviorSubject(false)
-        lateinit var disposable: Disposable
+        val hookedId = hooked?.id ?: return callback(false)
+        val recastObservable = merge(
+                EntityFallingEvent.observable.map { it.entity },
+                EntityRemovedEvent.observable.map { it.entity })
+                .filter { it.id == hookedId }.firstOrComplete()
 
-        disposable =
-            merge(
-                EntityFallingEvent.observable.filter { it.entity.id == hooked.id },
-                EntityRemovedEvent.observable.filter { it.entity.id == hooked.id })
-                .firstOrComplete()
-                .subscribeScoped {
-                    disposable.dispose()
-
-                    lateinit var disposableInner: Disposable
-
-                    disposableInner = useRod().subscribe {
-                        subject.onNextComplete(it)
-                        disposableInner.dispose()
-                    }
-                }
-
-        return subject.filter { it }.firstOrDefault(false)
+        tmpDisposable.addScope { d ->
+            recastObservable.subscribe {
+                d.get().dispose()
+                logger.d("recast rod")
+                useRod(callback)
+            }
+        }
     }
 }
