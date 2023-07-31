@@ -13,8 +13,8 @@ import org.c0nstexpr.fishology.utils.Module
 import org.c0nstexpr.fishology.utils.initObserve
 
 class Fishology(
-        val client: MinecraftClient,
-        var handler: ClientPlayNetworkHandler,
+    val client: MinecraftClient,
+    var handler: ClientPlayNetworkHandler,
 ) : DisposableScope by DisposableScope() {
     private var rod = object : Module() {
         var value: RodInteraction? = null

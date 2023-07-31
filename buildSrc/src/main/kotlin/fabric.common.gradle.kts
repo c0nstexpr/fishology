@@ -1,3 +1,4 @@
+import juuxel.vineflowerforloom.api.DecompilerBrand
 import kotlinx.datetime.Clock.System.now
 
 plugins {
@@ -37,8 +38,7 @@ val yarnMappings = getLib("yarn.mappings")
 val fabricLoaderLib = getLib("fabric.loader")
 val fabricApiLib = getLib("fabric.api")
 
-val extension =
-    extensions.create<ModPropertyPluginExtension>("modProperties")
+val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
 extension.properties.run {
     put("id", modId)
     put("version", modVersion)
@@ -55,6 +55,10 @@ dependencies {
     modImplementation(fabricApiLib)
 }
 
+vineflower {
+    brand.set(DecompilerBrand.VINEFLOWER)
+}
+
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
@@ -66,6 +70,8 @@ tasks {
         kotlinOptions {
             allWarningsAsErrors = true
             jvmTarget = compileJava.get().targetCompatibility
+            languageVersion = "1.8"
+            apiVersion = languageVersion
         }
     }
 

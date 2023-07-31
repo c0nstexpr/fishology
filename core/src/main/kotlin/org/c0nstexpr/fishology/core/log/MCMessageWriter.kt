@@ -16,13 +16,15 @@ class MCMessageWriter(
 ) : LogWriter() {
     override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
         hud.addMessage(
-                Text.literal(
-                        AttributionFormatter.formatMessage(severity, Tag(tag), Message(message)),
-                )
-                        .setStyle(
-                                Style.EMPTY.withColor(levelColor[severity]
-                                        ?: defaultColor(severity)),
-                        ),
+            Text.literal(
+                AttributionFormatter.formatMessage(severity, Tag(tag), Message(message)),
+            )
+                .setStyle(
+                    Style.EMPTY.withColor(
+                        levelColor[severity]
+                            ?: defaultColor(severity),
+                    ),
+                ),
         )
     }
 

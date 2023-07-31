@@ -22,16 +22,16 @@ internal abstract class Module : DisposableScope by DisposableScope() {
     }
 
     private fun onAdd(dependency: Module) =
-            dependents.run {
-                if (isEmpty()) onCreate()
-                add(dependency)
-            }
+        dependents.run {
+            if (isEmpty()) onCreate()
+            add(dependency)
+        }
 
     private fun onRemove(dependency: Module) =
-            dependents.run {
-                if (count() == 1) onDestroy()
-                remove(dependency)
-            }
+        dependents.run {
+            if (count() == 1) onDestroy()
+            remove(dependency)
+        }
 
     abstract fun onCreate()
     open fun onDestroy() {

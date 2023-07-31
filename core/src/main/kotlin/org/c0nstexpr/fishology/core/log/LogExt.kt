@@ -38,7 +38,7 @@ fun MutableLoggerConfig.addWriter(l: Logger): MutableLoggerConfig {
 fun logWriterOf(l: Logger) = LogWriterDelegate(l)
 
 fun MutableLoggerConfig.addMCWriter(
-        h: ChatHud,
+    h: ChatHud,
 ): MutableLoggerConfig {
     for (writer in logWriterList) if (writer is MCMessageWriter) {
         writer.hud = h

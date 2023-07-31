@@ -11,4 +11,4 @@ fun PlayerEntity.getSlotInHand(hand: Hand) = when (hand) {
 }
 
 fun MinecraftClient.interactItem(hand: Hand) =
-        this.interactionManager?.interactItem(player, hand)
+    this.interactionManager?.interactItem(player, hand)

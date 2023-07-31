@@ -34,14 +34,14 @@ class BobberInteraction(val client: MinecraftClient) : DisposableScope by Dispos
 
             if (value) {
                 chatDisposable.set(
-                        hook.notNull().subscribe {
-                            client.chat(
-                                    Text.translatable("$modId.caught_on_chat")
-                                            .append(it.displayName)
-                                            .string,
-                                    logger,
-                            )
-                        },
+                    hook.notNull().subscribe {
+                        client.chat(
+                            Text.translatable("$modId.caught_on_chat")
+                                .append(it.displayName)
+                                .string,
+                            logger,
+                        )
+                    },
                 )
             }
 
@@ -54,7 +54,7 @@ class BobberInteraction(val client: MinecraftClient) : DisposableScope by Dispos
         }.subscribeScoped { bobber = it }
 
         HookedEvent.observable.filter { it.bobber.uuid == bobber?.uuid }
-                .subscribeScoped { hookSubject.onNext(it.hook) }
+            .subscribeScoped { hookSubject.onNext(it.hook) }
 
         chatDisposable.scope()
     }

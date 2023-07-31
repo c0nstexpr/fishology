@@ -7,8 +7,8 @@ import net.minecraft.util.Hand
 
 class UseRodEvent private constructor() {
     data class Arg(
-            val hand: Hand,
-            val player: PlayerEntity,
+        val hand: Hand,
+        val player: PlayerEntity,
     )
 
     companion object {

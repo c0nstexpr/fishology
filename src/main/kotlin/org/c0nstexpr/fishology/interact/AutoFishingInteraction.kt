@@ -20,9 +20,9 @@ import org.c0nstexpr.fishology.utils.addScope
 import java.util.UUID
 
 class AutoFishingInteraction(
-        val useRod: (callback: (Boolean) -> Unit) -> Unit,
-        var uuid: UUID,
-        var hooked: BehaviorObservable<Entity?>,
+    val useRod: (callback: (Boolean) -> Unit) -> Unit,
+    var uuid: UUID,
+    var hooked: BehaviorObservable<Entity?>,
 ) : DisposableScope by DisposableScope() {
     private val cycleSubject = PublishSubject<Boolean>()
     val cycle: Observable<Boolean> = cycleSubject
@@ -53,25 +53,25 @@ class AutoFishingInteraction(
         logger.d("try to recast rod")
 
         val hookObservable = hooked.notNull()
-                .filter { it.uuid != preHook }
-                .firstOrComplete()
+            .filter { it.uuid != preHook }
+            .firstOrComplete()
 
         tmpDisposable.addScope(
-                hookObservable.subscribe { hook ->
-                    val recastObservable = merge(
-                            EntityFallingEvent.observable.map { it.entity },
-                            EntityRemovedEvent.observable.map { it.entity },
-                    )
-                            .filter { it.uuid == hook.uuid }.firstOrComplete()
+            hookObservable.subscribe { hook ->
+                val recastObservable = merge(
+                    EntityFallingEvent.observable.map { it.entity },
+                    EntityRemovedEvent.observable.map { it.entity },
+                )
+                    .filter { it.uuid == hook.uuid }.firstOrComplete()
 
-                    tmpDisposable.addScope { d ->
-                        recastObservable.subscribe {
-                            d.get().dispose()
-                            logger.d("recast rod")
-                            useRod(callback)
-                        }
+                tmpDisposable.addScope { d ->
+                    recastObservable.subscribe {
+                        d.get().dispose()
+                        logger.d("recast rod")
+                        useRod(callback)
                     }
-                },
+                }
+            },
         )
     }
 }

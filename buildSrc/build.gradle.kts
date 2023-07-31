@@ -32,13 +32,13 @@ dependencies {
 }
 
 tasks {
-    compileJava{
+    compileJava {
         targetCompatibility = JvmTarget.JVM_19.target
     }
 
     compileKotlin {
         kotlinOptions {
-            languageVersion = LanguageVersion.LATEST_STABLE.versionString
+            languageVersion = LanguageVersion.KOTLIN_1_8.versionString
             apiVersion = languageVersion
             allWarningsAsErrors = true
             jvmTarget = compileJava.get().targetCompatibility
