@@ -1,8 +1,11 @@
 package org.c0nstexpr.fishology
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
-import net.minecraft.client.network.ClientPlayNetworkHandler
-import org.c0nstexpr.fishology.core.log.*
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import org.c0nstexpr.fishology.core.log.LogBuilder
+import org.c0nstexpr.fishology.core.log.MCMessageWriter
+import org.c0nstexpr.fishology.core.log.addMCWriter
+import org.c0nstexpr.fishology.core.log.greeting
+import org.c0nstexpr.fishology.core.log.removeWriterWhere
 import org.c0nstexpr.fishology.core.modId
 
 const val modId = "fishology"
@@ -18,16 +21,17 @@ var fishology: Fishology? = null
  */
 @Suppress("unused")
 fun init() {
-    ClientLifecycleEvents.CLIENT_STARTED.register {
-        val config = logger.mutableConfig
+    logger.greeting()
 
-        config.addMCWriter(it.inGameHud.chatHud)
-        logger.greeting()
-        fishology = Fishology(it)
+    ClientPlayConnectionEvents.JOIN.register { handler, _, client ->
+        logger.mutableConfig.addMCWriter(client.inGameHud.chatHud)
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register {
+        if (fishology?.isDisposed == true) fishology = Fishology(client, handler)
+
+        ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
             fishology?.dispose()
-            config.removeWriterWhere { writer -> writer is MCMessageWriter }
+            fishology = null
+            logger.mutableConfig.removeWriterWhere { writer -> writer is MCMessageWriter }
         }
     }
 }

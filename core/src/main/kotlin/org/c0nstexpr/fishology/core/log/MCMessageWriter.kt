@@ -1,22 +1,28 @@
 package org.c0nstexpr.fishology.core.log
 
-import co.touchlab.kermit.*
+import co.touchlab.kermit.LogWriter
+import co.touchlab.kermit.Message
+import co.touchlab.kermit.Severity
+import co.touchlab.kermit.Tag
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.hud.ChatHud
-import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
 
 class MCMessageWriter(
     var hud: ChatHud = MinecraftClient.getInstance().inGameHud.chatHud,
-    val levelColor: MutableMap<Severity, TextColor> = mutableMapOf()
+    val levelColor: MutableMap<Severity, TextColor> = mutableMapOf(),
 ) : LogWriter() {
     override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
         hud.addMessage(
-            Text.literal(AttributionFormatter.formatMessage(severity, Tag(tag), Message(message)))
-                .setStyle(Style.EMPTY.withColor(levelColor[severity] ?: defaultColor(severity)))
+                Text.literal(
+                        AttributionFormatter.formatMessage(severity, Tag(tag), Message(message)),
+                )
+                        .setStyle(
+                                Style.EMPTY.withColor(levelColor[severity]
+                                        ?: defaultColor(severity)),
+                        ),
         )
     }
 
@@ -31,4 +37,3 @@ class MCMessageWriter(
         }
     }
 }
-

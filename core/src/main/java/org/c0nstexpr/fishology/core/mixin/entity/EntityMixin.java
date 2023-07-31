@@ -2,7 +2,6 @@ package org.c0nstexpr.fishology.core.mixin.entity;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
-
 import org.c0nstexpr.fishology.core.FishologyCoreModKt;
 import org.c0nstexpr.fishology.core.events.EntityFallingEvent;
 import org.c0nstexpr.fishology.core.events.EntityRemovedEvent;

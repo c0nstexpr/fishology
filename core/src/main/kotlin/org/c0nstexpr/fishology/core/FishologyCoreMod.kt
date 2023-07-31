@@ -1,8 +1,11 @@
 package org.c0nstexpr.fishology.core
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
-import org.c0nstexpr.fishology.core.log.*
-
+import org.c0nstexpr.fishology.core.log.LogBuilder
+import org.c0nstexpr.fishology.core.log.MCMessageWriter
+import org.c0nstexpr.fishology.core.log.addMCWriter
+import org.c0nstexpr.fishology.core.log.greeting
+import org.c0nstexpr.fishology.core.log.removeWriterWhere
 
 const val modId = "fishology-core"
 const val modName = "Fishology Core"

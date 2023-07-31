@@ -1,9 +1,15 @@
 package org.c0nstexpr.fishology.core.log
 
-import co.touchlab.kermit.*
+import co.touchlab.kermit.LogWriter
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.LoggerConfig
+import co.touchlab.kermit.Message
+import co.touchlab.kermit.MessageStringFormatter
+import co.touchlab.kermit.MutableLoggerConfig
+import co.touchlab.kermit.Severity
+import co.touchlab.kermit.Tag
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.hud.ChatHud
-import net.minecraft.client.network.ClientPlayNetworkHandler
 
 fun Logger.greeting(who: String = tag) = i("Hello, this is $who")
 
@@ -32,7 +38,7 @@ fun MutableLoggerConfig.addWriter(l: Logger): MutableLoggerConfig {
 fun logWriterOf(l: Logger) = LogWriterDelegate(l)
 
 fun MutableLoggerConfig.addMCWriter(
-    h: ChatHud
+        h: ChatHud,
 ): MutableLoggerConfig {
     for (writer in logWriterList) if (writer is MCMessageWriter) {
         writer.hud = h
@@ -50,7 +56,7 @@ inline fun MutableLoggerConfig.removeWriterWhere(p: (LogWriter) -> Boolean): Mut
 
 fun LogBuilder.forMC(
     modId: String,
-    hud: ChatHud = MinecraftClient.getInstance().inGameHud.chatHud
+    hud: ChatHud = MinecraftClient.getInstance().inGameHud.chatHud,
 ): LogBuilder {
     tag = modId
     config.addMCWriter(hud)

@@ -11,11 +11,11 @@ fun <Param, T : Param> Option<T>.initObserve(block: (Param) -> Unit) {
 
 fun <Model, Wrapper : ConfigWrapper<Model>, Type> Wrapper.get(
     prop: KProperty1<Model, Type>,
-    key: Option.Key = Option.Key(prop.name)
+    key: Option.Key = Option.Key(prop.name),
 ) = optionForKey<Type>(key)
 
 fun <Param, Model, Wrapper : ConfigWrapper<Model>, Type : Param> Wrapper.initObserve(
     prop: KProperty1<Model, Type>,
     key: Option.Key = Option.Key(prop.name),
-    block: (Param) -> Unit
+    block: (Param) -> Unit,
 ) = get(prop, key)?.initObserve(block)

@@ -1,97 +1,118 @@
 package org.c0nstexpr.fishology
 
-import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.disposable.SerialDisposable
+import co.touchlab.kermit.Severity
 import com.badoo.reaktive.disposable.scope.DisposableScope
-import com.badoo.reaktive.disposable.scope.doOnDispose
-import com.badoo.reaktive.observable.notNull
-import com.badoo.reaktive.observable.subscribe
 import net.minecraft.client.MinecraftClient
-import net.minecraft.entity.Entity
-import net.minecraft.text.Text
-import org.c0nstexpr.fishology.core.chat
+import net.minecraft.client.network.ClientPlayNetworkHandler
 import org.c0nstexpr.fishology.core.config.FishologyConfig
 import org.c0nstexpr.fishology.core.config.FishologyConfigModel
 import org.c0nstexpr.fishology.interact.AutoFishingInteraction
 import org.c0nstexpr.fishology.interact.BobberInteraction
 import org.c0nstexpr.fishology.interact.RodInteraction
+import org.c0nstexpr.fishology.utils.Module
 import org.c0nstexpr.fishology.utils.initObserve
 
-class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScope() {
-    var rod: RodInteraction? = null
-        private set
-    var hooked: BobberInteraction? = null
-        private set(value) {
-            field?.dispose()
-            field = value
+class Fishology(
+        val client: MinecraftClient,
+        var handler: ClientPlayNetworkHandler,
+) : DisposableScope by DisposableScope() {
+    private var rod = object : Module() {
+        var value: RodInteraction? = null
+            private set(value) {
+                field?.dispose()
+                field = value
+            }
+
+        override fun onCreate() {
+            value = RodInteraction(client)
         }
 
-    var fishing: AutoFishingInteraction? = null
-        private set
+        override fun onDestroy() {
+            value = null
+        }
+    }
 
-    val config: FishologyConfig = FishologyConfig.createAndLoad()
+    private var bobber = object : Module() {
+        var value: BobberInteraction? = null
+            private set(value) {
+                field?.dispose()
+                field = value
+            }
 
-    var player: Entity? = client.player
-        private set
+        override fun onCreate() {
+            value = BobberInteraction(client)
+        }
+
+        override fun onDestroy() {
+            value = null
+        }
+    }
+
+    private var fishing = object : Module() {
+        var value: AutoFishingInteraction? = null
+            private set(value) {
+                field?.dispose()
+                field = value
+            }
+
+        override fun onCreate() {
+            val rod = this@Fishology.rod
+            val bobber = this@Fishology.bobber
+
+            add(rod)
+            add(bobber)
+
+            value = AutoFishingInteraction(rod.value!!::use, handler.profile.id, bobber.value!!.hook)
+        }
+
+        override fun onDestroy() {
+            value = null
+            super.onDestroy()
+        }
+    }
+
+    private val configModule = object : Module() {
+        val config: FishologyConfig = FishologyConfig.createAndLoad()
+
+        override fun onCreate() = Unit
+
+        init {
+            config.initObserve(FishologyConfigModel::enableAutoFish) { onEnableAutoFish(it) }
+            config.initObserve(FishologyConfigModel::enableChatOnCaught) { onEnableChatOnCaught(it) }
+            config.initObserve(FishologyConfigModel::logLevel) { onChangeLogLevel(it) }
+        }
+
+        private fun onChangeLogLevel(it: Severity) {
+            logger.mutableConfig.minSeverity = it
+        }
+
+        private fun onEnableAutoFish(it: Boolean) {
+            if (!it) {
+                logger.d("Disable auto fishing")
+                remove(fishing)
+                return
+            }
+
+            logger.d("Enable auto fishing")
+            add(fishing)
+        }
+
+        private fun onEnableChatOnCaught(it: Boolean) {
+            logger.d("${if (it) "Enable" else "Disable"} chat on caught")
+
+            if (!it) {
+                remove(bobber)
+                bobber.value?.enableChat = true
+
+                return
+            }
+
+            add(bobber)
+            bobber.value!!.enableChat = true
+        }
+    }
 
     init {
-        logger.d("Initializing main controller")
-
-        hooked.entity.notNull().subscribeScoped { fishing?.hooked = it }
-
-        config.initObserve(FishologyConfigModel::enabled) { onEnable(it) }
-        val chatDisposable = SerialDisposable()
-
-        config.initObserve(FishologyConfigModel::enableChatOnCaught) { onEnableChatOnCaught(it) }
-        config.initObserve(FishologyConfigModel::logLevel) { logger.mutableConfig.minSeverity = it }
-
-        hooked.scope()
-        rod.scope()
-
-        doOnDispose {
-            fishing?.dispose()
-        }
-    }
-
-    val chatDisposable = SerialDisposable()
-    private fun onEnableChatOnCaught(it: Boolean) {
-        logger.d("${if (it) "Enable" else "Disable"} auto fishing")
-
-        if (it) {
-            val d = run {
-                var h = hooked
-
-                if (h == null) {
-                    h = BobberInteraction(client)
-                    hooked = h
-                }
-
-                return@run h
-            }.entity.subscribe {
-                client.chat(
-                        Text.translatable("${org.c0nstexpr.fishology.core.modId}.caught_on_chat")
-                                .append(it.displayName)
-                                .string,
-                        logger)
-            }
-        }
-
-    }
-
-    private fun onEnable(it: Boolean) {
-        if (!it) {
-            logger.d("Disable auto fishing")
-            fishing?.dispose()
-            fishing = null
-            rod?.dispose()
-            rod = null
-
-            return
-        }
-
-        logger.d("Enable auto fishing")
-
-        if (rod == null) rod = RodInteraction(client)
-        if (fishing == null) fishing = AutoFishingInteraction(rod!!::use)
+        logger.d("Initializing main module")
     }
 }

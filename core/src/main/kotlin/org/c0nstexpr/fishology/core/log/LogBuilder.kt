@@ -14,4 +14,3 @@ class LogBuilder {
 
     fun build() = Logger(config, tag)
 }
-

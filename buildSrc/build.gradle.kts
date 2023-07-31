@@ -33,7 +33,7 @@ dependencies {
 
 tasks {
     compileJava{
-        targetCompatibility = JvmTarget.values().last().target
+        targetCompatibility = JvmTarget.JVM_19.target
     }
 
     compileKotlin {

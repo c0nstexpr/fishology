@@ -83,7 +83,15 @@ tasks {
         withSourcesJar()
     }
 
-    System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let { modrinth { token = it } }
+    System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
+        modrinth {
+            token.set(it)
+            projectId.set(modId)
+            versionNumber.set(modVersion)
+            versionType.set("alpha")
+            uploadFile.set(tasks.remapJar)
+        }
+    }
 }
 
 spotless {
