@@ -26,6 +26,9 @@
     "minecraft": "${minecraft}",
     "fabric": ">=${fabricApi}",
     "fabricloader": ">=${fabricLoader}",
+    "fabric-language-kotlin": ">=${fabricKotlin}",
+    "owo": ">=${owo}",
+    "modmenu": ">=${modmenu}",
     "fishology-core": ">=${version}"
   }
 }

@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    listOf(libs.fabric.kotlin, libs.modmenu, libs.owo).forEach(::modApi)
+    listOf(libs.fabric.kotlin, libs.owo, libs.modmenu).forEach(::modImplementation)
 
     include(libs.owo.sentinel)
     annotationProcessor(libs.owo)

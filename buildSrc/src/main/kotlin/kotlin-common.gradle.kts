@@ -41,7 +41,6 @@ tasks {
     jar { from("LICENSE") }
 
     java {
-        withJavadocJar()
         withSourcesJar()
     }
 }
