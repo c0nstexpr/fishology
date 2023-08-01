@@ -33,7 +33,7 @@ dependencies {
 
 tasks {
     compileJava {
-        sourceCompatibility = JvmTarget.JVM_19.target
+        sourceCompatibility = libs.versions.jvm.get()
         targetCompatibility = sourceCompatibility
         options.encoding = Charsets.UTF_8.name()
     }
