@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     `kotlin-dsl`
-    kotlin("jvm") version "latest.release"
 }
 
 repositories {
@@ -15,33 +14,36 @@ repositories {
 }
 
 dependencies {
-    fun DependencyHandler.implementation(provider: Provider<PluginDependency>): Dependency? {
+    listOf(
+        libs.plugins.kotlin.jvm,
+        libs.plugins.loom,
+        libs.plugins.minotaur,
+        libs.plugins.spotless,
+        libs.plugins.vineflower
+    ).forEach { provider ->
         val p = provider.get()
         val id = p.pluginId
         val version = p.version
 
-        return implementation("$id:$id.gradle.plugin:$version")
+        implementation("$id:$id.gradle.plugin:$version")
     }
 
-    implementation(libs.plugins.kotlin.jvm)
-    implementation(libs.plugins.loom)
-    implementation(libs.plugins.minotaur)
-    implementation(libs.plugins.spotless)
-    implementation(libs.plugins.vineflower)
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:latest.release")
 }
 
 tasks {
     compileJava {
-        targetCompatibility = JvmTarget.JVM_19.target
+        sourceCompatibility = JvmTarget.JVM_19.target
+        targetCompatibility = sourceCompatibility
+        options.encoding = Charsets.UTF_8.name()
     }
 
     compileKotlin {
         kotlinOptions {
-            languageVersion = LanguageVersion.KOTLIN_1_8.versionString
-            apiVersion = languageVersion
-            allWarningsAsErrors = true
             jvmTarget = compileJava.get().targetCompatibility
+            allWarningsAsErrors = true
+            languageVersion = LanguageVersion.LATEST_STABLE.versionString
+            apiVersion = languageVersion
         }
     }
 }

@@ -1,11 +1,3 @@
-plugins {
-    id("fabric.common")
-}
+plugins { `kotlin-common` }
 
 tasks.wrapper { gradleVersion = "latest" }
-
-tasks.build { dependsOn(tasks.wrapper) }
-
-dependencies {
-    fabricProject(":core")
-}

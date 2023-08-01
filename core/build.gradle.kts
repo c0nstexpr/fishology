@@ -1,5 +1,6 @@
 plugins {
-    id("fabric.common")
+    `kotlin-common`
+    `fabric-common`
 }
 
 repositories {
@@ -13,7 +14,7 @@ dependencies {
     include(libs.owo.sentinel)
     annotationProcessor(libs.owo)
 
-    listOf(libs.reaktive,libs.kermit).forEach(::api)
+    listOf(libs.reaktive, libs.kermit).forEach(::api)
 }
 
 fabricProperty {

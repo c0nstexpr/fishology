@@ -2,11 +2,8 @@ import juuxel.vineflowerforloom.api.DecompilerBrand
 import kotlinx.datetime.Clock.System.now
 
 plugins {
-    base
-    id("org.jetbrains.kotlin.jvm")
     id("fabric-loom")
     id("com.modrinth.minotaur")
-    id("com.diffplug.spotless")
     id("io.github.juuxel.loom-vineflower")
 }
 
@@ -14,9 +11,7 @@ val modVersion: String by project
 val modId: String by project
 val modName: String by project
 
-base { archivesName.set(modId) }
-version = modVersion
-group = "org.c0nstexpr"
+println("configuring $modId fabric mod project")
 
 repositories {
     mavenCentral()
@@ -25,18 +20,12 @@ repositories {
     maven("https://maven.fabricmc.net/")
 }
 
-val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+val libs = versionCatalog
 
-fun getLib(name: String) = libs.findLibrary(name).get()
-
-fun getVersion(name: String) = libs.findVersion(name).get().run {
-    requiredVersion.ifEmpty { strictVersion.ifEmpty { preferredVersion } }
-}
-
-val minecraftLib = getLib("minecraft")
-val yarnMappings = getLib("yarn.mappings")
-val fabricLoaderLib = getLib("fabric.loader")
-val fabricApiLib = getLib("fabric.api")
+val minecraftLib = libs.getLib("minecraft")
+val yarnMappings = libs.getLib("yarn.mappings")
+val fabricLoaderLib = libs.getLib("fabric.loader")
+val fabricApiLib = libs.getLib("fabric.api")
 
 val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
 extension.properties.run {
@@ -55,38 +44,13 @@ dependencies {
     modImplementation(fabricApiLib)
 }
 
-vineflower {
-    brand.set(DecompilerBrand.VINEFLOWER)
-}
+vineflower.brand.set(DecompilerBrand.VINEFLOWER)
 
 tasks {
-    compileJava {
-        options.encoding = Charsets.UTF_8.name()
-        sourceCompatibility = getVersion("jvm")
-        targetCompatibility = sourceCompatibility
-    }
-
-    compileKotlin {
-        kotlinOptions {
-            allWarningsAsErrors = true
-            jvmTarget = compileJava.get().targetCompatibility
-            languageVersion = "1.8"
-            apiVersion = languageVersion
-        }
-    }
-
     processResources {
         inputs.property("buildTimestamp", now().epochSeconds)
 
         filesMatching("fabric.mod.json") { expand(extension.properties.get()) }
-    }
-
-    jar {
-        from("LICENSE")
-    }
-
-    java {
-        withSourcesJar()
     }
 
     System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
@@ -98,13 +62,4 @@ tasks {
             uploadFile.set(tasks.remapJar)
         }
     }
-}
-
-spotless {
-    java {
-        googleJavaFormat().aosp()
-        formatAnnotations()
-    }
-
-    kotlin { ktlint() }
 }
