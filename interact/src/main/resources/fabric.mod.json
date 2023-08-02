@@ -24,9 +24,6 @@
   "icon": "assets/${id}/icon.png",
   "depends": {
     "minecraft": "${minecraft}",
-    "fabric": ">=${fabricApi}",
-    "fabricloader": ">=${fabricLoader}",
-    "fabric-language-kotlin": ">=${fabricKotlin}",
     "owo": ">=${owo}",
     "fishology-core": ">=${version}"
   }

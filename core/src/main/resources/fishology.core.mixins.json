@@ -4,7 +4,8 @@
   "client": [
     "entity.projecttile.FishingBobberEntityMixin",
     "item.FishingRodItemMixin",
-    "entity.EntityMixin"
+    "entity.EntityMixin",
+    "entity.ItemEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

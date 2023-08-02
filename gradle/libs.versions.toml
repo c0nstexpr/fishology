@@ -3,8 +3,7 @@ jvm = "17"
 kotlin = "1.9"
 minecraft = "1.20"
 yarn = "1.20+build+"
-fabric-api = "0.83.0+1.20"
-fabric-loader = "0.14.21"
+fabric = "0.83.0+1.20"
 fabric-kotlin = "1.10.8+kotlin.1.9.0"
 owo = "0.11.1+1.20"
 modmenu = "7.0.1"
@@ -13,11 +12,12 @@ modmenu = "7.0.1"
 # fabric dependencies
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 yarn-mappings = { module = "net.fabricmc:yarn", version.ref = "yarn" }
-fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
-fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
 
 # mod dependencies
+fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric" }
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version.ref = "fabric-kotlin" }
+fabric-screen = { module = "net.fabricmc.fabric-api:fabric-screen-api-v1", version.ref = "fabric" }
+fabric-key-binding = { module = "net.fabricmc.fabric-api:fabric-key-binding-api-v1", version.ref = "fabric" }
 owo = { module = "io.wispforest:owo-lib", version.ref = "owo" }
 owo-sentinel = { module = "io.wispforest:owo-sentinel", version.ref = "owo" }
 modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
@@ -25,6 +25,10 @@ modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 # kotlin library dependencies
 reaktive = { module = "com.badoo.reaktive:reaktive", version = "latest.release" }
 kermit = { module = "co.touchlab:kermit-jvm", version = "latest.release" }
+
+[bundles]
+fabric = ["fabric-kotlin", "fabric-api"]
+owo = ["owo", "modmenu", "fabric-screen", "fabric-key-binding"]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "latest.release" }

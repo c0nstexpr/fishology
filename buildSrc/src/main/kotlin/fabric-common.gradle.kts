@@ -24,8 +24,7 @@ val libs = versionCatalog
 
 val minecraftLib = libs.getLib("minecraft")
 val yarnMappings = libs.getLib("yarn.mappings")
-val fabricLoaderLib = libs.getLib("fabric.loader")
-val fabricApiLib = libs.getLib("fabric.api")
+val fabricLib = libs.getBundle("fabric")
 
 val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
 extension.properties.run {
@@ -33,20 +32,22 @@ extension.properties.run {
     put("version", modVersion)
     put("name", modName)
     put("minecraft", minecraftLib.get().version!!)
-    put("fabricApi", fabricApiLib.get().version!!)
-    put("fabricLoader", fabricLoaderLib.get().version!!)
+    put("fabricApi", libs.getVersion("fabric"))
 }
 
 dependencies {
     minecraft(minecraftLib)
     mappings(yarnMappings)
-    modImplementation(fabricLoaderLib)
-    modImplementation(fabricApiLib)
+
+    modImplementation(fabricLib)
 }
 
 vineflower.brand.set(DecompilerBrand.VINEFLOWER)
 
 loom {
+    splitEnvironmentSourceSets()
+    addSrc(project.name, sourceSets)
+
     runs {
         named("client") {
             client()

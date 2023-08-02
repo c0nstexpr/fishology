@@ -68,7 +68,7 @@ class RodInteraction(val client: MinecraftClient) : DisposableScope by Disposabl
 
             return item.run {
                 (slotIndex == player.getSlotInHand(hand)) &&
-                    areEqual(stack, player.inventory.getStack(slotIndex))
+                        areEqual(stack, player.inventory.getStack(slotIndex))
             }
         }
     }

@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    listOf(libs.fabric.kotlin, libs.owo, libs.modmenu).forEach(::modImplementation)
+    modImplementation(libs.bundles.owo)
     annotationProcessor(libs.owo)
 
     listOf(libs.reaktive, libs.kermit).forEach(::api)

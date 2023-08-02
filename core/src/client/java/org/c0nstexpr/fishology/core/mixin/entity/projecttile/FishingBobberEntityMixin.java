@@ -2,6 +2,7 @@ package org.c0nstexpr.fishology.core.mixin.entity.projecttile;
 
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import org.c0nstexpr.fishology.core.events.BobberOwnedEvent;
@@ -25,9 +26,7 @@ class FishingBobberEntityMixin {
 
     @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
     private void onTrackedDataSet(TrackedData<?> trackedData, CallbackInfo ci) {
-        final FishingBobberEntity bobber = (FishingBobberEntity) (Object) this;
-
-        if (!bobber.getWorld().isClient) return;
+        final var bobber = (FishingBobberEntity) (Object) this;
 
         if (CAUGHT_FISH.equals(trackedData))
             CaughtFishEvent.subject.onNext(new CaughtFishEvent.Arg(bobber, caughtFish));
@@ -35,20 +34,11 @@ class FishingBobberEntityMixin {
             HookedEvent.subject.onNext(new HookedEvent.Arg(bobber, hookedEntity));
     }
 
-    @Inject(method = "pullHookedEntity", at = @At("TAIL"))
-    private void pullHookedEntity(Entity entity, CallbackInfo ci) {
-        final FishingBobberEntity bobber = (FishingBobberEntity) (Object) this;
-
-        if (!bobber.getWorld().isClient) return;
-
-        HookedEvent.subject.onNext(new HookedEvent.Arg(bobber, entity));
-    }
-
     @Inject(method = "setOwner", at = @At("TAIL"))
     private void setOwner(Entity entity, CallbackInfo ci) {
-        final FishingBobberEntity bobber = (FishingBobberEntity) (Object) this;
+        final var bobber = (FishingBobberEntity) (Object) this;
 
-        if (!(bobber.getWorld().isClient && entity instanceof ClientPlayerEntity)) return;
+        if (!(entity instanceof ClientPlayerEntity)) return;
 
         BobberOwnedEvent.subject.onNext(new BobberOwnedEvent.Arg(bobber));
     }

@@ -20,8 +20,6 @@ class FishingRodItemMixin {
             PlayerEntity player,
             Hand hand,
             CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        if (!world.isClient) return;
-
         UseRodEvent.beforeUseSubject.onNext(new UseRodEvent.Arg(hand, player));
     }
 }

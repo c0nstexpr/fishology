@@ -28,7 +28,8 @@
   "depends": {
     "minecraft": "${minecraft}",
     "fabric": ">=${fabricApi}",
-    "fabricloader": ">=${fabricLoader}",
+    "fabric-screen-api-v1": ">=${fabricScreenApi}",
+    "fabric-key-binding-api-v1": ">=${fabricKeyBindingApi}",
     "fabric-language-kotlin": ">=${fabricKotlin}",
     "owo": ">=${owo}",
     "modmenu": ">=${modmenu}"

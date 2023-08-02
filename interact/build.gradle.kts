@@ -11,7 +11,7 @@ repositories {
 dependencies {
     fabricProject(":core")
 
-    listOf(libs.owo, libs.fabric.kotlin, libs.modmenu).forEach(::modImplementation)
+    listOf(libs.bundles.owo).forEach(::modImplementation)
 }
 
 fabricProperty {

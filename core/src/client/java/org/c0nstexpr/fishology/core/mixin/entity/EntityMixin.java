@@ -14,18 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class EntityMixin {
     @Inject(method = "setVelocity(Lnet/minecraft/util/math/Vec3d;)V", at = @At("TAIL"))
     private void setVelocity(Vec3d vec3d, CallbackInfo ci) {
-        final Entity entity = (Entity) (Object) this;
-
-        if (!entity.getWorld().isClient) return;
+        final var entity = (Entity) (Object) this;
 
         if (vec3d.y < 0) EntityFallingEvent.subject.onNext(new EntityFallingEvent.Arg(entity));
     }
 
     @Inject(method = "onRemoved", at = @At("TAIL"))
     private void onRemoved(CallbackInfo ci) {
-        final Entity entity = (Entity) (Object) this;
-
-        if (!entity.getWorld().isClient) return;
+        final var entity = (Entity) (Object) this;
 
         EntityRemovedEvent.subject.onNext(new EntityRemovedEvent.Arg(entity));
     }
