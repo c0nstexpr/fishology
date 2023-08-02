@@ -16,12 +16,16 @@ public class EntityMixin {
     private void setVelocity(Vec3d vec3d, CallbackInfo ci) {
         final Entity entity = (Entity) (Object) this;
 
+        if (!entity.getWorld().isClient) return;
+
         if (vec3d.y < 0) EntityFallingEvent.subject.onNext(new EntityFallingEvent.Arg(entity));
     }
 
     @Inject(method = "onRemoved", at = @At("TAIL"))
     private void onRemoved(CallbackInfo ci) {
         final Entity entity = (Entity) (Object) this;
+
+        if (!entity.getWorld().isClient) return;
 
         EntityRemovedEvent.subject.onNext(new EntityRemovedEvent.Arg(entity));
     }

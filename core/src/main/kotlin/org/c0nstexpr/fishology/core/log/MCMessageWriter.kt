@@ -11,9 +11,11 @@ import net.minecraft.text.Text
 import net.minecraft.text.TextColor
 
 class MCMessageWriter(
-    var hud: ChatHud = MinecraftClient.getInstance().inGameHud.chatHud,
+    var client: MinecraftClient,
     val levelColor: MutableMap<Severity, TextColor> = mutableMapOf(),
 ) : LogWriter() {
+    val hud: ChatHud get() = client.inGameHud.chatHud
+
     override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
         hud.addMessage(
             Text.literal(

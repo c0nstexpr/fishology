@@ -46,6 +46,16 @@ dependencies {
 
 vineflower.brand.set(DecompilerBrand.VINEFLOWER)
 
+loom {
+    runs {
+        named("client") {
+            client()
+            configName = "$modName Client"
+            isIdeConfigGenerated = true
+        }
+    }
+}
+
 tasks {
     processResources {
         inputs.property("buildTimestamp", now().epochSeconds)

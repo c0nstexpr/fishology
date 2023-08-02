@@ -24,9 +24,9 @@ fun init() {
     logger.greeting()
 
     ClientPlayConnectionEvents.JOIN.register { handler, _, client ->
-        logger.mutableConfig.addMCWriter(client.inGameHud.chatHud)
+        logger.mutableConfig.addMCWriter(client)
 
-        if (fishology?.isDisposed == true) fishology = Fishology(client, handler)
+        if (fishology?.isDisposed != false) fishology = Fishology(client, handler)
 
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
             fishology?.dispose()

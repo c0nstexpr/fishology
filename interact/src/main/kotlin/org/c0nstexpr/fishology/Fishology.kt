@@ -4,8 +4,9 @@ import co.touchlab.kermit.Severity
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayNetworkHandler
-import org.c0nstexpr.fishology.core.config.FishologyConfig
-import org.c0nstexpr.fishology.core.config.FishologyConfigModel
+import org.c0nstexpr.fishology.core.config.ConfigControl
+import org.c0nstexpr.fishology.core.config.FishologyCoreConfig
+import org.c0nstexpr.fishology.core.config.FishologyCoreConfigModel
 import org.c0nstexpr.fishology.interact.AutoFishingInteraction
 import org.c0nstexpr.fishology.interact.BobberInteraction
 import org.c0nstexpr.fishology.interact.RodInteraction
@@ -16,6 +17,8 @@ class Fishology(
     val client: MinecraftClient,
     var handler: ClientPlayNetworkHandler,
 ) : DisposableScope by DisposableScope() {
+    val config: FishologyCoreConfig by ConfigControl.config
+
     private var rod = object : Module() {
         var value: RodInteraction? = null
             private set(value) {
@@ -36,6 +39,7 @@ class Fishology(
         var value: BobberInteraction? = null
             private set(value) {
                 field?.dispose()
+                value?.enableChat = config.enableChatOnCaught()
                 field = value
             }
 
@@ -62,7 +66,8 @@ class Fishology(
             add(rod)
             add(bobber)
 
-            value = AutoFishingInteraction(rod.value!!::use, handler.profile.id, bobber.value!!.hook)
+            value =
+                AutoFishingInteraction(rod.value!!::use, handler.profile.id, bobber.value!!.hook)
         }
 
         override fun onDestroy() {
@@ -72,14 +77,16 @@ class Fishology(
     }
 
     private val configModule = object : Module() {
-        val config: FishologyConfig = FishologyConfig.createAndLoad()
+        val config by ConfigControl.config
 
         override fun onCreate() = Unit
 
         init {
-            config.initObserve(FishologyConfigModel::enableAutoFish) { onEnableAutoFish(it) }
-            config.initObserve(FishologyConfigModel::enableChatOnCaught) { onEnableChatOnCaught(it) }
-            config.initObserve(FishologyConfigModel::logLevel) { onChangeLogLevel(it) }
+            config.initObserve(FishologyCoreConfigModel::enableAutoFish) { onEnableAutoFish(it) }
+            config.initObserve(FishologyCoreConfigModel::enableChatOnCaught) {
+                onEnableChatOnCaught(it)
+            }
+            config.initObserve(FishologyCoreConfigModel::logLevel) { onChangeLogLevel(it) }
         }
 
         private fun onChangeLogLevel(it: Severity) {
@@ -102,13 +109,12 @@ class Fishology(
 
             if (!it) {
                 remove(bobber)
-                bobber.value?.enableChat = true
+                bobber.value?.enableChat = false
 
                 return
             }
 
             add(bobber)
-            bobber.value!!.enableChat = true
         }
     }
 

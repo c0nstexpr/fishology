@@ -9,7 +9,6 @@ import co.touchlab.kermit.MutableLoggerConfig
 import co.touchlab.kermit.Severity
 import co.touchlab.kermit.Tag
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.hud.ChatHud
 
 fun Logger.greeting(who: String = tag) = i("Hello, this is $who")
 
@@ -18,11 +17,10 @@ object AttributionFormatter : MessageStringFormatter {
         "[${severity?.run(::formatSeverity)}] [${tag?.run(::formatTag)}]: ${message.message}"
 }
 
-fun mutableLoggerConfigOf(c: LoggerConfig? = null) =
-    object : MutableLoggerConfig {
-        override var logWriterList: List<LogWriter> = c?.logWriterList ?: listOf()
-        override var minSeverity: Severity = c?.minSeverity ?: Severity.Warn
-    }
+fun mutableLoggerConfigOf(c: LoggerConfig? = null) = object : MutableLoggerConfig {
+    override var logWriterList: List<LogWriter> = c?.logWriterList ?: listOf()
+    override var minSeverity: Severity = c?.minSeverity ?: Severity.Warn
+}
 
 fun MutableLoggerConfig.addWriter(w: LogWriter): MutableLoggerConfig {
     logWriterList = logWriterList + w
@@ -38,14 +36,14 @@ fun MutableLoggerConfig.addWriter(l: Logger): MutableLoggerConfig {
 fun logWriterOf(l: Logger) = LogWriterDelegate(l)
 
 fun MutableLoggerConfig.addMCWriter(
-    h: ChatHud,
+    client: MinecraftClient = MinecraftClient.getInstance(),
 ): MutableLoggerConfig {
     for (writer in logWriterList) if (writer is MCMessageWriter) {
-        writer.hud = h
+        writer.client = client
         return this
     }
 
-    addWriter(MCMessageWriter(h))
+    addWriter(MCMessageWriter(client))
     return this
 }
 
@@ -56,9 +54,9 @@ inline fun MutableLoggerConfig.removeWriterWhere(p: (LogWriter) -> Boolean): Mut
 
 fun LogBuilder.forMC(
     modId: String,
-    hud: ChatHud = MinecraftClient.getInstance().inGameHud.chatHud,
+    client: MinecraftClient = MinecraftClient.getInstance(),
 ): LogBuilder {
     tag = modId
-    config.addMCWriter(hud)
+    config.addMCWriter(client)
     return this
 }

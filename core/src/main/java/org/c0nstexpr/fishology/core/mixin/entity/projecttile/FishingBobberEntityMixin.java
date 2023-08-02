@@ -27,17 +27,28 @@ class FishingBobberEntityMixin {
     private void onTrackedDataSet(TrackedData<?> trackedData, CallbackInfo ci) {
         final FishingBobberEntity bobber = (FishingBobberEntity) (Object) this;
 
+        if (!bobber.getWorld().isClient) return;
+
         if (CAUGHT_FISH.equals(trackedData))
             CaughtFishEvent.subject.onNext(new CaughtFishEvent.Arg(bobber, caughtFish));
         else if (HOOK_ENTITY_ID.equals(trackedData))
             HookedEvent.subject.onNext(new HookedEvent.Arg(bobber, hookedEntity));
     }
 
+    @Inject(method = "pullHookedEntity", at = @At("TAIL"))
+    private void pullHookedEntity(Entity entity, CallbackInfo ci) {
+        final FishingBobberEntity bobber = (FishingBobberEntity) (Object) this;
+
+        if (!bobber.getWorld().isClient) return;
+
+        HookedEvent.subject.onNext(new HookedEvent.Arg(bobber, entity));
+    }
+
     @Inject(method = "setOwner", at = @At("TAIL"))
     private void setOwner(Entity entity, CallbackInfo ci) {
         final FishingBobberEntity bobber = (FishingBobberEntity) (Object) this;
 
-        if (!(entity instanceof ClientPlayerEntity)) return;
+        if (!(bobber.getWorld().isClient && entity instanceof ClientPlayerEntity)) return;
 
         BobberOwnedEvent.subject.onNext(new BobberOwnedEvent.Arg(bobber));
     }

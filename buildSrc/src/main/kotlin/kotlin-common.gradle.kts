@@ -1,12 +1,7 @@
-import juuxel.vineflowerforloom.api.DecompilerBrand
-import kotlinx.datetime.Clock.System.now
-import org.gradle.api.artifacts.VersionCatalog
-import org.gradle.api.artifacts.VersionCatalogsExtension
-import org.gradle.kotlin.dsl.getByType
-
 plugins {
     kotlin("jvm")
     id("com.diffplug.spotless")
+    idea
 }
 
 val modVersion: String by project
@@ -27,6 +22,14 @@ tasks {
         sourceCompatibility = libs.getVersion("jvm")
         targetCompatibility = sourceCompatibility
         options.encoding = Charsets.UTF_8.name()
+
+        idea {
+            module {
+                generatedSourceDirs.add(
+                    options.generatedSourceOutputDirectory.asFile.get()
+                )
+            }
+        }
     }
 
     compileKotlin {
@@ -40,9 +43,7 @@ tasks {
 
     jar { from("LICENSE") }
 
-    java {
-        withSourcesJar()
-    }
+    java { withSourcesJar() }
 }
 
 spotless {
@@ -52,4 +53,13 @@ spotless {
     }
 
     kotlin { ktlint() }
+}
+
+idea {
+    module {
+        generatedSourceDirs.add(
+            tasks.compileJava.get().options.generatedSourceOutputDirectory
+                .asFile.get()
+        )
+    }
 }
