@@ -2,7 +2,6 @@ package org.c0nstexpr.fishology.core.mixin.entity.projecttile;
 
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import org.c0nstexpr.fishology.core.events.BobberOwnedEvent;

@@ -1,6 +1,6 @@
 package org.c0nstexpr.fishology.core.config;
 
-import static org.c0nstexpr.fishology.core.FishologyCoreModKt.getLogger;
+import static org.c0nstexpr.fishology.core.FishologyCoreKt.getLogger;
 
 import kotlin.Lazy;
 import kotlin.LazyKt;

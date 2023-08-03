@@ -1,10 +1,11 @@
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
+import net.fabricmc.loom.api.ModSettings
+import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.provider.MapProperty
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
@@ -34,11 +35,3 @@ fun VersionCatalog.getVersion(name: String): String =
     getByName(name, VersionCatalog::findVersion).run {
         requiredVersion.ifEmpty { strictVersion.ifEmpty { preferredVersion } }
     }
-
-
-fun LoomGradleExtensionAPI.addSrc(name: String, src: SourceSetContainer) {
-    mods.create(name) {
-        sourceSet(src["main"])
-        sourceSet(src["client"])
-    }
-}

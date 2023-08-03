@@ -27,18 +27,19 @@ val yarnMappings = libs.getLib("yarn.mappings")
 val fabricLib = libs.getBundle("fabric")
 
 val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
+val srcClient: SourceSet get() = sourceSets["client"]
+
 extension.properties.run {
     put("id", modId)
     put("version", modVersion)
     put("name", modName)
     put("minecraft", minecraftLib.get().version!!)
-    put("fabricApi", libs.getVersion("fabric"))
+    put("fabric", libs.getVersion("fabric"))
 }
 
 dependencies {
     minecraft(minecraftLib)
     mappings(yarnMappings)
-
     modImplementation(fabricLib)
 }
 
@@ -46,13 +47,18 @@ vineflower.brand.set(DecompilerBrand.VINEFLOWER)
 
 loom {
     splitEnvironmentSourceSets()
-    addSrc(project.name, sourceSets)
+
+    mods.register(name)
+    {
+        sourceSet(srcClient)
+    }
 
     runs {
         named("client") {
             client()
             configName = "$modName Client"
             isIdeConfigGenerated = true
+            source(srcClient)
         }
     }
 }
@@ -61,7 +67,9 @@ tasks {
     processResources {
         inputs.property("buildTimestamp", now().epochSeconds)
 
-        filesMatching("fabric.mod.json") { expand(extension.properties.get()) }
+        from(srcClient.resources.asPath) {
+            filesMatching("fabric.mod.json") { expand(extension.properties.get()) }
+        }
     }
 
     System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {

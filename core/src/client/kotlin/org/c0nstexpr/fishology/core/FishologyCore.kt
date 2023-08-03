@@ -18,7 +18,6 @@ fun init() = ClientLifecycleEvents.CLIENT_STARTED.register {
     loggerConfig.addMCWriter(it)
     logger.greeting()
     ConfigControl.init()
-
     ClientLifecycleEvents.CLIENT_STOPPING.register {
         loggerConfig.removeWriterWhere { writer -> writer is MCMessageWriter }
     }

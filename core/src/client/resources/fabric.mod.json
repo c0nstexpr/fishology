@@ -17,7 +17,7 @@
     "client": [
       {
         "adapter": "kotlin",
-        "value": "org.c0nstexpr.fishology.core.FishologyCoreModKt::init"
+        "value": "org.c0nstexpr.fishology.core.FishologyCoreClientKt::init"
       }
     ]
   },
@@ -27,11 +27,16 @@
   "icon": "assets/${id}/icon.png",
   "depends": {
     "minecraft": "${minecraft}",
-    "fabric": ">=${fabricApi}",
-    "fabric-screen-api-v1": ">=${fabricScreenApi}",
-    "fabric-key-binding-api-v1": ">=${fabricKeyBindingApi}",
-    "fabric-language-kotlin": ">=${fabricKotlin}",
+    "fabric": ">=${fabric}",
+    "fabric-language-kotlin": "*",
     "owo": ">=${owo}",
-    "modmenu": ">=${modmenu}"
+    "modmenu": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "library"
+      ]
+    }
   }
 }

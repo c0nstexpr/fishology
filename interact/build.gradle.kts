@@ -11,10 +11,5 @@ repositories {
 dependencies {
     fabricProject(":core")
 
-    listOf(libs.bundles.owo).forEach(::modImplementation)
-}
-
-fabricProperty {
-    put("fabricKotlin", libs.versions.fabric.kotlin)
-    put("owo", libs.versions.owo)
+    modImplementation(libs.owo)
 }

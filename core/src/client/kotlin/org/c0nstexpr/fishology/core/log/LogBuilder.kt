@@ -5,7 +5,7 @@ import co.touchlab.kermit.loggerConfigInit
 import kotlin.reflect.KClass
 
 class LogBuilder {
-    var config = mutableLoggerConfigOf(loggerConfigInit())
+    var config = org.c0nstexpr.fishology.core.log.mutableLoggerConfigOf(loggerConfigInit())
     var tag = ""
 
     fun withClass(clazz: KClass<*>) = apply { tag = clazz.simpleName ?: "" }

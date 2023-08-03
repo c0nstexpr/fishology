@@ -35,6 +35,11 @@ fun MutableLoggerConfig.addWriter(l: Logger): MutableLoggerConfig {
 
 fun logWriterOf(l: Logger) = LogWriterDelegate(l)
 
+inline fun MutableLoggerConfig.removeWriterWhere(p: (LogWriter) -> Boolean): MutableLoggerConfig {
+    logWriterList = logWriterList.filter(p)
+    return this
+}
+
 fun MutableLoggerConfig.addMCWriter(
     client: MinecraftClient = MinecraftClient.getInstance(),
 ): MutableLoggerConfig {
@@ -44,11 +49,6 @@ fun MutableLoggerConfig.addMCWriter(
     }
 
     addWriter(MCMessageWriter(client))
-    return this
-}
-
-inline fun MutableLoggerConfig.removeWriterWhere(p: (LogWriter) -> Boolean): MutableLoggerConfig {
-    logWriterList = logWriterList.filter(p)
     return this
 }
 

@@ -16,7 +16,5 @@ dependencies {
 }
 
 fabricProperty {
-    put("fabricKotlin", libs.versions.fabric.kotlin)
-    put("modmenu", libs.versions.modmenu)
     put("owo", libs.versions.owo)
 }
