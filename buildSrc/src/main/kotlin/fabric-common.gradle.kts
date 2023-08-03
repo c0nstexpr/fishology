@@ -48,10 +48,7 @@ vineflower.brand.set(DecompilerBrand.VINEFLOWER)
 loom {
     splitEnvironmentSourceSets()
 
-    mods.register(name)
-    {
-        sourceSet(srcClient)
-    }
+    mods.register(name) { sourceSet(srcClient) }
 
     runs {
         named("client") {
@@ -65,20 +62,34 @@ loom {
 
 tasks {
     processResources {
-        inputs.property("buildTimestamp", now().epochSeconds)
+        inputs.property("properties", extension.properties)
+//        srcClient.resources.srcDirs.map { it.toPath() }.forEach {
+//            from(it.resolve(modJson)) {
+//                filesMatching(modJson) {
+//                    expand(extension.properties.get())
+//                }
+//            }
+//        }
 
-        from(srcClient.resources.asPath) {
-            filesMatching("fabric.mod.json") { expand(extension.properties.get()) }
+        filesMatching("**/$modJson") { expand(extension.properties.get()) }
+
+        project.dependencies {
+            clientOutputs.each {
+                clientImplementation(it)
+            }
         }
     }
 
-    System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
-        modrinth {
-            token.set(it)
-            projectId.set(modId)
-            versionNumber.set(modVersion)
-            versionType.set("alpha")
-            uploadFile.set(tasks.remapJar)
-        }
+    withType<Jar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+}
+
+
+System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
+    modrinth {
+        token.set(it)
+        projectId.set(modId)
+        versionNumber.set(modVersion)
+        versionType.set("alpha")
+        uploadFile.set(tasks.remapJar)
     }
 }

@@ -35,3 +35,5 @@ fun VersionCatalog.getVersion(name: String): String =
     getByName(name, VersionCatalog::findVersion).run {
         requiredVersion.ifEmpty { strictVersion.ifEmpty { preferredVersion } }
     }
+
+const val modJson = "fabric.mod.json"
