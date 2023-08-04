@@ -1,0 +1,12 @@
+{
+  "text.config.fishology-core.title": "fishology-core",
+  "text.config.fishology-core.option.enableAutoFish": "Enable auto fishing",
+  "text.config.fishology-core.option.logLevel": "log output level filter",
+  "text.config.fishology-core.option.logLevel.value.verbose": "Verbose",
+  "text.config.fishology-core.option.logLevel.value.debug": "Debug",
+  "text.config.fishology-core.option.logLevel.value.info": "Info",
+  "text.config.fishology-core.option.logLevel.value.warn": "Warn",
+  "text.config.fishology-core.option.logLevel.value.error": "Error",
+  "text.config.fishology-core.option.logLevel.value.assert": "Assert",
+  "text.config.fishology-core.option.enableChatOnCaught": "send chat message on caught"
+}

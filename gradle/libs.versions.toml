@@ -13,6 +13,7 @@ minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 yarn-mappings = { module = "net.fabricmc:yarn", version.ref = "yarn" }
 
 # mod dependencies
+fabric-loader = { module = "net.fabricmc:fabric-loader", version = "latest.release" }
 fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric" }
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version = "latest.release" }
 
@@ -26,7 +27,7 @@ reaktive = { module = "com.badoo.reaktive:reaktive", version = "latest.release" 
 kermit = { module = "co.touchlab:kermit-jvm", version = "latest.release" }
 
 [bundles]
-fabric = ["fabric-kotlin", "fabric-api"]
+fabric = ["fabric-kotlin", "fabric-api", "fabric-loader"]
 owo = ["owo", "modmenu"]
 
 [plugins]

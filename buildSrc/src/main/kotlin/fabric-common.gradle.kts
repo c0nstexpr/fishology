@@ -1,5 +1,5 @@
+import gradle.kotlin.dsl.accessors._cb396132f851efe91a37ba0fe167d944.sourceSets
 import juuxel.vineflowerforloom.api.DecompilerBrand
-import kotlinx.datetime.Clock.System.now
 
 plugins {
     id("fabric-loom")
@@ -25,9 +25,7 @@ val libs = versionCatalog
 val minecraftLib = libs.getLib("minecraft")
 val yarnMappings = libs.getLib("yarn.mappings")
 val fabricLib = libs.getBundle("fabric")
-
 val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
-val srcClient: SourceSet get() = sourceSets["client"]
 
 extension.properties.run {
     put("id", modId)
@@ -48,14 +46,34 @@ vineflower.brand.set(DecompilerBrand.VINEFLOWER)
 loom {
     splitEnvironmentSourceSets()
 
-    mods.register(name) { sourceSet(srcClient) }
+    mods.register(name) {
+        sourceSet(srcMain)
+        sourceSet(srcClient)
+    }
+}
 
+sourceSets {
+    register("testModClient") {
+        compileClasspath += srcMain.compileClasspath + srcClient.compileClasspath
+        runtimeClasspath += srcMain.runtimeClasspath + srcClient.runtimeClasspath
+    }
+}
+
+loom {
     runs {
+        // named("server") {
+        //     server()
+        //     configName = "$modName Server"
+        //     isIdeConfigGenerated = true
+        //     source(srcTestModServer)
+        // }
+
         named("client") {
             client()
             configName = "$modName Client"
             isIdeConfigGenerated = true
-            source(srcClient)
+
+            source(srcTestModClient)
         }
     }
 }
@@ -63,26 +81,9 @@ loom {
 tasks {
     processResources {
         inputs.property("properties", extension.properties)
-//        srcClient.resources.srcDirs.map { it.toPath() }.forEach {
-//            from(it.resolve(modJson)) {
-//                filesMatching(modJson) {
-//                    expand(extension.properties.get())
-//                }
-//            }
-//        }
-
-        filesMatching("**/$modJson") { expand(extension.properties.get()) }
-
-        project.dependencies {
-            clientOutputs.each {
-                clientImplementation(it)
-            }
-        }
+        filesMatching(modJson) { expand(extension.properties.get()) }
     }
-
-    withType<Jar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 }
-
 
 System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
     modrinth {
