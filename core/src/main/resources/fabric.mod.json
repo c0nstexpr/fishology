@@ -31,5 +31,12 @@
     "fabric-language-kotlin": "*",
     "owo": ">=${owo}",
     "modmenu": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "library"
+      ]
+    }
   }
 }
