@@ -2,7 +2,7 @@
 jvm = "17"
 kotlin = "1.9"
 minecraft = "1.20"
-yarn = "1.20+build+"
+yarn = "1.20+build.1"
 fabric = "0.83.0+1.20"
 owo = "0.11.1+1.20"
 modmenu = "7.0.1"
@@ -10,16 +10,13 @@ modmenu = "7.0.1"
 [libraries]
 # fabric dependencies
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
-yarn-mappings = { module = "net.fabricmc:yarn", version.ref = "yarn" }
-
-# mod dependencies
 fabric-loader = { module = "net.fabricmc:fabric-loader", version = "latest.release" }
 fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric" }
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version = "latest.release" }
 
+# mod dependencies
 owo = { module = "io.wispforest:owo-lib", version.ref = "owo" }
 owo-sentinel = { module = "io.wispforest:owo-sentinel", version.ref = "owo" }
-
 modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 
 # kotlin library dependencies

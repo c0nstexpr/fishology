@@ -1,4 +1,4 @@
-package org.c0nstexpr.fishology.core.log
+package org.c0nstexpr.fishology.log
 
 import co.touchlab.kermit.LogWriter
 import co.touchlab.kermit.Message

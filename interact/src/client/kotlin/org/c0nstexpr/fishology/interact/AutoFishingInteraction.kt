@@ -12,9 +12,9 @@ import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.subject.behavior.BehaviorObservable
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.Entity
-import org.c0nstexpr.fishology.core.events.CaughtFishEvent
-import org.c0nstexpr.fishology.core.events.EntityFallingEvent
-import org.c0nstexpr.fishology.core.events.EntityRemovedEvent
+import org.c0nstexpr.fishology.events.CaughtFishEvent
+import org.c0nstexpr.fishology.events.EntityFallingEvent
+import org.c0nstexpr.fishology.events.EntityRemovedEvent
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.addScope
 import java.util.UUID

@@ -1,4 +1,4 @@
-package org.c0nstexpr.fishology.core
+package org.c0nstexpr.fishology
 
 import co.touchlab.kermit.Logger
 import net.minecraft.client.MinecraftClient

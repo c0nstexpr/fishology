@@ -1,11 +1,11 @@
 {
   "required": true,
-  "package": "org.c0nstexpr.fishology.core.mixin",
+  "package": "org.c0nstexpr.fishology.mixin",
   "client": [
     "entity.projecttile.FishingBobberEntityMixin",
     "item.FishingRodItemMixin",
     "entity.EntityMixin",
-    "entity.ItemEntityMixin"
+    "client.network.ClientPlayNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

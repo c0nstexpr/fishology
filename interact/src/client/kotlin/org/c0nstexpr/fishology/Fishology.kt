@@ -4,9 +4,9 @@ import co.touchlab.kermit.Severity
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayNetworkHandler
-import org.c0nstexpr.fishology.core.config.ConfigControl
-import org.c0nstexpr.fishology.core.config.FishologyCoreConfig
-import org.c0nstexpr.fishology.core.config.FishologyCoreConfigModel
+import org.c0nstexpr.fishology.config.ConfigControl
+import org.c0nstexpr.fishology.config.FishologyCoreConfig
+import org.c0nstexpr.fishology.config.FishologyCoreConfigModel
 import org.c0nstexpr.fishology.interact.AutoFishingInteraction
 import org.c0nstexpr.fishology.interact.BobberInteraction
 import org.c0nstexpr.fishology.interact.RodInteraction

@@ -24,5 +24,12 @@
   "icon": "assets/${id}/icon.png",
   "depends": {
     "fishology-core": ">=${version}"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "library"
+      ]
+    }
   }
 }

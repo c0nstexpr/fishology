@@ -1,4 +1,4 @@
-package org.c0nstexpr.fishology.core.events
+package org.c0nstexpr.fishology.events
 
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.subject.publish.PublishSubject
@@ -20,6 +20,6 @@ class UseRodEvent private constructor() {
         @JvmField
         internal val afterUseSubject = PublishSubject<Arg>()
 
-        val afterUseObservable: Observable<Arg> = beforeUseSubject
+        val afterUseObservable: Observable<Arg> = afterUseSubject
     }
 }

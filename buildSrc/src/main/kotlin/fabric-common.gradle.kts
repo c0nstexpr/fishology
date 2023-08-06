@@ -1,5 +1,6 @@
 import gradle.kotlin.dsl.accessors._cb396132f851efe91a37ba0fe167d944.sourceSets
 import juuxel.vineflowerforloom.api.DecompilerBrand
+import net.fabricmc.loom.task.ValidateMixinNameTask
 
 plugins {
     id("fabric-loom")
@@ -23,7 +24,6 @@ repositories {
 val libs = versionCatalog
 
 val minecraftLib = libs.getLib("minecraft")
-val yarnMappings = libs.getLib("yarn.mappings")
 val fabricLib = libs.getBundle("fabric")
 val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
 
@@ -37,7 +37,10 @@ extension.properties.run {
 
 dependencies {
     minecraft(minecraftLib)
-    mappings(yarnMappings)
+    // set mapping without full version catalog support
+    // because version catalog has no way to set "v2" classifier
+    // https://github.com/gradle/gradle/issues/17169
+    mappings("net.fabricmc:yarn:${libs.getVersion("yarn")}:v2")
     modImplementation(fabricLib)
 }
 
@@ -76,6 +79,10 @@ loom {
             source(srcTestModClient)
         }
     }
+
+    runConfigs.forEach {
+        it.runDir = project.relativePath("$rootDir/run")
+    }
 }
 
 tasks {
@@ -83,6 +90,13 @@ tasks {
         inputs.property("properties", extension.properties)
         filesMatching(modJson) { expand(extension.properties.get()) }
     }
+
+    val validateMixinName = register<ValidateMixinNameTask>("validateMixinName") {
+        source(srcMain.output)
+        source(srcClient.output)
+    }
+
+    build { dependsOn(validateMixinName) }
 }
 
 System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {

@@ -10,13 +10,17 @@ import com.badoo.reaktive.subject.behavior.BehaviorObservable
 import com.badoo.reaktive.subject.behavior.BehaviorSubject
 import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.Entity
+import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.projectile.FishingBobberEntity
 import net.minecraft.text.Text
-import org.c0nstexpr.fishology.core.chat
-import org.c0nstexpr.fishology.core.events.BobberOwnedEvent
-import org.c0nstexpr.fishology.core.events.HookedEvent
+import org.c0nstexpr.fishology.chat
+import org.c0nstexpr.fishology.events.BobberOwnedEvent
+import org.c0nstexpr.fishology.events.HookedEvent
+import org.c0nstexpr.fishology.events.ItemEntitySetVelocityEvent
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.modId
+import kotlin.math.absoluteValue
+import kotlin.math.sqrt
 
 class BobberInteraction(val client: MinecraftClient) : DisposableScope by DisposableScope() {
     var bobber: FishingBobberEntity? = null
@@ -56,6 +60,49 @@ class BobberInteraction(val client: MinecraftClient) : DisposableScope by Dispos
         HookedEvent.observable.filter { it.bobber.uuid == bobber?.uuid }
             .subscribeScoped { hookSubject.onNext(it.hook) }
 
+        ItemEntitySetVelocityEvent.observable.map { it.entity }
+            .filter(::isHookedItem)
+            .subscribeScoped(onNext = hookSubject::onNext)
+
         chatDisposable.scope()
+    }
+
+    private fun isHookedItem(entity: ItemEntity): Boolean {
+        // bobber entity source code:
+        // ItemEntity itemEntity = new ItemEntity(this.getWorld(), this.getX(), this.getY(), this.getZ(), itemStack2);
+        // double d = playerEntity.getX() - this.getX();
+        // double e = playerEntity.getY() - this.getY();
+        // double f = playerEntity.getZ() - this.getZ();
+        // double g = 0.1;
+        // itemEntity.setVelocity(d * 0.1, e * 0.1 + Math.sqrt(Math.sqrt(d * d + e * e + f * f)) * 0.08, f * 0.1);
+
+        entity.run {
+            val bobber = bobber ?: return false
+            val bobberPos = bobber.pos
+
+            if (pos != bobberPos) return false
+
+            val playerPos = bobber.owner?.pos ?: return false
+            val relativePosX = playerPos.x - bobberPos.x
+            if ((relativePosX * G - velocity.x).absoluteValue > ERROR) return false
+
+            val relativePosZ = playerPos.z - bobberPos.z
+            if ((relativePosZ * G - velocity.z).absoluteValue > ERROR) return false
+
+            val relativePosY = playerPos.y - bobberPos.y
+            val d = relativePosX * relativePosX +
+                    relativePosY * relativePosY +
+                    relativePosZ * relativePosZ
+            if ((relativePosY * G + sqrt(sqrt(d)) * 0.08 - velocity.y).absoluteValue > ERROR) {
+                return false
+            }
+
+            return true
+        }
+    }
+
+    companion object {
+        private const val ERROR = 0.01
+        private const val G = 0.1
     }
 }

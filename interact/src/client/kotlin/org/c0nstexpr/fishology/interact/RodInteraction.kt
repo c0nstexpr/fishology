@@ -8,7 +8,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemStack.areEqual
 import net.minecraft.util.Hand
-import org.c0nstexpr.fishology.core.events.UseRodEvent
+import org.c0nstexpr.fishology.events.UseRodEvent
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.getSlotInHand
 import org.c0nstexpr.fishology.utils.interactItem

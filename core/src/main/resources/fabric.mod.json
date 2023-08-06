@@ -17,12 +17,15 @@
     "client": [
       {
         "adapter": "kotlin",
-        "value": "org.c0nstexpr.fishology.core.FishologyCoreKt::init"
+        "value": "org.c0nstexpr.fishology.FishologyCoreKt::init"
       }
     ]
   },
   "mixins": [
-    "fishology.core.mixins.json"
+    {
+      "environment": "client",
+      "config": "fishology-core.client.mixins.json"
+    }
   ],
   "icon": "assets/${id}/icon.png",
   "depends": {
@@ -31,12 +34,5 @@
     "fabric-language-kotlin": "*",
     "owo": ">=${owo}",
     "modmenu": "*"
-  },
-  "custom": {
-    "modmenu": {
-      "badges": [
-        "library"
-      ]
-    }
   }
 }

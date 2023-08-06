@@ -1,12 +1,11 @@
 package org.c0nstexpr.fishology
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import org.c0nstexpr.fishology.core.log.LogBuilder
-import org.c0nstexpr.fishology.core.log.MCMessageWriter
-import org.c0nstexpr.fishology.core.log.addMCWriter
-import org.c0nstexpr.fishology.core.log.greeting
-import org.c0nstexpr.fishology.core.log.removeWriterWhere
-import org.c0nstexpr.fishology.core.modId
+import org.c0nstexpr.fishology.log.LogBuilder
+import org.c0nstexpr.fishology.log.MCMessageWriter
+import org.c0nstexpr.fishology.log.addMCWriter
+import org.c0nstexpr.fishology.log.greeting
+import org.c0nstexpr.fishology.log.removeWriterWhere
 
 const val modId = "fishology"
 const val modName = "Fishology"

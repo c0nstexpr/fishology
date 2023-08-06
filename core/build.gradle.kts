@@ -10,6 +10,7 @@ repositories {
 
 dependencies {
     modImplementation(libs.bundles.owo)
+    annotationProcessor(libs.owo)
     listOf(libs.reaktive, libs.kermit).forEach(::api)
 }
 
