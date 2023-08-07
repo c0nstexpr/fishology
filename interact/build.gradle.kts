@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    fabricProject(":core")
+    fabricProject(":core") { findProject(it)!! }
     modImplementation(libs.owo)
     modRuntimeOnly(libs.modmenu)
 }

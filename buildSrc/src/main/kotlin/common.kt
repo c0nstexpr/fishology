@@ -1,5 +1,4 @@
 import gradle.kotlin.dsl.accessors._cb396132f851efe91a37ba0fe167d944.sourceSets
-import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -8,17 +7,14 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.tasks.SourceSet
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.getValue
 import org.gradle.kotlin.dsl.project
-import org.gradle.kotlin.dsl.provideDelegate
-import org.gradle.kotlin.dsl.registering
 import java.util.*
 
-fun DependencyHandler.fabricProject(vararg name: String) = name.forEach {
-    val p = project(it, "namedElements")
-    add("api", p)
-    add("clientImplementation", p)
-}
+fun DependencyHandler.fabricProject(vararg name: String, findProject: (String) -> Project?) = name
+    .forEach {
+        add("api", project(it, "namedElements"))
+        findProject(it)?.let { p -> add("clientImplementation", p.srcClient.output) }
+    }
 
 fun Project.fabricProperty(block: MapProperty<String, String>.() -> Unit) =
     block(extensions.getByType(ModPropertyPluginExtension::class.java).properties)

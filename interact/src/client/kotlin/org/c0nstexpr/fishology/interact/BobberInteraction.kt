@@ -68,7 +68,9 @@ class BobberInteraction(val client: MinecraftClient) : DisposableScope by Dispos
     }
 
     private fun isHookedItem(entity: ItemEntity): Boolean {
-        // bobber entity source code:
+        if (hook.value?.uuid == entity.uuid) return true
+
+        // bobber use code:
         // ItemEntity itemEntity = new ItemEntity(this.getWorld(), this.getX(), this.getY(), this.getZ(), itemStack2);
         // double d = playerEntity.getX() - this.getX();
         // double e = playerEntity.getY() - this.getY();
@@ -76,11 +78,22 @@ class BobberInteraction(val client: MinecraftClient) : DisposableScope by Dispos
         // double g = 0.1;
         // itemEntity.setVelocity(d * 0.1, e * 0.1 + Math.sqrt(Math.sqrt(d * d + e * e + f * f)) * 0.08, f * 0.1);
 
+        // bobber bobbing code:
+        // setVelocity(vec3d.x * 0.9, vec3d.y - d * (double)this.random.nextFloat() * 0.2, vec3d.z * 0.9);
+
         entity.run {
+            if (hook.value?.uuid == entity.uuid) return false
+
             val bobber = bobber ?: return false
             val bobberPos = bobber.pos
 
-            if (pos != bobberPos) return false
+            if (
+                (pos.x - bobberPos.x).absoluteValue > ERROR &&
+                (pos.y - bobberPos.y).absoluteValue > ERROR &&
+                (pos.z - bobberPos.z).absoluteValue > ERROR
+            ) {
+                return false
+            }
 
             val playerPos = bobber.owner?.pos ?: return false
             val relativePosX = playerPos.x - bobberPos.x
