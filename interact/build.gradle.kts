@@ -10,7 +10,6 @@ repositories {
 
 dependencies {
     fabricProject(":core")
-
     modImplementation(libs.owo)
     modRuntimeOnly(libs.modmenu)
 }

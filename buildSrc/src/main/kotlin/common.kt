@@ -15,7 +15,9 @@ import org.gradle.kotlin.dsl.registering
 import java.util.*
 
 fun DependencyHandler.fabricProject(vararg name: String) = name.forEach {
-    add("api", (project(it, "namedElements")))
+    val p = project(it, "namedElements")
+    add("api", p)
+    add("clientImplementation", p)
 }
 
 fun Project.fabricProperty(block: MapProperty<String, String>.() -> Unit) =

@@ -1,5 +1,6 @@
 import gradle.kotlin.dsl.accessors._cb396132f851efe91a37ba0fe167d944.sourceSets
 import juuxel.vineflowerforloom.api.DecompilerBrand
+import kotlinx.datetime.Clock.System.now
 import net.fabricmc.loom.task.ValidateMixinNameTask
 
 plugins {
@@ -80,14 +81,12 @@ loom {
         }
     }
 
-    runConfigs.forEach {
-        it.runDir = project.relativePath("$rootDir/run")
-    }
+    runConfigs.forEach { it.runDir = project.relativePath("$rootDir/run") }
 }
 
 tasks {
     processResources {
-        inputs.property("properties", extension.properties)
+        inputs.property("timestamp", "${now()}")
         filesMatching(modJson) { expand(extension.properties.get()) }
     }
 

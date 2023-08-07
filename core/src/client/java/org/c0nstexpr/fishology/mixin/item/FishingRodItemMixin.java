@@ -1,7 +1,5 @@
 package org.c0nstexpr.fishology.mixin.item;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.FishingRodItem;
 import net.minecraft.item.ItemStack;
@@ -15,9 +13,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Environment(EnvType.CLIENT)
 @Mixin(FishingRodItem.class)
-abstract class FishingRodItemMixin {
+public abstract class FishingRodItemMixin {
     @Inject(method = "use", at = @At("HEAD"))
     private void beforeUse(
             @NotNull World world,

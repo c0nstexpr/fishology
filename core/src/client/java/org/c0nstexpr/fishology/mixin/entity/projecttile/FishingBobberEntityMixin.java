@@ -1,7 +1,5 @@
 package org.c0nstexpr.fishology.mixin.entity.projecttile;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.TrackedData;
@@ -18,8 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @SuppressWarnings({"DataFlowIssue"})
 @Mixin(FishingBobberEntity.class)
-@Environment(EnvType.CLIENT)
-abstract class FishingBobberEntityMixin {
+public abstract class FishingBobberEntityMixin {
     @Final @Shadow private static TrackedData<Boolean> CAUGHT_FISH;
     @Final @Shadow private static TrackedData<Boolean> HOOK_ENTITY_ID;
 

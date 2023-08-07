@@ -1,7 +1,5 @@
 package org.c0nstexpr.fishology.mixin.entity;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import org.c0nstexpr.fishology.events.EntityFallingEvent;
@@ -13,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @SuppressWarnings({"DataFlowIssue"})
 @Mixin(Entity.class)
-@Environment(EnvType.CLIENT)
-abstract class EntityMixin {
+public abstract class EntityMixin {
     @Inject(method = "setVelocity(Lnet/minecraft/util/math/Vec3d;)V", at = @At("TAIL"))
     private void setVelocity(Vec3d vec3d, CallbackInfo ci) {
         final var entity = (Entity) (Object) this;
