@@ -27,14 +27,6 @@ fun MutableLoggerConfig.addWriter(w: LogWriter): MutableLoggerConfig {
     return this
 }
 
-fun MutableLoggerConfig.addWriter(l: Logger): MutableLoggerConfig {
-    logWriterList = logWriterList + logWriterOf(l)
-
-    return this
-}
-
-fun logWriterOf(l: Logger) = LogWriterDelegate(l)
-
 inline fun MutableLoggerConfig.removeWriterWhere(p: (LogWriter) -> Boolean): MutableLoggerConfig {
     logWriterList = logWriterList.filter(p)
     return this

@@ -2,14 +2,19 @@ package org.c0nstexpr.fishology
 
 import co.touchlab.kermit.Severity
 import com.badoo.reaktive.disposable.scope.DisposableScope
+import com.badoo.reaktive.disposable.scope.doOnDispose
+import com.badoo.reaktive.observable.notNull
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayNetworkHandler
+import org.c0nstexpr.fishology.config.Config
 import org.c0nstexpr.fishology.config.ConfigControl
-import org.c0nstexpr.fishology.config.FishologyCoreConfig
-import org.c0nstexpr.fishology.config.FishologyCoreConfigModel
+import org.c0nstexpr.fishology.config.ConfigModel
 import org.c0nstexpr.fishology.interact.AutoFishingInteraction
 import org.c0nstexpr.fishology.interact.BobberInteraction
 import org.c0nstexpr.fishology.interact.RodInteraction
+import org.c0nstexpr.fishology.log.MCMessageWriter
+import org.c0nstexpr.fishology.log.addMCWriter
+import org.c0nstexpr.fishology.log.removeWriterWhere
 import org.c0nstexpr.fishology.utils.Module
 import org.c0nstexpr.fishology.utils.initObserve
 
@@ -17,7 +22,7 @@ class Fishology(
     val client: MinecraftClient,
     var handler: ClientPlayNetworkHandler,
 ) : DisposableScope by DisposableScope() {
-    val config: FishologyCoreConfig by ConfigControl.config
+    val config: Config by ConfigControl.config
 
     private var rod = object : Module() {
         var value: RodInteraction? = null
@@ -63,11 +68,14 @@ class Fishology(
             val rod = this@Fishology.rod
             val bobber = this@Fishology.bobber
 
-            add(rod)
-            add(bobber)
+            add(rod, bobber)
 
             value =
-                AutoFishingInteraction(rod.value!!::use, handler.profile.id, bobber.value!!.hook)
+                AutoFishingInteraction(
+                    rod.value!!::use,
+                    handler.profile.id,
+                    bobber.value!!.caught.notNull(),
+                )
         }
 
         override fun onDestroy() {
@@ -82,11 +90,12 @@ class Fishology(
         override fun onCreate() = Unit
 
         init {
-            config.initObserve(FishologyCoreConfigModel::enableAutoFish) { onEnableAutoFish(it) }
-            config.initObserve(FishologyCoreConfigModel::enableChatOnCaught) {
-                onEnableChatOnCaught(it)
-            }
-            config.initObserve(FishologyCoreConfigModel::logLevel) { onChangeLogLevel(it) }
+            logger.mutableConfig.addMCWriter(client)
+            doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }
+
+            config.initObserve(ConfigModel::logLevel) { onChangeLogLevel(it) }
+            config.initObserve(ConfigModel::enableAutoFish) { onEnableAutoFish(it) }
+            config.initObserve(ConfigModel::enableChatOnCaught) { onEnableChatOnCaught(it) }
         }
 
         private fun onChangeLogLevel(it: Severity) {

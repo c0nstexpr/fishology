@@ -5,9 +5,9 @@ import io.wispforest.owo.config.annotation.Config;
 import io.wispforest.owo.config.annotation.Modmenu;
 import org.c0nstexpr.fishology.FishologyCoreKt;
 
-@Modmenu(modId = FishologyCoreKt.modId)
-@Config(name = FishologyCoreKt.modId, wrapperName = "FishologyCoreConfig")
-public class FishologyCoreConfigModel {
+@Modmenu(modId = FishologyCoreKt.coreModId)
+@Config(name = FishologyCoreKt.coreModId, wrapperName = "Config")
+public class ConfigModel {
     public boolean enableAutoFish = true;
     public Severity logLevel = Severity.Warn;
     public boolean enableChatOnCaught = true;

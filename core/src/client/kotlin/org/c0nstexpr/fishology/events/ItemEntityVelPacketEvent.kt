@@ -4,7 +4,7 @@ import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
 
-class ItemEntitySetVelocityEvent private constructor() {
+class ItemEntityVelPacketEvent private constructor() {
     data class Arg(val entity: ItemEntity)
 
     companion object {

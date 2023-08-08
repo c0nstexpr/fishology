@@ -1,32 +1,35 @@
 package org.c0nstexpr.fishology.mixin.entity;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.util.math.Vec3d;
-import org.c0nstexpr.fishology.events.EntityFallingEvent;
-import org.c0nstexpr.fishology.events.EntityRemovedEvent;
+import net.minecraft.world.World;
+import org.c0nstexpr.fishology.events.ItemEntityFallingEvent;
+import org.c0nstexpr.fishology.events.ItemEntityRemovedEvent;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @SuppressWarnings({"DataFlowIssue"})
 @Mixin(Entity.class)
-public abstract class EntityMixin {
+abstract class EntityMixin {
+    @Shadow private World world;
+
     @Inject(method = "setVelocity(Lnet/minecraft/util/math/Vec3d;)V", at = @At("TAIL"))
     private void setVelocity(Vec3d vec3d, CallbackInfo ci) {
         final var entity = (Entity) (Object) this;
 
-        if (!entity.getWorld().isClient) return;
+        if (!(world.isClient && entity instanceof ItemEntity item && vec3d.y < 0)) return;
 
-        if (vec3d.y < 0) EntityFallingEvent.subject.onNext(new EntityFallingEvent.Arg(entity));
+        ItemEntityFallingEvent.subject.onNext(new ItemEntityFallingEvent.Arg(item));
     }
 
     @Inject(method = "onRemoved", at = @At("TAIL"))
     private void onRemoved(CallbackInfo ci) {
-        final var entity = (Entity) (Object) this;
+        if (!(world.isClient && (Entity) (Object) this instanceof ItemEntity item)) return;
 
-        if (!entity.getWorld().isClient) return;
-
-        EntityRemovedEvent.subject.onNext(new EntityRemovedEvent.Arg(entity));
+        ItemEntityRemovedEvent.subject.onNext(new ItemEntityRemovedEvent.Arg(item));
     }
 }

@@ -23,8 +23,7 @@ class MCMessageWriter(
             )
                 .setStyle(
                     Style.EMPTY.withColor(
-                        levelColor[severity]
-                            ?: defaultColor(severity),
+                        levelColor[severity] ?: defaultColor(severity),
                     ),
                 ),
         )
