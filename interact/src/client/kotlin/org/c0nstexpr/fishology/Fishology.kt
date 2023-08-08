@@ -124,6 +124,7 @@ class Fishology(
             }
 
             add(bobber)
+            bobber.value!!.enableChat = true
         }
     }
 

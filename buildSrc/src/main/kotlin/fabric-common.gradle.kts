@@ -22,6 +22,8 @@ repositories {
     maven("https://maven.fabricmc.net/")
 }
 
+base { archivesName.set(modId) }
+
 val libs = versionCatalog
 
 val minecraftLib = libs.getLib("minecraft")
@@ -96,14 +98,20 @@ tasks {
     }
 
     build { dependsOn(validateMixinName) }
+
+    remapJar {
+        archiveBaseName.set(modId)
+        println("remap jar archive path: ${archiveFile.get().asFile.absolutePath}")
+    }
+
+    this.modrinth { dependsOn(remapJar) }
 }
 
 System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
     modrinth {
-        token.set(it)
         projectId.set(modId)
         versionNumber.set(modVersion)
         versionType.set("alpha")
-        uploadFile.set(tasks.remapJar)
+        uploadFile.set(tasks.remapJar.get())
     }
 }

@@ -7,8 +7,6 @@ import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
-import com.badoo.reaktive.subject.behavior.BehaviorObservable
-import com.badoo.reaktive.subject.behavior.BehaviorSubject
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.client.MinecraftClient
 import net.minecraft.enchantment.EnchantmentHelper
@@ -23,6 +21,7 @@ import org.c0nstexpr.fishology.events.HookedEvent
 import org.c0nstexpr.fishology.events.ItemEntityVelPacketEvent
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.modId
+import java.util.*
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
@@ -34,9 +33,9 @@ class BobberInteraction(val client: MinecraftClient) : DisposableScope by Dispos
 
     val hook: Observable<Entity?> = hookSubject
 
-    private val caughtSubject = BehaviorSubject(null as ItemEntity?)
+    private val caughtSubject = PublishSubject<ItemEntity>()
 
-    val caught: BehaviorObservable<ItemEntity?> = caughtSubject
+    val caught: Observable<ItemEntity?> = caughtSubject
 
     private var chatDisposable = CompositeDisposable()
 
@@ -47,15 +46,7 @@ class BobberInteraction(val client: MinecraftClient) : DisposableScope by Dispos
             if (value) {
                 chatDisposable.run {
                     add(hook.notNull().subscribe { chat(it.displayName, "hooked_on_chat") })
-                    add(
-                        caught.notNull().subscribe {
-                            val text = Text.empty().append(it.displayName)
-                            EnchantmentHelper.get(it.stack)
-                                .map { (enchantment, level) -> enchantment.getName(level) }
-                                .forEach(text.append("\n")::append)
-                            chat(text, "caught_on_chat")
-                        },
-                    )
+                    add(caught.notNull().subscribe { onCaughtChat(it) })
                 }
             } else {
                 chatDisposable.clear(true)
@@ -64,12 +55,29 @@ class BobberInteraction(val client: MinecraftClient) : DisposableScope by Dispos
             field = value
         }
 
+    private fun onCaughtChat(it: ItemEntity) {
+        val text = Text.empty().append(it.displayName)
+            .append(Text.translatable("$modId.left_brace"))
+        val enchantText = EnchantmentHelper.get(it.stack)
+            .map { (enchantment, level) -> enchantment.getName(level) }
+
+        for (txt in enchantText.take(enchantText.size - 1)) {
+            text.append(txt).append(Text.translatable("$modId.comma"))
+        }
+
+        text.append(enchantText.last())
+            .append(Text.translatable("$modId.right_brace"))
+
+        chat(text, "caught_on_chat")
+    }
+
     private fun chat(text: Text, key: String) = client.chat(
         Text.translatable("$modId.$key").append(text).string,
         logger,
     )
 
-    val caughtItemId get() = caughtSubject.value?.uuid
+    var caughtItemId: UUID = UUID.randomUUID()
+        private set
 
     init {
         BobberOwnedEvent.observable.map { it.bobber }
@@ -81,7 +89,10 @@ class BobberInteraction(val client: MinecraftClient) : DisposableScope by Dispos
 
         ItemEntityVelPacketEvent.observable.map { it.entity }
             .filter(::isCaughtItem)
-            .subscribeScoped { caughtSubject.onNext(it) }
+            .subscribeScoped {
+                caughtSubject.onNext(it)
+                caughtItemId = it.uuid
+            }
 
         chatDisposable.scope()
     }

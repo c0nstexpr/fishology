@@ -8,10 +8,21 @@ repositories {
     maven("https://maven.terraformersmc.com")
 }
 
+val includeAndExpose: Configuration by configurations.creating
+
+configurations {
+    modApi { extendsFrom(includeAndExpose) }
+    include { extendsFrom(includeAndExpose) }
+}
+
 dependencies {
     modImplementation(libs.bundles.owo)
     annotationProcessor(libs.owo)
-    listOf(libs.reaktive, libs.kermit).forEach(::api)
+    listOf(libs.reaktive, libs.kermit).forEach {
+        includeAndExpose(it)
+        implementation(it)
+        shadow(it)
+    }
 }
 
 fabricProperty {

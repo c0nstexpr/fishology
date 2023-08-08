@@ -1,4 +1,7 @@
 {
   "fishology.caught_on_chat": "我钓到了",
-  "fishology.hooked_on_chat": "我钩住了 "
+  "fishology.hooked_on_chat": "我钩住了",
+  "fishology.left_brace": "（",
+  "fishology.right_brace": "）",
+  "fishology.comma": "，"
 }
