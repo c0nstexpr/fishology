@@ -87,24 +87,6 @@ loom {
 }
 
 fun Configuration.exclusion() {
-//    listOf(
-//        "kotlin-stdlib",
-//        "kotlin-stdlib-jdk8",
-//        "kotlin-stdlib-jdk7",
-//        "kotlin-reflect"
-//    ).forEach { exclude("org.jetbrains.kotlin", it) }
-//
-//    listOf(
-//        "kotlinx-coroutines-core",
-//        "kotlinx-coroutines-core-jvm",
-//        "kotlinx-coroutines-jdk8",
-//        "kotlinx-serialization-core-jvm",
-//        "kotlinx-serialization-json-jvm",
-//        "kotlinx-serialization-cbor-jvm",
-//        "atomicfu-jvm",
-//        "kotlinx-datetime-jvm"
-//    ).forEach { exclude("org.jetbrains.kotlinx", it) }
-
     exclude("com.mojang", "minecraft")
 }
 
