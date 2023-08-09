@@ -1,12 +1,13 @@
-import gradle.kotlin.dsl.accessors._cb396132f851efe91a37ba0fe167d944.sourceSets
 import juuxel.vineflowerforloom.api.DecompilerBrand
 import kotlinx.datetime.Clock.System.now
 import net.fabricmc.loom.task.ValidateMixinNameTask
 
 plugins {
+    id("kotlin-common")
     id("fabric-loom")
     id("com.modrinth.minotaur")
     id("io.github.juuxel.loom-vineflower")
+    id("com.github.johnrengelman.shadow")
 }
 
 val modVersion: String by project
@@ -17,7 +18,6 @@ println("configuring $modId fabric mod project")
 
 repositories {
     mavenCentral()
-    mavenLocal()
 
     maven("https://maven.fabricmc.net/")
 }
@@ -86,6 +86,38 @@ loom {
     runConfigs.forEach { it.runDir = project.relativePath("$rootDir/run") }
 }
 
+fun Configuration.exclusion() {
+//    listOf(
+//        "kotlin-stdlib",
+//        "kotlin-stdlib-jdk8",
+//        "kotlin-stdlib-jdk7",
+//        "kotlin-reflect"
+//    ).forEach { exclude("org.jetbrains.kotlin", it) }
+//
+//    listOf(
+//        "kotlinx-coroutines-core",
+//        "kotlinx-coroutines-core-jvm",
+//        "kotlinx-coroutines-jdk8",
+//        "kotlinx-serialization-core-jvm",
+//        "kotlinx-serialization-json-jvm",
+//        "kotlinx-serialization-cbor-jvm",
+//        "atomicfu-jvm",
+//        "kotlinx-datetime-jvm"
+//    ).forEach { exclude("org.jetbrains.kotlinx", it) }
+
+    exclude("com.mojang", "minecraft")
+}
+
+val shadowApi: Configuration by configurations.creating { exclusion() }
+val shadowImpl: Configuration by configurations.creating { exclusion() }
+val shadowInclude: Configuration by configurations.creating { exclusion() }
+
+configurations {
+    api { extendsFrom(shadowApi) }
+    implementation { extendsFrom(shadowImpl) }
+    include { extendsFrom(shadowInclude) }
+}
+
 tasks {
     processResources {
         inputs.property("timestamp", "${now()}")
@@ -99,9 +131,16 @@ tasks {
 
     build { dependsOn(validateMixinName) }
 
+    shadowJar {
+        configurations = listOf(shadowApi, shadowImpl, shadowInclude)
+        dependencies { exclude("META-INF/**") }
+        // minimize()
+    }
+
     remapJar {
         archiveBaseName.set(modId)
-        println("remap jar archive path: ${archiveFile.get().asFile.absolutePath}")
+        dependsOn(shadowJar)
+        inputFile.set(shadowJar.get().archiveFile)
     }
 
     this.modrinth { dependsOn(remapJar) }

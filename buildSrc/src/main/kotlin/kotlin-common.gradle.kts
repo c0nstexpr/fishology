@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm")
     id("com.diffplug.spotless")
-    idea
 }
 
 val modVersion: String by project
@@ -22,14 +21,6 @@ tasks {
         sourceCompatibility = libs.getVersion("jvm")
         targetCompatibility = sourceCompatibility
         options.encoding = Charsets.UTF_8.name()
-
-        idea {
-            module {
-                generatedSourceDirs.add(
-                    options.generatedSourceOutputDirectory.asFile.get()
-                )
-            }
-        }
     }
 
     compileKotlin {
@@ -55,11 +46,3 @@ spotless {
     kotlin { ktlint() }
 }
 
-idea {
-    module {
-        generatedSourceDirs.add(
-            tasks.compileJava.get().options.generatedSourceOutputDirectory
-                .asFile.get()
-        )
-    }
-}

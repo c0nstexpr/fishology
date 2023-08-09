@@ -16,7 +16,6 @@ fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version = "lat
 
 # mod dependencies
 owo = { module = "io.wispforest:owo-lib", version.ref = "owo" }
-owo-sentinel = { module = "io.wispforest:owo-sentinel", version.ref = "owo" }
 modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 
 # kotlin library dependencies
