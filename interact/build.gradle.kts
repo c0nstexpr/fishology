@@ -5,12 +5,7 @@ repositories {
     maven("https://maven.terraformersmc.com")
 }
 
-val projConfig: Configuration by configurations.creating
-
-configurations { modApi { extendsFrom(projConfig) } }
-
 dependencies {
-    fabricProject(":core", projConfig)
-    modImplementation(libs.owo)
+    fabricProject(":core", configurations.implementation.get())
     modRuntimeOnly(libs.modmenu)
 }

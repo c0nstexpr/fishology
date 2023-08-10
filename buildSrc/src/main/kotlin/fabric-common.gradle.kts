@@ -86,20 +86,6 @@ loom {
     runConfigs.forEach { it.runDir = project.relativePath("$rootDir/run") }
 }
 
-fun Configuration.exclusion() {
-    exclude("com.mojang", "minecraft")
-}
-
-val shadowApi: Configuration by configurations.creating { exclusion() }
-val shadowImpl: Configuration by configurations.creating { exclusion() }
-val shadowInclude: Configuration by configurations.creating { exclusion() }
-
-configurations {
-    api { extendsFrom(shadowApi) }
-    implementation { extendsFrom(shadowImpl) }
-    include { extendsFrom(shadowInclude) }
-}
-
 tasks {
     processResources {
         inputs.property("timestamp", "${now()}")
@@ -115,12 +101,10 @@ tasks {
 
     shadowJar {
         configurations = listOf(shadowApi, shadowImpl, shadowInclude)
-        dependencies { exclude("META-INF/**") }
         // minimize()
     }
 
     remapJar {
-        archiveBaseName.set(modId)
         dependsOn(shadowJar)
         inputFile.set(shadowJar.get().archiveFile)
     }

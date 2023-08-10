@@ -6,8 +6,9 @@ repositories {
 }
 
 dependencies {
-    modImplementation(libs.bundles.owo)
+    modApi(libs.owo)
     annotationProcessor(libs.owo)
+    modRuntimeOnly(libs.modmenu)
     listOf(libs.reaktive, libs.kermit).forEach { fabricLibrary(it, shadowApi) }
 }
 

@@ -1,6 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.artifacts.VersionCatalog
@@ -27,7 +28,7 @@ inline val Project.fabricLibrary:
     get() = { dep, config ->
         config(dep)
         tasks.named<ShadowJar>("shadowJar") {
-            val projectGroup = "$group.libs"
+            val projectGroup = "${project.group}.libs"
             val depGroup = dep.get().group
             relocate(depGroup, "${projectGroup}.$depGroup")
         }
@@ -65,8 +66,18 @@ inline val Project.srcTestModServer: SourceSet get() = srcMain
 
 inline val Project.srcTestModClient: SourceSet get() = sourceSets["testModClient"]
 
-inline val Project.shadowApi: Configuration get() = configurations[::shadowApi.name]
+private fun ConfigurationContainer.getOrCreate(configName: String, extends: String): Configuration {
+    return findByName(configName)
+        ?: create(configName).apply {
+            get(extends).extendsFrom(this)
+        }
+}
 
-inline val Project.shadowImpl: Configuration get() = configurations[::shadowImpl.name]
+val Project.shadowApi: Configuration
+    get() = configurations.getOrCreate(::shadowApi.name, "api")
 
-inline val Project.shadowInclude: Configuration get() = configurations["shadowInclude"]
+val Project.shadowImpl: Configuration
+    get() = configurations.getOrCreate(::shadowImpl.name, "implementation")
+
+val Project.shadowInclude: Configuration
+    get() = configurations.getOrCreate(::shadowInclude.name, "include")

@@ -39,8 +39,8 @@ abstract class FishingBobberEntityMixin {
     private void setOwner(Entity entity, CallbackInfo ci) {
         final var bobber = (FishingBobberEntity) (Object) this;
 
-        if (!(bobber.getWorld().isClient && entity instanceof ClientPlayerEntity)) return;
+        if (!(bobber.getWorld().isClient && entity instanceof ClientPlayerEntity player)) return;
 
-        BobberOwnedEvent.subject.onNext(new BobberOwnedEvent.Arg(bobber));
+        BobberOwnedEvent.subject.onNext(new BobberOwnedEvent.Arg(bobber, player));
     }
 }
