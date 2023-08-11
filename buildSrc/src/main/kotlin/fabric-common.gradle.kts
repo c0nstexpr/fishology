@@ -68,17 +68,16 @@ sourceSets {
 loom {
     runs {
         // named("server") {
+        //     isIdeConfigGenerated = true
         //     server()
         //     configName = "$modName Server"
-        //     isIdeConfigGenerated = true
         //     source(srcTestModServer)
         // }
 
         named("client") {
+            isIdeConfigGenerated = true
             client()
             configName = "$modName Client"
-            isIdeConfigGenerated = true
-
             source(srcTestModClient)
         }
     }
@@ -101,11 +100,14 @@ tasks {
 
     shadowJar {
         configurations = listOf(shadowApi, shadowImpl, shadowInclude)
+        archiveClassifier = "shadow"
+        from(srcClient.output)
         // minimize()
     }
 
     remapJar {
         dependsOn(shadowJar)
+        addNestedDependencies.set(true)
         inputFile.set(shadowJar.get().archiveFile)
     }
 
