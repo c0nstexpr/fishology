@@ -1,8 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ConfigurationContainer
-import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -10,23 +8,18 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskContainer
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.project
 import java.util.*
 
-inline val Project.fabricProject: DependencyHandlerScope.(String, Configuration) -> Dependency?
-    get() = { name, config ->
-        findProject(name)?.let { p -> "clientImplementation"(p.srcClient.output) }
-        config(project(name, "namedElements"))
-    }
-
-inline val Project.fabricLibrary:
-        DependencyHandlerScope.(Provider<MinimalExternalModuleDependency>, Configuration) -> Unit
-    get() = { dep, config ->
-        config(dep)
+fun DependencyHandlerScope.fabricLibrary(
+    dep: Provider<MinimalExternalModuleDependency>,
+    tasks: TaskContainer
+)   {
+        "shadowImpl"(dep)
         tasks.named<ShadowJar>("shadowJar") {
             val projectGroup = "${project.group}.libs"
             val depGroup = dep.get().group
@@ -39,7 +32,6 @@ inline fun Project.fabricProperty(block: MapProperty<String, String>.() -> Unit)
 
 inline val Project.versionCatalog: VersionCatalog
     get() = extensions.getByType<VersionCatalogsExtension>().named("libs")
-
 inline fun <R> VersionCatalog.getByName(
     name: String,
     block: VersionCatalog.(String) -> Optional<R>
@@ -65,19 +57,3 @@ inline val Project.srcMain: SourceSet get() = sourceSets["main"]
 inline val Project.srcTestModServer: SourceSet get() = srcMain
 
 inline val Project.srcTestModClient: SourceSet get() = sourceSets["testModClient"]
-
-private fun ConfigurationContainer.getOrCreate(configName: String, extends: String): Configuration {
-    return findByName(configName)
-        ?: create(configName).apply {
-            get(extends).extendsFrom(this)
-        }
-}
-
-val Project.shadowApi: Configuration
-    get() = configurations.getOrCreate(::shadowApi.name, "api")
-
-val Project.shadowImpl: Configuration
-    get() = configurations.getOrCreate(::shadowImpl.name, "implementation")
-
-val Project.shadowInclude: Configuration
-    get() = configurations.getOrCreate(::shadowInclude.name, "include")

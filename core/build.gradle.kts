@@ -6,10 +6,10 @@ repositories {
 }
 
 dependencies {
-    modApi(libs.owo)
+    modImplementation(libs.owo)
     annotationProcessor(libs.owo)
     modRuntimeOnly(libs.modmenu)
-    listOf(libs.reaktive, libs.kermit).forEach { fabricLibrary(it, shadowApi) }
+    listOf(libs.reaktive, libs.kermit).forEach { fabricLibrary(it, tasks) }
 }
 
 fabricProperty {

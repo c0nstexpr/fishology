@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import juuxel.vineflowerforloom.api.DecompilerBrand
 import kotlinx.datetime.Clock.System.now
 import net.fabricmc.loom.task.ValidateMixinNameTask
@@ -5,9 +6,8 @@ import net.fabricmc.loom.task.ValidateMixinNameTask
 plugins {
     id("kotlin-common")
     id("fabric-loom")
-    id("com.modrinth.minotaur")
     id("io.github.juuxel.loom-vineflower")
-    id("com.github.johnrengelman.shadow")
+    id("com.modrinth.minotaur")
 }
 
 val modVersion: String by project
@@ -98,27 +98,12 @@ tasks {
 
     build { dependsOn(validateMixinName) }
 
-    shadowJar {
-        configurations = listOf(shadowApi, shadowImpl, shadowInclude)
-        archiveClassifier = "shadow"
-        from(srcClient.output)
-        // minimize()
-    }
+    shadowJar { from(srcClient.output) }
 
     remapJar {
         dependsOn(shadowJar)
+        archiveClassifier.set("remap")
         addNestedDependencies.set(true)
         inputFile.set(shadowJar.get().archiveFile)
-    }
-
-    this.modrinth { dependsOn(remapJar) }
-}
-
-System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
-    modrinth {
-        projectId.set(modId)
-        versionNumber.set(modVersion)
-        versionType.set("alpha")
-        uploadFile.set(tasks.remapJar.get())
     }
 }
