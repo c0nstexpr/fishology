@@ -16,20 +16,22 @@ class CaughtChat(
     private val caught: Observable<ItemEntity>,
 ) : SwitchDisposable() {
     private fun onCaughtChat(it: ItemEntity) {
-        val enchantText = EnchantmentHelper.get(it.stack)
-            .map { (enchantment, level) -> enchantment.getName(level).string }.joinToString(
-                Text.translatable("$modId.comma").string,
-                Text.translatable("$modId.left_brace").string,
-                Text.translatable("$modId.right_brace").string,
-            )
+        val enchantments = EnchantmentHelper.get(it.stack)
+        val txt = Text.translatable("$modId.${"caught_on_chat"}")
+            .append(it.displayName)
 
-        client.chat(
-            Text.translatable("$modId.${"caught_on_chat"}")
-                .append(it.displayName)
-                .append(enchantText)
-                .string,
-            logger,
-        )
+        if (enchantments.isNotEmpty()) {
+            txt.append(
+                enchantments.map { (enchantment, level) -> enchantment.getName(level).string }
+                    .joinToString(
+                        Text.translatable("$modId.comma").string,
+                        Text.translatable("$modId.left_brace").string,
+                        Text.translatable("$modId.right_brace").string,
+                    ),
+            )
+        }
+
+        client.chat(txt.string, logger)
     }
 
     override fun onEnable() = caught.subscribe { onCaughtChat(it) }

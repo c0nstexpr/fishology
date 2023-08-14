@@ -92,6 +92,6 @@ class CaughtFish(private val id: UUID) : SwitchDisposable() {
         }
 
         private fun absLess(a: Double, vararg b: Double) =
-            b.all { a.absoluteValue < it.absoluteValue }
+            b.all { a.absoluteValue < it.absoluteValue + 0.01 }
     }
 }
