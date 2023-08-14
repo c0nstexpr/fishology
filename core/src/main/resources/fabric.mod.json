@@ -32,7 +32,6 @@
     "minecraft": "${minecraft}",
     "fabric": ">=${fabric}",
     "fabric-language-kotlin": "*",
-    "owo": ">=${owo}",
-    "modmenu": "*"
+    "owo": ">=${owo}"
   }
 }

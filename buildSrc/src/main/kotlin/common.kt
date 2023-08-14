@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -15,36 +14,34 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
 import java.util.*
 
-fun DependencyHandlerScope.fabricLibrary(
-    dep: Provider<MinimalExternalModuleDependency>,
-    tasks: TaskContainer
-)   {
-        "shadowImpl"(dep)
-        tasks.named<ShadowJar>("shadowJar") {
-            val projectGroup = "${project.group}.libs"
-            val depGroup = dep.get().group
-            relocate(depGroup, "${projectGroup}.$depGroup")
-        }
-    }
-
 inline fun Project.fabricProperty(block: MapProperty<String, String>.() -> Unit) =
     block(extensions.getByType(ModPropertyPluginExtension::class.java).properties)
 
 inline val Project.versionCatalog: VersionCatalog
     get() = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
 inline fun <R> VersionCatalog.getByName(
     name: String,
     block: VersionCatalog.(String) -> Optional<R>
 ) = block(name).get()
 
-fun VersionCatalog.getLib(name: String) = getByName(name, VersionCatalog::findLibrary)
+operator fun VersionCatalog.get(name: String) = getByName(name, VersionCatalog::findLibrary)
 
-fun VersionCatalog.getBundle(name: String) = getByName(name, VersionCatalog::findBundle)
+val VersionCatalog.bundles get() = VCBundleAccess(this)
 
-fun VersionCatalog.getVersion(name: String): String =
-    getByName(name, VersionCatalog::findVersion).run {
+class VCBundleAccess internal constructor(versionCatalog: VersionCatalog) : VersionCatalog by
+versionCatalog {
+    operator fun get(name: String) = getByName(name, VersionCatalog::findBundle)
+}
+
+val VersionCatalog.versions get() = VCVersionsAccess(this)
+
+class VCVersionsAccess internal constructor(versionCatalog: VersionCatalog) :
+    VersionCatalog by versionCatalog {
+    operator fun get(name: String) = getByName(name, VersionCatalog::findVersion).run {
         requiredVersion.ifEmpty { strictVersion.ifEmpty { preferredVersion } }
     }
+}
 
 const val modJson = "fabric.mod.json"
 

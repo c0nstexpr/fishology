@@ -10,20 +10,15 @@ repositories {
 val coreProjName = "core"
 val modVersion: String by project
 val modId: String by project
-val depends = listOf(libs.reaktive, libs.kermit)
 
 dependencies {
     clientImplementation(findProject(":${coreProjName}")!!.srcClient.output)
-
-    val coreProj = project(":${coreProjName}:", "namedElements")
-
-    include(implementation(coreProj)!!)
-
-    depends.forEach { fabricLibrary(it, tasks) }
+    include(implementation(project(":${coreProjName}:", "namedElements")) { isTransitive = false })
 
     modImplementation(libs.owo)
     modRuntimeOnly(libs.modmenu)
-}
+
+    listOf(libs.reaktive, libs.kermit).forEach(::shadowApi)}
 
 tasks { this.modrinth { dependsOn(remapJar) } }
 
@@ -34,4 +29,9 @@ System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
         versionType.set("alpha")
         uploadFile.set(tasks.remapJar.get())
     }
+}
+
+fabricProperty {
+    put("owo", libs.versions.owo)
+    put("modmenu", libs.versions.modmenu)
 }

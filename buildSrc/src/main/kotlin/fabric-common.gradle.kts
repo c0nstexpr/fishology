@@ -1,4 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import juuxel.vineflowerforloom.api.DecompilerBrand
 import kotlinx.datetime.Clock.System.now
 import net.fabricmc.loom.task.ValidateMixinNameTask
@@ -26,8 +25,8 @@ base { archivesName.set(modId) }
 
 val libs = versionCatalog
 
-val minecraftLib = libs.getLib("minecraft")
-val fabricLib = libs.getBundle("fabric")
+val minecraftLib = libs["minecraft"]
+val fabricLib = libs.bundles["fabric"]
 val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
 
 extension.properties.run {
@@ -35,15 +34,12 @@ extension.properties.run {
     put("version", modVersion)
     put("name", modName)
     put("minecraft", minecraftLib.get().version!!)
-    put("fabric", libs.getVersion("fabric"))
+    put("fabric", libs.versions["fabric"])
 }
 
 dependencies {
     minecraft(minecraftLib)
-    // set mapping without full version catalog support
-    // because version catalog has no way to set "v2" classifier
-    // https://github.com/gradle/gradle/issues/17169
-    mappings("net.fabricmc:yarn:${libs.getVersion("yarn")}:v2")
+    mappings(variantOf(libs["yarn"]) { classifier("v2") })
     modImplementation(fabricLib)
 }
 

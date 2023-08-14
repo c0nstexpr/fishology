@@ -23,7 +23,11 @@
   },
   "icon": "assets/${id}/icon.png",
   "depends": {
-    "fishology-core": ">=${version}"
+    "minecraft": "${minecraft}",
+    "fabric": ">=${fabric}",
+    "fabric-language-kotlin": "*",
+    "owo": ">=${owo}",
+    "modmenu": ">=${modmenu}"
   },
   "custom": {
     "modmenu": {

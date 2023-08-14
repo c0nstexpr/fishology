@@ -28,7 +28,7 @@ class Fishology(
 
     private val rod by lazy { Rod(client).apply { enable = true }.scope() }
 
-    private val caughtFish by lazy { CaughtFish(playerUUID).scope() }
+    private val caughtFish by lazy { CaughtFish(playerUUID).apply { enable = true }.scope() }
 
     private val caughtChat by lazy { CaughtChat(client, caughtFish.caught).scope() }
 
@@ -39,12 +39,12 @@ class Fishology(
     init {
         logger.d("Initializing Fishology module")
 
-        logger.mutableConfig.addMCWriter(client)
-        doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }
-
         config.initObserve(ConfigModel::logLevel) { onChangeLogLevel(it) }
         config.initObserve(ConfigModel::enableAutoFish) { onEnableAutoFish(it) }
         config.initObserve(ConfigModel::enableChatOnCaught) { onEnableChatOnCaught(it) }
+
+        logger.mutableConfig.addMCWriter(client)
+        doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }
     }
 
     private fun onChangeLogLevel(it: Severity) {

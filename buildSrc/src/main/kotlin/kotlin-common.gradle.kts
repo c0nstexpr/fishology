@@ -27,7 +27,7 @@ val libs = versionCatalog
 
 tasks {
     compileJava {
-        sourceCompatibility = libs.getVersion("jvm")
+        sourceCompatibility = libs.versions["jvm"]
         targetCompatibility = sourceCompatibility
         options.encoding = Charsets.UTF_8.name()
     }
@@ -36,7 +36,7 @@ tasks {
         kotlinOptions {
             jvmTarget = compileJava.get().targetCompatibility
             allWarningsAsErrors = true
-            languageVersion = libs.getVersion("kotlin")
+            languageVersion = libs.versions["kotlin"]
             apiVersion = languageVersion
         }
     }
@@ -47,9 +47,18 @@ tasks {
 
     shadowJar {
         from("LICENSE")
-        configurations = listOf(shadowApi, shadowImpl)
+        configurations = listOf(shadowApi, shadowImpl).apply {
+            forEach {
+                it.allDependencies.forEach {
+                    val depGroup = it.group
+                    relocate(depGroup, "${project.group}-${project.name}.libs.$depGroup")
+                }
+            }
+        }
+
         archiveClassifier.set("shadow")
         mergeServiceFiles()
+        minimize()
     }
 }
 
