@@ -17,8 +17,7 @@ dependencies {
         libs.plugins.loom,
         libs.plugins.minotaur,
         libs.plugins.spotless,
-        libs.plugins.vineflower,
-        libs.plugins.shadow
+        libs.plugins.vineflower
     ).forEach { provider ->
         val p = provider.get()
         val id = p.pluginId

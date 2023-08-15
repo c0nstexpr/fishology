@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm")
     id("com.diffplug.spotless")
-    id("com.github.johnrengelman.shadow")
 }
 
 val modVersion: String by project
@@ -13,14 +12,6 @@ group = modGroup
 repositories {
     mavenCentral()
     mavenLocal()
-}
-
-val shadowApi by configurations.creating
-val shadowImpl by configurations.creating
-
-configurations {
-    api { extendsFrom(shadowApi) }
-    implementation { extendsFrom(shadowImpl) }
 }
 
 val libs = versionCatalog
@@ -44,22 +35,6 @@ tasks {
     jar { from("LICENSE") }
 
     java { withSourcesJar() }
-
-    shadowJar {
-        from("LICENSE")
-        configurations = listOf(shadowApi, shadowImpl).apply {
-            forEach {
-                it.allDependencies.forEach {
-                    val depGroup = it.group
-                    relocate(depGroup, "${project.group}-${project.name}.libs.$depGroup")
-                }
-            }
-        }
-
-        archiveClassifier.set("shadow")
-        mergeServiceFiles()
-        minimize()
-    }
 }
 
 spotless {

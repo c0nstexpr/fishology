@@ -6,13 +6,10 @@ repositories {
 }
 
 dependencies {
-    modApi(libs.owo)
+    listOf(libs.owo, libs.bundles.fabric).forEach(::modApi)
     annotationProcessor(libs.owo)
-    modRuntimeOnly(libs.modmenu)
-
-    listOf(libs.reaktive, libs.kermit).forEach(::shadowApi)
-}
-
-fabricProperty {
-    put("owo", libs.versions.owo)
+    listOf(libs.bundles.reaktive, libs.bundles.kermit).forEach {
+        api(it)
+        include(it)
+    }
 }

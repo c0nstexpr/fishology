@@ -11,7 +11,6 @@ modmenu = "7.0.1"
 # fabric dependencies
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 yarn = { module = "net.fabricmc:yarn", version.ref = "yarn" }
-fabric-loader = { module = "net.fabricmc:fabric-loader", version = "latest.release" }
 fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric" }
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version = "latest.release" }
 
@@ -20,12 +19,18 @@ owo = { module = "io.wispforest:owo-lib", version.ref = "owo" }
 modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 
 # kotlin library dependencies
-reaktive = { module = "com.badoo.reaktive:reaktive", version = "latest.release" }
+reaktive = { module = "com.badoo.reaktive:reaktive-jvm", version = "latest.release" }
+reaktive-utils = { module = "com.badoo.reaktive:utils-internal-jvm", version = "latest.release" }
+reaktive-annotations = { module = "com.badoo.reaktive:reaktive-annotations-jvm", version = "latest.release" }
 kermit = { module = "co.touchlab:kermit-jvm", version = "latest.release" }
+kermit-core = { module = "co.touchlab:kermit-core-jvm", version = "latest.release" }
 
 [bundles]
-fabric = ["fabric-kotlin", "fabric-api", "fabric-loader"]
+fabric = ["fabric-kotlin", "fabric-api"]
 owo = ["owo", "modmenu"]
+
+reaktive = ["reaktive", "reaktive-utils", "reaktive-annotations"]
+kermit = ["kermit", "kermit-core"]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "latest.release" }
@@ -33,4 +38,3 @@ minotaur = { id = "com.modrinth.minotaur", version = "latest.release" }
 loom = { id = "fabric-loom", version = "latest.release" }
 spotless = { id = "com.diffplug.spotless", version = "latest.release" }
 vineflower = { id = "io.github.juuxel.loom-vineflower", version = "latest.release" }
-shadow = { id = "com.github.johnrengelman.shadow", version = "latest.release" }

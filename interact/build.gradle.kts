@@ -1,37 +1,56 @@
-plugins {
-    `fabric-common`
-}
+plugins { `fabric-common` }
 
 repositories {
     maven("https://maven.wispforest.io")
     maven("https://maven.terraformersmc.com")
 }
 
-val coreProjName = "core"
-val modVersion: String by project
 val modId: String by project
 
 dependencies {
-    clientImplementation(findProject(":${coreProjName}")!!.srcClient.output)
-    include(implementation(project(":${coreProjName}:", "namedElements")) { isTransitive = false })
-
-    modImplementation(libs.owo)
+    project(":core", "namedElements").run {
+        api(this)
+        include(this)
+        clientImplementation(dependencyProject.srcClient.output)
+    }
+    listOf(libs.owo, libs.bundles.fabric).forEach(::modApi)
     modRuntimeOnly(libs.modmenu)
+}
 
-    listOf(libs.reaktive, libs.kermit).forEach(::shadowApi)}
+tasks {
+    this.modrinth { dependsOn(remapJar) }
 
-tasks { this.modrinth { dependsOn(remapJar) } }
+    processResources {
+        doFirst {
+            fabricProperty {
+                put("owo", libs.versions.owo)
+                put("modmenu", libs.versions.modmenu)
+                put("minecraft", libs.versions.minecraft)
+                put("fabric", libs.versions.fabric)
+
+                val fabricKotlin = libs.fabric.kotlin.get()
+                val dep = configurations
+                    .modApi
+                    .get()
+                    .resolvedConfiguration
+                    .firstLevelModuleDependencies
+                    .single {
+                        it.children
+                        it.moduleName == fabricKotlin.name &&
+                                it.moduleGroup == fabricKotlin.group
+                    }
+
+                put("fabricKotlin", dep.moduleVersion)
+            }
+        }
+    }
+}
 
 System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
     modrinth {
         projectId.set(modId)
-        versionNumber.set(modVersion)
+        versionNumber.set(version.toString())
         versionType.set("alpha")
         uploadFile.set(tasks.remapJar.get())
     }
-}
-
-fabricProperty {
-    put("owo", libs.versions.owo)
-    put("modmenu", libs.versions.modmenu)
 }

@@ -33,14 +33,11 @@ extension.properties.run {
     put("id", modId)
     put("version", modVersion)
     put("name", modName)
-    put("minecraft", minecraftLib.get().version!!)
-    put("fabric", libs.versions["fabric"])
 }
 
 dependencies {
-    minecraft(minecraftLib)
-    mappings(variantOf(libs["yarn"]) { classifier("v2") })
-    modImplementation(fabricLib)
+    minecraft(minecraftLib) { isTransitive = false }
+    mappings(variantOf(libs["yarn"]) { classifier("v2") }) { isTransitive = false }
 }
 
 vineflower.brand.set(DecompilerBrand.VINEFLOWER)
@@ -94,12 +91,9 @@ tasks {
 
     build { dependsOn(validateMixinName) }
 
-    shadowJar { from(srcClient.output) }
-
     remapJar {
-        dependsOn(shadowJar)
+        from(srcClient.output)
         archiveClassifier.set("remap")
         addNestedDependencies.set(true)
-        inputFile.set(shadowJar.get().archiveFile)
     }
 }

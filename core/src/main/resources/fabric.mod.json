@@ -3,15 +3,6 @@
   "id": "${id}",
   "version": "${version}",
   "name": "${name}",
-  "description": "Better fish experience",
-  "authors": [
-    "c0nstexpr"
-  ],
-  "contact": {
-    "homepage": "https://github.com/c0nstexpr",
-    "sources": "https://github.com/c0nstexpr/fishology"
-  },
-  "license": "MIT",
   "environment": "client",
   "entrypoints": {
     "client": [
@@ -27,11 +18,5 @@
       "config": "fishology-core.client.mixins.json"
     }
   ],
-  "icon": "assets/${id}/icon.png",
-  "depends": {
-    "minecraft": "${minecraft}",
-    "fabric": ">=${fabric}",
-    "fabric-language-kotlin": "*",
-    "owo": ">=${owo}"
-  }
+  "icon": "assets/${id}/icon.png"
 }
