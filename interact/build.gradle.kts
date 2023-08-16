@@ -8,10 +8,10 @@ repositories {
 val modId: String by project
 
 dependencies {
-    project(":core", "namedElements").run {
-        api(this)
-        include(this)
-        clientImplementation(dependencyProject.srcClient.output)
+    project(":core", "namedElements").let {
+        api(it)
+        include(it)
+        clientImplementation(it.dependencyProject.srcClient.output)
     }
     listOf(libs.owo, libs.bundles.fabric).forEach(::modApi)
     modRuntimeOnly(libs.modmenu)
