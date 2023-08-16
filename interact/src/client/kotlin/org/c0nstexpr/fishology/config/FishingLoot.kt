@@ -50,6 +50,7 @@ enum class FishingLoot(val lootType: FishingLootType) {
             } else {
                 EnchantedFishingRod
             }
+
             is BookItem -> Book
             Items.NAUTILUS_SHELL -> NautilusShell
             Items.COD -> Cod
