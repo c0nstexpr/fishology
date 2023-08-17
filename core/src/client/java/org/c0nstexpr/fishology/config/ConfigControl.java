@@ -1,9 +1,13 @@
 package org.c0nstexpr.fishology.config;
 
-import static org.c0nstexpr.fishology.FishologyCoreKt.getCoreLogger;
+import static org.c0nstexpr.fishology.FishologyCoreKt.*;
+
+import io.wispforest.owo.config.ui.ConfigScreen;
 
 import kotlin.Lazy;
 import kotlin.LazyKt;
+
+import net.minecraft.util.Identifier;
 
 public class ConfigControl {
     public static final Lazy<org.c0nstexpr.fishology.config.Config> config =
@@ -11,5 +15,9 @@ public class ConfigControl {
 
     public static void init() {
         getCoreLogger().d("initialize config %s".formatted(config.getValue()));
+        ConfigScreen.registerProvider(
+                coreModId,
+                screen -> new Screen(new Identifier(coreModId), config.getValue(), screen)
+        );
     }
 }
