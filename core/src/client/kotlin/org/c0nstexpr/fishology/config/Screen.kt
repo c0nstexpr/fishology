@@ -9,13 +9,12 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.util.Identifier
 import java.util.function.Predicate
 import kotlin.reflect.jvm.javaType
-import kotlin.reflect.jvm.kotlinProperty
 
 class Screen(modelId: Identifier?, config: ConfigWrapper<*>?, parent: Screen?) :
     ConfigScreen(modelId, config, parent) {
     init {
         extraFactories[Predicate(::optionPredicate)] = OptionComponentFactory { _, option ->
-            val layout = FishingLootDropdown(option)
+            val layout = FishingLootCollapsible(option)
             Result(layout, layout)
         }
     }

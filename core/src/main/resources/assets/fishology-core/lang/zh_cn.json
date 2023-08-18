@@ -8,5 +8,7 @@
   "text.config.fishology-core.option.logLevel.value.warn": "Warn",
   "text.config.fishology-core.option.logLevel.value.error": "Error",
   "text.config.fishology-core.option.logLevel.value.assert": "Assert",
-  "text.config.fishology-core.option.enableChatOnCaught": "钓到物品时发送聊天消息"
+  "text.config.fishology-core.option.enableChatOnCaught": "钓到物品时发送聊天消息",
+  "text.config.fishology-core.option.enableChatOnCaught.value.EnchantedFishingRod": "附魔钓鱼竿",
+  "text.config.fishology-core.option.enableChatOnCaught.value.Unknown": "其他未知物品"
 }

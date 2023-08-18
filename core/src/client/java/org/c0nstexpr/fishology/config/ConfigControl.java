@@ -17,7 +17,7 @@ public class ConfigControl {
         getCoreLogger().d("initialize config %s".formatted(config.getValue()));
         ConfigScreen.registerProvider(
                 coreModId,
-                screen -> new Screen(new Identifier(coreModId), config.getValue(), screen)
+                screen -> new Screen(new Identifier("owo:config"), config.getValue(), screen)
         );
     }
 }
