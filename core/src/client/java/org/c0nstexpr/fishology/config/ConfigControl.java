@@ -3,10 +3,8 @@ package org.c0nstexpr.fishology.config;
 import static org.c0nstexpr.fishology.FishologyCoreKt.*;
 
 import io.wispforest.owo.config.ui.ConfigScreen;
-
 import kotlin.Lazy;
 import kotlin.LazyKt;
-
 import net.minecraft.util.Identifier;
 
 public class ConfigControl {
@@ -17,7 +15,6 @@ public class ConfigControl {
         getCoreLogger().d("initialize config %s".formatted(config.getValue()));
         ConfigScreen.registerProvider(
                 coreModId,
-                screen -> new Screen(new Identifier("owo:config"), config.getValue(), screen)
-        );
+                screen -> new Screen(new Identifier("owo:config"), config.getValue(), screen));
     }
 }

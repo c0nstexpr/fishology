@@ -20,6 +20,6 @@ class Screen(modelId: Identifier?, config: ConfigWrapper<*>?, parent: Screen?) :
     }
 
     private fun optionPredicate(option: Option<*>) =
-        option.backingField().field.genericType == ConfigModel::enableChatOnCaught
+        option.backingField().field.genericType == ConfigModel::chatOnCaught
             .returnType.javaType
 }

@@ -8,6 +8,7 @@ import net.minecraft.client.network.ClientPlayNetworkHandler
 import org.c0nstexpr.fishology.config.Config
 import org.c0nstexpr.fishology.config.ConfigControl
 import org.c0nstexpr.fishology.config.ConfigModel
+import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.interact.AutoFishing
 import org.c0nstexpr.fishology.interact.CaughtChat
 import org.c0nstexpr.fishology.interact.CaughtFish
@@ -30,7 +31,7 @@ class Fishology(
 
     private val caughtFish by lazy { CaughtFish(playerUUID).apply { enable = true }.scope() }
 
-    private val caughtChat by lazy { CaughtChat(client, caughtFish.caught).scope() }
+    private val caughtChat by lazy { CaughtChat(client, caughtFish.caught).apply { enable = true }.scope() }
 
     private val autoFish by lazy { AutoFishing(rod::use, playerUUID, caughtFish.caught).scope() }
 
@@ -41,10 +42,16 @@ class Fishology(
 
         config.initObserve(ConfigModel::logLevel) { onChangeLogLevel(it) }
         config.initObserve(ConfigModel::enableAutoFish) { onEnableAutoFish(it) }
-        config.initObserve(ConfigModel::enableChatOnCaught) { onEnableChatOnCaught(it) }
+        config.initObserve(ConfigModel::enableChatOnHook) { onEnableChatOnHook(it) }
+        config.initObserve(ConfigModel::chatOnCaught) { onChangeChatOnCaught(it) }
 
         logger.mutableConfig.addMCWriter(client)
         doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }
+    }
+
+    private fun onEnableChatOnHook(it: Boolean) {
+        logger.d("${if (it) "Enable" else "Disable"} chat on hook")
+        hookChatInteraction.enable = it
     }
 
     private fun onChangeLogLevel(it: Severity) {
@@ -57,9 +64,8 @@ class Fishology(
         autoFish.enable = it
     }
 
-    private fun onEnableChatOnCaught(it: Boolean) {
-        logger.d("${if (it) "Enable" else "Disable"} chat on caught")
-        hookChatInteraction.enable = it
-        caughtChat.enable = it
+    private fun onChangeChatOnCaught(it: Set<FishingLoot>) {
+        logger.d("Change chat on caught")
+        caughtChat.lootsFilter = it
     }
 }

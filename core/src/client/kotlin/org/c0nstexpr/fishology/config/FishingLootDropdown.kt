@@ -3,34 +3,31 @@ package org.c0nstexpr.fishology.config
 import io.wispforest.owo.ui.component.DropdownComponent
 import io.wispforest.owo.ui.core.Insets
 import io.wispforest.owo.ui.core.Sizing
-import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.Text
+import org.c0nstexpr.fishology.coreModId
 import java.util.function.Consumer
-import java.util.function.Supplier
+import kotlin.enums.EnumEntries
 
-class FishingLootDropdown(val getTranslationKey: Supplier<String>) :
+class FishingLootDropdown :
     DropdownComponent(Sizing.fill(100)) {
     var valueSet: MutableSet<FishingLoot> = HashSet()
         set(value) {
-            children().mapNotNull { it as? FishingLootCheckBox }
+            entries.children().mapNotNull { it as? FishingLootCheckBox }
                 .forEach { it.mutableState = value.contains(it.loot) }
             field = value
         }
 
-    fun translate(loot: FishingLoot): Text {
-        val key = "${getTranslationKey.get()}.value.${loot.name}"
-        return if (I18n.hasTranslation(key)) Text.translatable(key)
-        else loot.item.name
-    }
-
     init {
         FishingLoot.entries.apply {
-            filter { it.lootType == FishingLootType.Treasure }.forEach(::addValues)
-            divider()
-            filter { it.lootType == FishingLootType.Fish }.forEach(::addValues)
-            divider()
-            filter { it.lootType == FishingLootType.Junk }.forEach(::addValues)
+            addLoots(FishingLootType.Treasure)
+            addLoots(FishingLootType.Fish)
+            addLoots(FishingLootType.Junk)
         }
+    }
+
+    private fun EnumEntries<FishingLoot>.addLoots(lootType: FishingLootType) {
+        text(Text.translatable("$coreModId.${FishingLootType::class.simpleName}.${lootType.name}"))
+        filter { it.lootType == lootType }.forEach(::addValues)
     }
 
     private fun addValues(it: FishingLoot) = entries.child(
@@ -43,16 +40,17 @@ class FishingLootDropdown(val getTranslationKey: Supplier<String>) :
         }.apply {
             loot = it
             margins(Insets.of(2))
-        })
+        },
+    )
 
     companion object {
         private class FishingLootCheckBox(
-            private val dropdown: FishingLootDropdown,
-            onClick: Consumer<Boolean>
+            dropdown: FishingLootDropdown,
+            onClick: Consumer<Boolean>,
         ) : Checkbox(dropdown, Text.empty(), false, onClick) {
             var loot = FishingLoot.Unknown
                 set(value) {
-                    text = dropdown.translate(value)
+                    text = value.translate()
                     field = value
                 }
 

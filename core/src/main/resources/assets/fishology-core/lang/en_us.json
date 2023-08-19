@@ -8,7 +8,11 @@
   "text.config.fishology-core.option.logLevel.value.warn": "Warn",
   "text.config.fishology-core.option.logLevel.value.error": "Error",
   "text.config.fishology-core.option.logLevel.value.assert": "Assert",
-  "text.config.fishology-core.option.enableChatOnCaught": "send chat message on caught",
-  "text.config.fishology-core.option.enableChatOnCaught.value.EnchantedFishingRod": "enchanted fishing rod",
-  "text.config.fishology-core.option.enableChatOnCaught.value.Unknown": "other unknown items"
+  "text.config.fishology-core.option.enableChatOnHook": "send chat message on hooking entity",
+  "text.config.fishology-core.option.chatOnCaught": "send chat message on catching item",
+  "text.config.fishology-core.option.chatOnCaught.value.EnchantedFishingRod": "enchanted fishing rod",
+  "text.config.fishology-core.option.chatOnCaught.value.Unknown": "other unknown items",
+  "fishology-core.FishingLootType.Treasure": "treasure",
+  "fishology-core.FishingLootType.Junk": "junk",
+  "fishology-core.FishingLootType.Fish": "fish"
 }

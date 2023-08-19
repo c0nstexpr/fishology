@@ -8,12 +8,10 @@ import io.wispforest.owo.ui.component.Components
 import io.wispforest.owo.ui.component.LabelComponent
 import io.wispforest.owo.ui.container.CollapsibleContainer
 import io.wispforest.owo.ui.core.Component.FocusSource
-import io.wispforest.owo.ui.core.CursorStyle
 import io.wispforest.owo.ui.core.Insets
 import io.wispforest.owo.ui.core.Positioning
 import io.wispforest.owo.ui.core.Sizing
 import io.wispforest.owo.ui.core.VerticalAlignment
-import io.wispforest.owo.ui.util.UISounds
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.Text
@@ -24,10 +22,17 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
         Sizing.fill(100),
         Sizing.content(),
         Text.translatable(option.translationKey()),
-        option.backingField().field().isAnnotationPresent(Expanded::class.java)
-    ), OptionValueProvider {
-    private val dropdown = FishingLootDropdown(option::translationKey)
-    private val valueSet get() = dropdown.valueSet
+        option.backingField().field().isAnnotationPresent(Expanded::class.java),
+    ),
+    OptionValueProvider {
+    private val dropdown = FishingLootDropdown()
+
+    private var valueSet
+        get() = dropdown.valueSet
+        set(value) {
+            dropdown.valueSet = value
+            resetButton.active = isActive()
+        }
 
     val resetButton: ButtonWidget =
         Components.button(Text.literal("⇄")) {
@@ -36,7 +41,13 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
         }.apply {
             margins(Insets.right(10))
             positioning(Positioning.relative(100, 50))
+            active = isActive()
         }
+
+    private fun isActive() = option.run {
+        !detached() &&
+            defaultValue().run { (count() != valueSet.count()) || containsAll(valueSet) }
+    }
 
     init {
         titleLayout.apply {
@@ -45,13 +56,13 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
             verticalAlignment(VerticalAlignment.CENTER)
             children(
                 listOf(
-                    titleLabel(),
                     resetButton,
                     SearchAnchorComponent(
                         this,
                         option.key(),
-                        { I18n.translate(option.translationKey()) })
-                )
+                        { I18n.translate(option.translationKey()) },
+                    ),
+                ),
             )
         }
 
@@ -62,26 +73,7 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
                 dropdown.valueSet = HashSet<FishingLoot>().apply { addAll(option.value()) }
                 focusHandler()?.focus(dropdown.children().last(), FocusSource.MOUSE_CLICK)
             } else {
-                resetButton.active =
-                    !option.detached() && option.defaultValue().containsAll(valueSet)
-            }
-        }
-    }
-
-    private fun titleLabel(): LabelComponent = Components.label(
-        Text.translatable("text.owo.config.list.add_entry").formatted(Formatting.GRAY)
-    ).configure {
-        it.apply {
-            if (option.detached()) return@apply
-
-            cursorStyle(CursorStyle.HAND)
-
-            mouseEnter().subscribe { setTextColor(Formatting.YELLOW) }
-            mouseLeave().subscribe { setTextColor(Formatting.GRAY) }
-            mouseDown().subscribe { _, _, _ ->
-                UISounds.playInteractionSound()
-                toggleExpansion()
-                true
+                option.set(dropdown.valueSet)
             }
         }
     }

@@ -1,7 +1,7 @@
 package org.c0nstexpr.fishology.config
 
+import net.minecraft.client.resource.language.I18n
 import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.item.BookItem
 import net.minecraft.item.EnchantedBookItem
 import net.minecraft.item.FishingRodItem
 import net.minecraft.item.InkSacItem
@@ -11,6 +11,7 @@ import net.minecraft.item.Items
 import net.minecraft.item.NameTagItem
 import net.minecraft.item.PotionItem
 import net.minecraft.item.SaddleItem
+import net.minecraft.text.Text
 
 enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
     NameTag(FishingLootType.Treasure, Items.NAME_TAG),
@@ -71,6 +72,15 @@ enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
             Items.ROTTEN_FLESH -> RottenFlesh
             Items.BAMBOO -> Bamboo
             else -> Unknown
+        }
+    }
+
+    fun translate(): Text {
+        val key = "text.config.fishology-core.option.chatOnCaught.value.$name"
+        return if (I18n.hasTranslation(key)) {
+            Text.translatable(key)
+        } else {
+            item.name
         }
     }
 }
