@@ -26,8 +26,7 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: 'liberica'
 
-      - name: Setup Gradle
+      - name: Gradle build
         uses: gradle/gradle-build-action@v2
-
-      - name: build
-        run: chmod +x ./gradlew build
+        with:
+          arguments: build
