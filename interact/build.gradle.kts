@@ -52,6 +52,7 @@ tasks {
 System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
     modrinth {
         projectId.set("rjuXQb7H")
+        token.set(it)
         versionNumber.set(version.toString())
         versionType.set("alpha")
         uploadFile.set(tasks.remapJar.get())
