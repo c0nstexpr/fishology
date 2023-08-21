@@ -5,7 +5,7 @@ on:
     branches: [ release ]
 
 jobs:
-  build:
+  build_and_release:
     strategy:
       matrix:
         java: [ 17 ]

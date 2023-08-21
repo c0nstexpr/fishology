@@ -15,7 +15,6 @@ dependencies {
     listOf(
         libs.plugins.kotlin.jvm,
         libs.plugins.loom,
-        libs.plugins.minotaur,
         libs.plugins.spotless,
         libs.plugins.vineflower
     ).forEach { provider ->

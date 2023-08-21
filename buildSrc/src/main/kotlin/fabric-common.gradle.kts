@@ -6,7 +6,6 @@ plugins {
     id("kotlin-common")
     id("fabric-loom")
     id("io.github.juuxel.loom-vineflower")
-    id("com.modrinth.minotaur")
 }
 
 val modVersion: String by project

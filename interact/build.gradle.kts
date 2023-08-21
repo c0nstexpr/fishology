@@ -1,4 +1,7 @@
-plugins { `fabric-common` }
+plugins {
+    `fabric-common`
+    alias(libs.plugins.minotaur)
+}
 
 repositories {
     maven("https://maven.wispforest.io")
@@ -48,9 +51,11 @@ tasks {
 
 System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
     modrinth {
-        projectId.set(modId)
+        projectId.set("rjuXQb7H")
         versionNumber.set(version.toString())
         versionType.set("alpha")
         uploadFile.set(tasks.remapJar.get())
+        loaders.add("fabric")
+        syncBodyFrom.set(rootProject.file("README.md").readText())
     }
 }
