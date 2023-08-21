@@ -26,6 +26,9 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: 'liberica'
 
+      - name: Run chmod to make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Gradle build
         uses: gradle/gradle-build-action@v2
         with:
