@@ -33,7 +33,7 @@ jobs:
         run: ./gradlew build
 
       - name: publish modrinth
-        if: ${{ github.ref_name == 'release' && github.ref_type == 'branch' }}
+        if: ${{ runner.os == 'Linux' && github.ref_name == 'release' && github.ref_type == 'branch' }}
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: ./gradlew modrinth
