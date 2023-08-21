@@ -27,10 +27,15 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: publish modrinth
+      - name: Run chmod to make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Modrinth publish
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-        run: ./gradlew modrinth
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: modrinth
 
       - name: capture build artifacts
         uses: actions/upload-artifact@v3
