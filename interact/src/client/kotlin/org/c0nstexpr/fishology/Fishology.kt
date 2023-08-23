@@ -12,7 +12,7 @@ import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.interact.AutoFishing
 import org.c0nstexpr.fishology.interact.CaughtChat
 import org.c0nstexpr.fishology.interact.CaughtFish
-import org.c0nstexpr.fishology.interact.HookChatInteraction
+import org.c0nstexpr.fishology.interact.HookChat
 import org.c0nstexpr.fishology.interact.Rod
 import org.c0nstexpr.fishology.log.MCMessageWriter
 import org.c0nstexpr.fishology.log.addMCWriter
@@ -35,7 +35,7 @@ class Fishology(
 
     private val autoFish by lazy { AutoFishing(rod::use, playerUUID, caughtFish.caught).scope() }
 
-    private val hookChatInteraction by lazy { HookChatInteraction(client).scope() }
+    private val hookChat by lazy { HookChat(client).scope() }
 
     init {
         logger.d("Initializing Fishology module")
@@ -51,7 +51,7 @@ class Fishology(
 
     private fun onEnableChatOnHook(it: Boolean) {
         logger.d("${if (it) "Enable" else "Disable"} chat on hook")
-        hookChatInteraction.enable = it
+        hookChat.enable = it
     }
 
     private fun onChangeLogLevel(it: Severity) {

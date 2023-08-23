@@ -12,7 +12,7 @@ import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.modId
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 
-class HookChatInteraction(val client: MinecraftClient) : SwitchDisposable() {
+class HookChat(val client: MinecraftClient) : SwitchDisposable() {
     private fun Entity.chat() = client.chat(
         Text.translatable("$modId.hooked_on_chat").append(displayName).string,
         logger,

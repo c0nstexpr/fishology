@@ -12,6 +12,7 @@ import net.minecraft.item.NameTagItem
 import net.minecraft.item.PotionItem
 import net.minecraft.item.SaddleItem
 import net.minecraft.text.Text
+import org.c0nstexpr.fishology.coreModId
 
 enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
     NameTag(FishingLootType.Treasure, Items.NAME_TAG),
@@ -76,7 +77,7 @@ enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
     }
 
     fun translate(): Text {
-        val key = "text.config.fishology-core.option.chatOnCaught.value.$name"
+        val key = "$coreModId.${FishingLoot::class.simpleName}.$name"
         return if (I18n.hasTranslation(key)) {
             Text.translatable(key)
         } else {

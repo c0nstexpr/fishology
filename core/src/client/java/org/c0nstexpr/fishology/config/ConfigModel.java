@@ -14,4 +14,6 @@ public class ConfigModel {
     public boolean enableChatOnHook = true;
 
     public Set<FishingLoot> chatOnCaught = Set.of();
+
+    public Set<FishingLoot> excludedItems = Set.of();
 }

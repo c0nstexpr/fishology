@@ -10,8 +10,9 @@
   "text.config.fishology-core.option.logLevel.value.assert": "Assert",
   "text.config.fishology-core.option.enableChatOnHook": "钩到实体时发送聊天消息",
   "text.config.fishology-core.option.chatOnCaught": "钓上物品时发送聊天消息",
-  "text.config.fishology-core.option.chatOnCaught.value.EnchantedFishingRod": "附魔钓鱼竿",
-  "text.config.fishology-core.option.chatOnCaught.value.Unknown": "其他未知物品",
+  "text.config.fishology-core.option.excludedItems": "扔掉指定的战利品",
+  "fishology-core.FishingLoot.EnchantedFishingRod": "附魔钓鱼竿",
+  "fishology-core.FishingLoot.Unknown": "其他未知物品",
   "fishology-core.FishingLootType.Treasure": "宝藏",
   "fishology-core.FishingLootType.Junk": "垃圾",
   "fishology-core.FishingLootType.Fish": "鱼"
