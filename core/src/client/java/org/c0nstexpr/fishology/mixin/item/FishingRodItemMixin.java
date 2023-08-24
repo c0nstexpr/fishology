@@ -7,6 +7,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.c0nstexpr.fishology.events.UseRodEvent;
+import org.c0nstexpr.fishology.events.UseRodEvent.Arg;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +24,7 @@ abstract class FishingRodItemMixin {
             CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         if (!world.isClient) return;
 
-        UseRodEvent.beforeUseSubject.onNext(new UseRodEvent.Arg(hand, player));
+        UseRodEvent.beforeUseSubject.onNext(new Arg(hand, player));
     }
 
     @Inject(method = "use", at = @At("TAIL"))
@@ -34,6 +35,6 @@ abstract class FishingRodItemMixin {
             CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         if (!world.isClient) return;
 
-        UseRodEvent.afterUseSubject.onNext(new UseRodEvent.Arg(hand, player));
+        UseRodEvent.afterUseSubject.onNext(new Arg(hand, player));
     }
 }

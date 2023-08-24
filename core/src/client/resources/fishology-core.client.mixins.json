@@ -3,8 +3,8 @@
   "package": "org.c0nstexpr.fishology.mixin",
   "client": [
     "entity.projecttile.FishingBobberEntityMixin",
+    "entity.EntityMixin" ,
     "item.FishingRodItemMixin",
-    "entity.EntityMixin",
     "client.network.ClientPlayNetworkHandlerMixin"
   ],
   "injectors": {
