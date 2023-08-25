@@ -5,7 +5,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.utils.getSlotInHand
 
-internal class RodItem(val hand: Hand, val player: PlayerEntity) {
+class RodItem(val hand: Hand, val player: PlayerEntity) {
     val slotIndex = player.inventory.getSlotInHand(hand)
     val stack: ItemStack = player.getStackInHand(hand)
 

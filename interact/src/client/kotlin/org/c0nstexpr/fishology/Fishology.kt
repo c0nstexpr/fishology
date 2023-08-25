@@ -14,6 +14,7 @@ import org.c0nstexpr.fishology.interact.CaughtChat
 import org.c0nstexpr.fishology.interact.CaughtFish
 import org.c0nstexpr.fishology.interact.HookChat
 import org.c0nstexpr.fishology.interact.Rod
+import org.c0nstexpr.fishology.interact.ThrowLoot
 import org.c0nstexpr.fishology.log.MCMessageWriter
 import org.c0nstexpr.fishology.log.addMCWriter
 import org.c0nstexpr.fishology.log.removeWriterWhere
@@ -31,11 +32,17 @@ class Fishology(
 
     private val caughtFish by lazy { CaughtFish(playerUUID).apply { enable = true }.scope() }
 
-    private val caughtChat by lazy { CaughtChat(client, caughtFish.caught).apply { enable = true }.scope() }
+    private val caughtChat by lazy {
+        CaughtChat(client, caughtFish.caught).apply { enable = true }.scope()
+    }
 
     private val autoFish by lazy { AutoFishing(rod::use, playerUUID, caughtFish.caught).scope() }
 
     private val hookChat by lazy { HookChat(client).scope() }
+
+    private val throwLoot by lazy {
+        ThrowLoot(playerUUID, caughtFish.caught).apply { enable = true }.scope()
+    }
 
     init {
         logger.d("Initializing Fishology module")
@@ -44,9 +51,15 @@ class Fishology(
         config.initObserve(ConfigModel::enableAutoFish) { onEnableAutoFish(it) }
         config.initObserve(ConfigModel::enableChatOnHook) { onEnableChatOnHook(it) }
         config.initObserve(ConfigModel::chatOnCaught) { onChangeChatOnCaught(it) }
+        config.initObserve(ConfigModel::excludedLoots) { onExcludedLoots(it) }
 
         logger.mutableConfig.addMCWriter(client)
         doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }
+    }
+
+    private fun onExcludedLoots(it: Set<FishingLoot>) {
+        logger.d("Change excluded loots")
+        throwLoot.lootsFilter = it
     }
 
     private fun onEnableChatOnHook(it: Boolean) {

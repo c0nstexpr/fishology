@@ -17,7 +17,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
 class CaughtFish(private val id: UUID) : SwitchDisposable() {
-    var bobber: FishingBobberEntity? = null
+    var bobber = null as FishingBobberEntity?
         private set
 
     private val caughtSubject = PublishSubject<ItemEntity>()
