@@ -49,7 +49,3 @@ inline val Project.sourceSets get() = extensions.getByType<SourceSetContainer>()
 inline val Project.srcClient: SourceSet get() = sourceSets["client"]
 
 inline val Project.srcMain: SourceSet get() = sourceSets["main"]
-
-inline val Project.srcTestModServer: SourceSet get() = srcMain
-
-inline val Project.srcTestModClient: SourceSet get() = sourceSets["testModClient"]

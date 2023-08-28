@@ -10,7 +10,7 @@
   "text.config.fishology-core.option.logLevel.value.assert": "Assert",
   "text.config.fishology-core.option.enableChatOnHook": "send chat message on hooking entity",
   "text.config.fishology-core.option.chatOnCaught": "send chat message on catching item",
-  "text.config.fishology-core.option.excludedItems": "throw out loot items",
+  "text.config.fishology-core.option.discardLoots": "throw out loot items",
   "fishology-core.FishingLoot.EnchantedFishingRod": "enchanted fishing rod",
   "fishology-core.FishingLoot.Unknown": "other unknown items",
   "fishology-core.FishingLootType.Treasure": "treasure",

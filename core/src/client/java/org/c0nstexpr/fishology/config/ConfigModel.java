@@ -15,5 +15,5 @@ public class ConfigModel {
 
     public Set<FishingLoot> chatOnCaught = Set.of();
 
-    public Set<FishingLoot> excludedLoots = Set.of();
+    public Set<FishingLoot> discardLoots = Set.of();
 }

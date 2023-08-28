@@ -3,8 +3,10 @@ package org.c0nstexpr.fishology
 import co.touchlab.kermit.Severity
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.disposable.scope.doOnDispose
+import com.badoo.reaktive.observable.mapNotNull
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayNetworkHandler
+import net.minecraft.client.network.ClientPlayerEntity
 import org.c0nstexpr.fishology.config.Config
 import org.c0nstexpr.fishology.config.ConfigControl
 import org.c0nstexpr.fishology.config.ConfigModel
@@ -41,7 +43,16 @@ class Fishology(
     private val hookChat by lazy { HookChat(client).scope() }
 
     private val throwLoot by lazy {
-        ThrowLoot(playerUUID, caughtFish.caught).apply { enable = true }.scope()
+        ThrowLoot(
+            caughtFish.run {
+                caught.mapNotNull {
+                    (bobber?.playerOwner as? ClientPlayerEntity)?.let { p -> Pair(p, it) }
+                }
+            },
+        ).apply {
+            enable = true
+        }
+            .scope()
     }
 
     init {
@@ -51,7 +62,7 @@ class Fishology(
         config.initObserve(ConfigModel::enableAutoFish) { onEnableAutoFish(it) }
         config.initObserve(ConfigModel::enableChatOnHook) { onEnableChatOnHook(it) }
         config.initObserve(ConfigModel::chatOnCaught) { onChangeChatOnCaught(it) }
-        config.initObserve(ConfigModel::excludedLoots) { onExcludedLoots(it) }
+        config.initObserve(ConfigModel::discardLoots) { onExcludedLoots(it) }
 
         logger.mutableConfig.addMCWriter(client)
         doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }

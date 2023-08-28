@@ -16,7 +16,6 @@ println("configuring $modId fabric mod project")
 
 repositories {
     mavenCentral()
-
     maven("https://maven.fabricmc.net/")
 }
 
@@ -37,6 +36,7 @@ extension.properties.run {
 dependencies {
     minecraft(minecraftLib) { isTransitive = false }
     mappings(variantOf(libs["yarn"]) { classifier("v2") }) { isTransitive = false }
+    modApi(libs["fabric-loader"])
 }
 
 vineflower.brand.set(DecompilerBrand.VINEFLOWER)
@@ -44,16 +44,9 @@ vineflower.brand.set(DecompilerBrand.VINEFLOWER)
 loom {
     splitEnvironmentSourceSets()
 
-    mods.register(name) {
+    mods.create(name) {
         sourceSet(srcMain)
         sourceSet(srcClient)
-    }
-}
-
-sourceSets {
-    register("testModClient") {
-        compileClasspath += srcMain.compileClasspath + srcClient.compileClasspath
-        runtimeClasspath += srcMain.runtimeClasspath + srcClient.runtimeClasspath
     }
 }
 
@@ -63,14 +56,12 @@ loom {
         //     isIdeConfigGenerated = true
         //     server()
         //     configName = "$modName Server"
-        //     source(srcTestModServer)
         // }
 
         named("client") {
             isIdeConfigGenerated = true
             client()
             configName = "$modName Client"
-            source(srcTestModClient)
         }
     }
 

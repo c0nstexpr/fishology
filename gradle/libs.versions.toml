@@ -11,6 +11,7 @@ modmenu = "7.0.1"
 # fabric dependencies
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 yarn = { module = "net.fabricmc:yarn", version.ref = "yarn" }
+fabric-loader = { module = "net.fabricmc:fabric-loader",  version = "latest.release" }
 fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric" }
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version = "latest.release" }
 
