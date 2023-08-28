@@ -18,28 +18,32 @@ class ThrowLoot(
 ) : SwitchDisposable() {
     override fun onEnable() = disposableScope {
         var player = null as ClientPlayerEntity?
-        var item = null as ItemEntity?
+        var caughtStack = null as ItemStack?
 
         caughtItem.filter { lootsFilter.contains(it.second.stack.getLoot()) }
             .subscribeScoped {
                 player = it.first
-                item = it.second
+                caughtStack = it.second.stack.copy()
             }
 
         SlotUpdateEvent.observable.filter {
-            val stack = item?.stack
-            if (stack == null) {
+            if (caughtStack == null) {
                 false
             } else {
-                ItemStack.areEqual(it.stack, stack)
+                ItemStack.areEqual(it.stack, caughtStack)
             }
         }
             .subscribeScoped {
                 player?.run {
                     logger.d("detected excluded loots")
-
                     dropItem(it.stack, false, true)
-                    playerScreenHandler.slots[it.slot].markDirty()
+                    playerScreenHandler.getSlot(it.slot)
+                        .run {
+                            stack = ItemStack.EMPTY
+                            markDirty()
+                        }
+
+                    caughtStack = ItemStack.EMPTY
                 }
             }
     }
