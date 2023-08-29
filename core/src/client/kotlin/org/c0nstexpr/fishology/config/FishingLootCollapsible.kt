@@ -25,17 +25,18 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
         option.backingField().field().isAnnotationPresent(Expanded::class.java),
     ),
     OptionValueProvider {
-    private val dropdown = FishingLootDropdown()
+    private val dropdown = FishingLootDropdown().apply { valueSet.addAll(option.value()) }
 
-    private var valueSet
+    private var valueSet: Set<FishingLoot>
         get() = dropdown.valueSet
         set(value) {
-            dropdown.valueSet = value
+            dropdown.valueSet.clear()
+            dropdown.valueSet.addAll(value)
             resetButton.active = isActive()
         }
 
     val resetButton: ButtonWidget =
-        Components.button(Text.literal("⇄")) {
+        Components.button(Text.of("⇄")) {
             dropdown.valueSet = HashSet<FishingLoot>().apply { addAll(option.defaultValue()) }
             it.active = false
         }.apply {
@@ -45,8 +46,7 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
         }
 
     private fun isActive() = option.run {
-        !detached() &&
-            defaultValue().run { (count() != valueSet.count()) || containsAll(valueSet) }
+        !detached() && defaultValue().run { (count() != valueSet.count()) || containsAll(valueSet) }
     }
 
     init {

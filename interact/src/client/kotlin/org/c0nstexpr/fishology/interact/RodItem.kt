@@ -1,6 +1,5 @@
 package org.c0nstexpr.fishology.interact
 
-import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Hand

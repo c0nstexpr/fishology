@@ -1,22 +1,13 @@
 package org.c0nstexpr.fishology.interact
 
-import com.badoo.reaktive.disposable.SerialDisposable
 import com.badoo.reaktive.disposable.scope.disposableScope
-import com.badoo.reaktive.maybe.subscribe
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.observable.delay
 import com.badoo.reaktive.observable.filter
-import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.merge
-import com.badoo.reaktive.observable.observableOfEmpty
-import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMap
-import com.badoo.reaktive.observable.toObservable
 import com.badoo.reaktive.scheduler.ioScheduler
 import com.badoo.reaktive.scheduler.submit
-import com.badoo.reaktive.single.toSingle
-import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -33,7 +24,7 @@ class AutoFishing(
 ) : SwitchDisposable() {
     override fun onEnable() = disposableScope {
         var player = null as PlayerEntity?
-        val performanceSub = PublishSubject<Boolean>()
+        var recast: Boolean
 
         fun Entity?.isLower(itemY: Double): Boolean {
             val y = this?.pos?.y ?: return false
@@ -51,7 +42,7 @@ class AutoFishing(
             .subscribeScoped {
                 logger.d("recast rod")
                 rod.use()
-                performanceSub.onNext(false)
+                recast = true
             }
 
         CaughtFishEvent.observable.filter {
@@ -61,14 +52,13 @@ class AutoFishing(
                 logger.d("retrieve rod")
                 rod.use()
                 player = it.bobber.playerOwner
+                recast = false
 
                 ioScheduler.submit(3.seconds) {
-                    performanceSub.onNext(true)
+                    if (!recast) {
+                        logger.w("Recast action has taken longer than 3 seconds")
+                    }
                 }
             }
-
-        performanceSub.filter { it }.subscribeScoped {
-            logger.w("Recast action has taken longer than 3 seconds")
-        }
     }
 }

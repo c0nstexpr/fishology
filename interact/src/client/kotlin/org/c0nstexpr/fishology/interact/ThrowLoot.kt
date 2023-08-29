@@ -1,8 +1,6 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.disposable.scope.DisposableScope
-import com.badoo.reaktive.disposable.scope.disposableScope
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.map

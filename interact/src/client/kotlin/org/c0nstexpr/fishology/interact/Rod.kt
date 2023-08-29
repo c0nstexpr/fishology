@@ -4,7 +4,6 @@ import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.subscribe
-import com.badoo.reaktive.subject.behavior.BehaviorObservable
 import com.badoo.reaktive.subject.behavior.BehaviorSubject
 import net.minecraft.client.MinecraftClient
 import org.c0nstexpr.fishology.events.UseRodEvent
@@ -20,9 +19,10 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
     val rodItem
         get() = itemSubject.value?.run {
             if (equals(RodItem(hand, player))) {
-                logger.d("rod status not match")
                 return@run this
             }
+
+            logger.d("rod status not match")
             null
         }
 
@@ -35,7 +35,7 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
         return UseRodEvent.beforeUseObservable.filter { it.player.uuid == client.player?.uuid }
             .subscribe {
                 logger.d("detected rod use, saving rod status")
-                itemSubject.onNext(it.let { RodItem(it.hand, it.player) })
+                itemSubject.onNext(RodItem(it.hand, it.player))
             }
     }
 
