@@ -40,7 +40,7 @@ class ThrowLoot(
                 rod.run {
                     logger.d("detected excluded loots")
 
-                    val p = bobber?.playerOwner as? ClientPlayerEntity ?: return@subscribe
+                    val p = player as? ClientPlayerEntity ?: return@subscribe
 
                     if (rodItem?.slotIndex == p.inventory.selectedSlot) {
                         logger.d("rod is selected, aborting")
