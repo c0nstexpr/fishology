@@ -3,9 +3,10 @@ package org.c0nstexpr.fishology.events
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
+import net.minecraft.entity.projectile.FishingBobberEntity
 
-class ItemEntityFallingEvent private constructor() {
-    data class Arg(val entity: ItemEntity)
+class BobberHitItemEvent private constructor() {
+    data class Arg(val bobber: FishingBobberEntity, val item: ItemEntity)
 
     companion object {
         @JvmField

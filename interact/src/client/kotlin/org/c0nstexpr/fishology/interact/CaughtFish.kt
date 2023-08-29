@@ -1,7 +1,9 @@
 package org.c0nstexpr.fishology.interact
 
+import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.disposable.scope.disposableScope
 import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.observable.debounce
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.subject.publish.PublishSubject
@@ -17,10 +19,7 @@ import java.util.*
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
-class CaughtFish(private val id: UUID) : SwitchDisposable() {
-    var bobber = null as FishingBobberEntity?
-        private set
-
+class CaughtFish(private val rod: Rod) : SwitchDisposable() {
     private val caughtSubject = PublishSubject<ItemEntity>()
 
     val caught: Observable<ItemEntity> = caughtSubject
@@ -28,17 +27,17 @@ class CaughtFish(private val id: UUID) : SwitchDisposable() {
     var caughtItemId: UUID = UUID.randomUUID()
         private set
 
-    override fun onEnable() = disposableScope {
-        BobberOwnedEvent.observable.filter { id == it.player.uuid }
-            .subscribeScoped { bobber = it.bobber }
-
-        ItemEntityVelPacketEvent.observable.map { it.entity }
-            .filter { it.isCaughtItem() }
-            .subscribeScoped {
-                logger.d("Caught item: ${it.displayName}")
-                caughtSubject.onNext(it)
-                caughtItemId = it.uuid
-            }
+    override fun onEnable(): DisposableScope {
+        logger.d("enable caught fish interaction")
+        return disposableScope {
+            ItemEntityVelPacketEvent.observable.map { it.entity }
+                .filter { it.isCaughtItem() }
+                .subscribeScoped {
+                    logger.d("Caught item: ${it.displayName}")
+                    caughtSubject.onNext(it)
+                    caughtItemId = it.uuid
+                }
+        }
     }
 
     private fun Entity.isCaughtItem(): Boolean {
@@ -46,7 +45,7 @@ class CaughtFish(private val id: UUID) : SwitchDisposable() {
 
         logger.d("check caught item is near bobber")
 
-        val bobber = bobber ?: return false
+        val bobber = rod.bobber ?: return false
         if (
             nearBobber(bobber, Vec3d::x, Entity::prevX) &&
             nearBobber(bobber, Vec3d::y, Entity::prevY) &&

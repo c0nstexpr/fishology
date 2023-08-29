@@ -4,8 +4,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.c0nstexpr.fishology.events.ItemEntityFallingEvent;
-import org.c0nstexpr.fishology.events.ItemEntityRemovedEvent;
+import org.c0nstexpr.fishology.events.ItemEntityRmovEvent;
+import org.c0nstexpr.fishology.events.ItemEntityVelEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,15 +21,15 @@ abstract class EntityMixin {
     private void setVelocity(Vec3d vec3d, CallbackInfo ci) {
         final var entity = (Entity) (Object) this;
 
-        if (!(world.isClient && entity instanceof ItemEntity item && vec3d.y < 0)) return;
+        if (!(world.isClient && entity instanceof ItemEntity item)) return;
 
-        ItemEntityFallingEvent.subject.onNext(new ItemEntityFallingEvent.Arg(item));
+        ItemEntityVelEvent.subject.onNext(new ItemEntityVelEvent.Arg(item));
     }
 
     @Inject(method = "onRemoved", at = @At("TAIL"))
     private void onRemoved(CallbackInfo ci) {
         if (!(world.isClient && (Entity) (Object) this instanceof ItemEntity item)) return;
 
-        ItemEntityRemovedEvent.subject.onNext(new ItemEntityRemovedEvent.Arg(item));
+        ItemEntityRmovEvent.subject.onNext(new ItemEntityRmovEvent.Arg(item));
     }
 }

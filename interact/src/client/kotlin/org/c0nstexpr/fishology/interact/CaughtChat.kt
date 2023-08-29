@@ -1,5 +1,6 @@
 package org.c0nstexpr.fishology.interact
 
+import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.map
@@ -42,8 +43,10 @@ class CaughtChat(
         client.chat(txt.string, logger)
     }
 
-    override fun onEnable() =
-        caught.map { Pair(it.stack, it.stack.getLoot()) }
+    override fun onEnable(): Disposable {
+        logger.d("enable caught chat interaction")
+        return caught.map { Pair(it.stack, it.stack.getLoot()) }
             .filter { lootsFilter.contains(it.second) }
             .subscribe { onCaughtChat(it.first, it.second.translate()) }
+    }
 }

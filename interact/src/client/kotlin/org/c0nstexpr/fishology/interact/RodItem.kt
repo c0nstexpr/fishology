@@ -1,11 +1,12 @@
 package org.c0nstexpr.fishology.interact
 
+import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.utils.getSlotInHand
 
-class RodItem(val hand: Hand, val player: PlayerEntity) {
+data class RodItem(val hand: Hand, val player: PlayerEntity) {
     val slotIndex = player.inventory.getSlotInHand(hand)
     val stack: ItemStack = player.getStackInHand(hand)
 

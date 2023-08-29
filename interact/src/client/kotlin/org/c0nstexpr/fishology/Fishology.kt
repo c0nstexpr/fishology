@@ -32,28 +32,17 @@ class Fishology(
 
     private val rod by lazy { Rod(client).apply { enable = true }.scope() }
 
-    private val caughtFish by lazy { CaughtFish(playerUUID).apply { enable = true }.scope() }
+    private val caughtFish by lazy { CaughtFish(rod).apply { enable = true }.scope() }
 
     private val caughtChat by lazy {
         CaughtChat(client, caughtFish.caught).apply { enable = true }.scope()
     }
 
-    private val autoFish by lazy { AutoFishing(rod::use, playerUUID, caughtFish.caught).scope() }
+    private val autoFish by lazy { AutoFishing(rod, caughtFish.caught).scope() }
 
     private val hookChat by lazy { HookChat(client).scope() }
 
-    private val throwLoot by lazy {
-        ThrowLoot(
-            caughtFish.run {
-                caught.mapNotNull {
-                    (bobber?.playerOwner as? ClientPlayerEntity)?.let { p -> Pair(p, it) }
-                }
-            },
-        ).apply {
-            enable = true
-        }
-            .scope()
-    }
+    private val throwLoot by lazy { ThrowLoot(rod, caughtFish.caught).apply { enable = true }.scope() }
 
     init {
         logger.d("Initializing Fishology module")

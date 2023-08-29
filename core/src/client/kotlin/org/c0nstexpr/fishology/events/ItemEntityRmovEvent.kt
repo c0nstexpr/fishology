@@ -4,7 +4,7 @@ import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
 
-class ItemEntityRemovedEvent private constructor() {
+class ItemEntityRmovEvent private constructor() {
     data class Arg(val entity: ItemEntity)
 
     companion object {

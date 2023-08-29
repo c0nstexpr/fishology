@@ -5,26 +5,20 @@ import co.touchlab.kermit.Message
 import co.touchlab.kermit.Severity
 import co.touchlab.kermit.Tag
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.hud.ChatHud
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.text.TextColor
+import org.c0nstexpr.fishology.msg
 
 class MCMessageWriter(
     var client: MinecraftClient,
     val levelColor: MutableMap<Severity, TextColor> = mutableMapOf(),
 ) : LogWriter() {
-    val hud: ChatHud get() = client.inGameHud.chatHud
-
     override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
-        hud.addMessage(
-            Text.literal(
-                AttributionFormatter.formatMessage(severity, Tag(tag), Message(message)),
-            )
+        client.msg(
+            Text.literal(AttributionFormatter.formatMessage(severity, Tag(tag), Message(message)))
                 .setStyle(
-                    Style.EMPTY.withColor(
-                        levelColor[severity] ?: defaultColor(severity),
-                    ),
+                    Style.EMPTY.withColor(levelColor[severity] ?: defaultColor(severity)),
                 ),
         )
     }

@@ -1,5 +1,6 @@
 package org.c0nstexpr.fishology.interact
 
+import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.subscribe
@@ -18,9 +19,12 @@ class HookChat(val client: MinecraftClient) : SwitchDisposable() {
         logger,
     )
 
-    override fun onEnable() = HookedEvent.observable.filter {
-        client.player?.run { it.bobber.owner?.uuid == uuid } ?: false
+    override fun onEnable(): Disposable {
+        logger.d("enable hook chat interaction")
+        return HookedEvent.observable.filter {
+            client.player?.run { it.bobber.owner?.uuid == uuid } ?: false
+        }
+            .map { it.hook }
+            .subscribe { it.chat() }
     }
-        .map { it.hook }
-        .subscribe { it.chat() }
 }

@@ -6,10 +6,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.Hand
 
 class UseRodEvent private constructor() {
-    data class Arg(
-        val hand: Hand,
-        val player: PlayerEntity,
-    )
+    data class Arg(val hand: Hand, val player: PlayerEntity)
 
     companion object {
         @JvmField

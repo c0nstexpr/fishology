@@ -3,5 +3,6 @@
   "fishology.hooked_on_chat": "I hook a ",
   "fishology.left_brace": "(",
   "fishology.right_brace": ")",
-  "fishology.comma": ","
+  "fishology.comma": ",",
+  "fishology.excluded_loots_notification": "Rod is selected, excluded loots feature will not be working"
 }
