@@ -10,7 +10,6 @@ import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.subscribe
-import com.badoo.reaktive.observable.switchMap
 import com.badoo.reaktive.observable.switchMapMaybe
 import net.minecraft.entity.ItemEntity
 import net.minecraft.item.ItemStack

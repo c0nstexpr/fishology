@@ -3,7 +3,6 @@ package org.c0nstexpr.fishology
 import co.touchlab.kermit.Severity
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.disposable.scope.doOnDispose
-import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.notNull
 import net.minecraft.client.MinecraftClient
 import org.c0nstexpr.fishology.config.Config

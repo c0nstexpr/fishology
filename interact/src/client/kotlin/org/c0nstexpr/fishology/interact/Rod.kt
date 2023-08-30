@@ -16,7 +16,7 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
 
     val itemObservable: Observable<RodItem?> = itemSubject
 
-    val rodItem get() = itemSubject.value?.takeIf { equals(RodItem(it.hand, it.player)) }
+    val rodItem get() = itemSubject.value?.takeIf { it == RodItem(it.hand, it.player) }
 
     val player get() = client.player
 
