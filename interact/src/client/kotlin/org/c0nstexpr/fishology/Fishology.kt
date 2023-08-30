@@ -3,8 +3,9 @@ package org.c0nstexpr.fishology
 import co.touchlab.kermit.Severity
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.disposable.scope.doOnDispose
+import com.badoo.reaktive.observable.mapNotNull
+import com.badoo.reaktive.observable.notNull
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.network.ClientPlayNetworkHandler
 import org.c0nstexpr.fishology.config.Config
 import org.c0nstexpr.fishology.config.ConfigControl
 import org.c0nstexpr.fishology.config.ConfigModel
@@ -12,35 +13,34 @@ import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.interact.AutoFishing
 import org.c0nstexpr.fishology.interact.CaughtChat
 import org.c0nstexpr.fishology.interact.CaughtFish
+import org.c0nstexpr.fishology.interact.DiscardLoot
 import org.c0nstexpr.fishology.interact.HookChat
 import org.c0nstexpr.fishology.interact.Rod
-import org.c0nstexpr.fishology.interact.ThrowLoot
 import org.c0nstexpr.fishology.log.MCMessageWriter
 import org.c0nstexpr.fishology.log.addMCWriter
 import org.c0nstexpr.fishology.log.removeWriterWhere
 import org.c0nstexpr.fishology.utils.initObserve
 
-class Fishology(
-    val client: MinecraftClient,
-    var handler: ClientPlayNetworkHandler,
-) : DisposableScope by DisposableScope() {
+class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScope() {
     val config: Config by ConfigControl.config
 
-    private val playerUUID = handler.profile.id
+    private val playerUUID = client.networkHandler!!.profile.id
 
     private val rod by lazy { Rod(client).apply { enable = true }.scope() }
 
     private val caughtFish by lazy { CaughtFish(rod).apply { enable = true }.scope() }
 
-    private val caughtChat by lazy {
-        CaughtChat(client, caughtFish.caught).apply { enable = true }.scope()
-    }
-
     private val autoFish by lazy { AutoFishing(rod, caughtFish.caught).scope() }
 
     private val hookChat by lazy { HookChat(client).scope() }
 
-    private val throwLoot by lazy { ThrowLoot(rod, caughtFish.caught).apply { enable = true }.scope() }
+    private val caughtChat by lazy {
+        CaughtChat(client, caughtFish.caught.notNull()).apply { enable = true }.scope()
+    }
+
+    private val discardLoot by lazy {
+        DiscardLoot(rod, caughtFish.caught.notNull()).apply { enable = true }.scope()
+    }
 
     init {
         logger.d("Initializing Fishology module")
@@ -49,15 +49,15 @@ class Fishology(
         config.initObserve(ConfigModel::enableAutoFish) { onEnableAutoFish(it) }
         config.initObserve(ConfigModel::enableChatOnHook) { onEnableChatOnHook(it) }
         config.initObserve(ConfigModel::chatOnCaught) { onChangeChatOnCaught(it) }
-        config.initObserve(ConfigModel::discardLoots) { onExcludedLoots(it) }
+        config.initObserve(ConfigModel::discardLoots) { onChangeDiscardLoots(it) }
 
         logger.mutableConfig.addMCWriter(client)
         doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }
     }
 
-    private fun onExcludedLoots(it: Set<FishingLoot>) {
+    private fun onChangeDiscardLoots(it: Set<FishingLoot>) {
         logger.d("Change excluded loots")
-        throwLoot.lootsFilter = it
+        discardLoot.lootsFilter = it
     }
 
     private fun onEnableChatOnHook(it: Boolean) {

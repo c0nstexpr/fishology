@@ -14,19 +14,11 @@ import org.c0nstexpr.fishology.utils.interactItem
 class Rod(val client: MinecraftClient) : SwitchDisposable() {
     private val itemSubject = BehaviorSubject(null as RodItem?)
 
-    val item: Observable<RodItem?> = itemSubject
+    val itemObservable: Observable<RodItem?> = itemSubject
 
-    val rodItem
-        get() = itemSubject.value?.run {
-            if (equals(RodItem(hand, player))) {
-                return@run this
-            }
+    val rodItem get() = itemSubject.value?.takeIf { equals(RodItem(it.hand, it.player)) }
 
-            logger.d("rod status not match")
-            null
-        }
-
-    val player get() = rodItem?.player
+    val player get() = client.player
 
     val bobber get() = player?.fishHook
 

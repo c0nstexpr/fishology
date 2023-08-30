@@ -2,6 +2,7 @@ package org.c0nstexpr.fishology.utils
 
 import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.item.ItemStack
 import net.minecraft.util.Hand
 
 fun PlayerInventory.getSlotInHand(hand: Hand) = when (hand) {
@@ -11,3 +12,7 @@ fun PlayerInventory.getSlotInHand(hand: Hand) = when (hand) {
 
 fun MinecraftClient.interactItem(hand: Hand) =
     this.interactionManager?.interactItem(player, hand)
+
+fun ItemStack.isSame(other: ItemStack?): Boolean {
+    return ItemStack.areEqual(this, other ?: return false)
+}

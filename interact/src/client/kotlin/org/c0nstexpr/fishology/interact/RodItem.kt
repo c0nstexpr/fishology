@@ -4,6 +4,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.utils.getSlotInHand
+import org.c0nstexpr.fishology.utils.isSame
 
 data class RodItem(val hand: Hand, val player: PlayerEntity) {
     val slotIndex = player.inventory.getSlotInHand(hand)
@@ -13,7 +14,7 @@ data class RodItem(val hand: Hand, val player: PlayerEntity) {
         hand == other.hand &&
         player.uuid == other.player.uuid &&
         slotIndex == other.slotIndex &&
-        ItemStack.areEqual(stack, other.stack)
+        stack.isSame(other.stack)
 
     override fun hashCode(): Int {
         var result = hand.hashCode()

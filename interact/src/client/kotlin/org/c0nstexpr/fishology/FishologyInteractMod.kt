@@ -15,8 +15,8 @@ var fishology: Fishology? = null
 internal fun init() {
     logger.greeting()
 
-    ClientPlayConnectionEvents.JOIN.register { handler, _, client ->
-        if (fishology?.isDisposed != false) fishology = Fishology(client, handler)
+    ClientPlayConnectionEvents.JOIN.register { _, _, client ->
+        if (fishology?.isDisposed != false) fishology = Fishology(client)
 
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
             fishology?.dispose()

@@ -1,16 +1,17 @@
 package org.c0nstexpr.fishology.interact
 
-import com.badoo.reaktive.disposable.scope.disposableScope
+import com.badoo.reaktive.base.exceptions.TimeoutException
 import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.observable.doOnAfterSubscribe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.merge
+import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMap
+import com.badoo.reaktive.observable.timeout
 import com.badoo.reaktive.scheduler.ioScheduler
-import com.badoo.reaktive.scheduler.submit
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ItemEntity
-import net.minecraft.entity.player.PlayerEntity
 import org.c0nstexpr.fishology.events.CaughtFishEvent
 import org.c0nstexpr.fishology.events.ItemEntityRmovEvent
 import org.c0nstexpr.fishology.events.ItemEntityVelEvent
@@ -20,45 +21,51 @@ import kotlin.time.Duration.Companion.seconds
 
 class AutoFishing(
     private val rod: Rod,
-    private val caughtItem: Observable<ItemEntity>,
+    private val caughtItem: Observable<ItemEntity?>,
 ) : SwitchDisposable() {
-    override fun onEnable() = disposableScope {
-        var player = null as PlayerEntity?
-        var recast: Boolean
+    private val player get() = rod.player
 
-        fun Entity?.isLower(itemY: Double): Boolean {
-            val y = this?.pos?.y ?: return false
-            return y - itemY >= 0.01
+    override fun onEnable() = CaughtFishEvent.observable.filter { it.caught }
+        .map { it.bobber }
+        .filter { player?.uuid == it.playerOwner?.uuid }
+        .switchMap { onCaughtFish() }
+        .subscribe(onError = ::onError) {
+            logger.d("recast rod")
+            rod.use()
         }
 
-        caughtItem.switchMap { item ->
-            val itemId = item.id
-            merge(
-                ItemEntityVelEvent.observable.map { it.entity }
-                    .filter { it.run { id == itemId && velocity.y <= 0.0 && player.isLower(pos.y) } },
-                ItemEntityRmovEvent.observable.map { it.entity }.filter { it.id == itemId },
-            )
+    private fun onError(it: Throwable) {
+        if (it !is TimeoutException) {
+            logger.e(it.localizedMessage)
+            return
         }
-            .subscribeScoped {
-                logger.d("recast rod")
-                rod.use()
-                recast = true
-            }
 
-        CaughtFishEvent.observable.filter {
-            it.run { (rod.rodItem?.player?.uuid == bobber.playerOwner?.uuid) && caught }
+        logger.w("Recast action has taken longer than $timeout")
+    }
+
+    private fun onCaughtFish() = caughtItem.switchMap(::onCaughtItem)
+        .doOnAfterSubscribe {
+            logger.d("retrieve rod")
+            rod.use()
         }
-            .subscribeScoped {
-                logger.d("retrieve rod")
-                rod.use()
-                player = it.bobber.playerOwner
-                recast = false
 
-                ioScheduler.submit(3.seconds) {
-                    if (!recast) {
-                        logger.w("Recast action has taken longer than 3 seconds")
-                    }
-                }
-            }
+    private fun onCaughtItem(item: ItemEntity?): Observable<ItemEntity> {
+        fun isSameItem(it: ItemEntity) = it.id == item.id
+
+        fun Entity?.isHigher(itemY: Double): Boolean {
+            return (this?.pos?.y ?: return false) - itemY >= 0.01
+        }
+
+        return merge(
+            ItemEntityVelEvent.observable.map { it.entity }
+                .filter(::isSameItem)
+                .filter { it.run { velocity.y <= 0.0 && player.isHigher(pos.y) } },
+            ItemEntityRmovEvent.observable.map { it.entity }.filter(::isSameItem),
+        )
+            .timeout(timeout, ioScheduler)
+    }
+
+    companion object {
+        private val timeout = 3.seconds
     }
 }
