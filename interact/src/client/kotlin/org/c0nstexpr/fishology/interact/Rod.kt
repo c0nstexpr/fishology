@@ -16,7 +16,7 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
 
     val itemObservable: Observable<RodItem?> = itemSubject
 
-    val rodItem get() = itemSubject.value?.takeIf { it == RodItem(it.hand, it.player) }
+    val rodItem get() = itemSubject.value?.takeIf { it == RodItem(it.hand, it.player, it.inUse) }
 
     val player get() = client.player
 
@@ -24,10 +24,11 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
 
     override fun onEnable(): Disposable {
         logger.d("enable rod interaction")
-        return UseRodEvent.beforeUseObservable.filter { it.player.uuid == client.player?.uuid }
+        return UseRodEvent.observable.filter { it.player.uuid == client.player?.uuid }
+            .tryOn()
             .subscribe {
                 logger.d("detected rod use, saving rod status")
-                itemSubject.onNext(RodItem(it.hand, it.player))
+                itemSubject.onNext(RodItem(it.hand, it.player, it.isThrow))
             }
     }
 

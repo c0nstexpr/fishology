@@ -1,15 +1,19 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.base.exceptions.TimeoutException
+import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.maybe.Maybe
+import com.badoo.reaktive.maybe.timeout
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.doOnAfterSubscribe
 import com.badoo.reaktive.observable.filter
+import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.merge
 import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMap
-import com.badoo.reaktive.observable.timeout
+import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.scheduler.ioScheduler
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ItemEntity
@@ -23,21 +27,26 @@ class AutoFishing(
     private val rod: Rod,
     private val caughtItem: Observable<ItemEntity?>,
 ) : SwitchDisposable() {
+    override fun onEnable(): Disposable {
+        val onCaughtFish = onCaughtFish()
 
-    override fun onEnable() = caughtItem.filter { it == null }
-        .switchMap { onCaughtFish() }
-        .subscribe(onError = ::onError) {
-            logger.d("recast rod")
-            rod.use()
-        }
+        return caughtItem.filter { it == null }
+            .switchMap { onCaughtFish }
+            .tryOn { _, e -> onRetry(e) }
+            .subscribe {
+                logger.d("recast rod")
+                rod.use()
+            }
+    }
 
-    private fun onCaughtFish() = caughtItem.notNull().switchMap(::onCaughtItem)
+    private fun onCaughtFish() = caughtItem.notNull()
+        .switchMapMaybe(::onCaughtItem)
         .doOnAfterSubscribe {
             logger.d("retrieve rod")
             rod.use()
         }
 
-    private fun onCaughtItem(item: ItemEntity): Observable<ItemEntity> {
+    private fun onCaughtItem(item: ItemEntity): Maybe<ItemEntity> {
         fun isSameItem(it: ItemEntity) = it.id == item.id
 
         fun Entity?.isHigher(itemY: Double): Boolean {
@@ -50,16 +59,18 @@ class AutoFishing(
                 .filter { it.run { velocity.y <= 0.0 && rod.player.isHigher(pos.y) } },
             ItemEntityRmovEvent.observable.map { it.entity }.filter(::isSameItem),
         )
+            .firstOrComplete()
             .timeout(timeout, ioScheduler)
     }
 
-    private fun onError(it: Throwable) {
+    private fun onRetry(it: Throwable): Boolean {
         if (it !is TimeoutException) {
-            logger.e(it.localizedMessage)
-            return
+            return false
         }
 
         logger.w("Recast action has taken longer than $timeout")
+
+        return true
     }
 
     companion object {

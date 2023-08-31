@@ -6,17 +6,12 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.Hand
 
 class UseRodEvent private constructor() {
-    data class Arg(val hand: Hand, val player: PlayerEntity)
+    data class Arg(val hand: Hand, val player: PlayerEntity, val isThrow: Boolean)
 
     companion object {
         @JvmField
-        internal val beforeUseSubject = PublishSubject<Arg>()
+        internal val useSubject = PublishSubject<Arg>()
 
-        val beforeUseObservable: Observable<Arg> = beforeUseSubject
-
-        @JvmField
-        internal val afterUseSubject = PublishSubject<Arg>()
-
-        val afterUseObservable: Observable<Arg> = afterUseSubject
+        val observable: Observable<Arg> = useSubject
     }
 }

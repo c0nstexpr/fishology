@@ -47,6 +47,7 @@ class CaughtChat(
         logger.d("enable caught chat interaction")
         return caught.map { Pair(it.stack, it.stack.getLoot()) }
             .filter { lootsFilter.contains(it.second) }
+            .tryOn()
             .subscribe { onCaughtChat(it.first, it.second.translate()) }
     }
 }

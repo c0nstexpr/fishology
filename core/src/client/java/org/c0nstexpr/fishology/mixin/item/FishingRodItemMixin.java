@@ -1,5 +1,6 @@
 package org.c0nstexpr.fishology.mixin.item;
 
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.FishingRodItem;
 import net.minecraft.item.ItemStack;
@@ -17,24 +18,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(FishingRodItem.class)
 abstract class FishingRodItemMixin {
     @Inject(method = "use", at = @At("HEAD"))
-    private void beforeUse(
+    private void use(
             @NotNull World world,
             PlayerEntity player,
             Hand hand,
             CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        if (!world.isClient) return;
+        if (!(world.isClient && player instanceof ClientPlayerEntity)) return;
 
-        UseRodEvent.beforeUseSubject.onNext(new Arg(hand, player));
-    }
-
-    @Inject(method = "use", at = @At("TAIL"))
-    private void afterUse(
-            @NotNull World world,
-            PlayerEntity player,
-            Hand hand,
-            CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        if (!world.isClient) return;
-
-        UseRodEvent.afterUseSubject.onNext(new Arg(hand, player));
+        UseRodEvent.useSubject.onNext(new Arg(hand, player, player.fishHook == null));
     }
 }
