@@ -155,7 +155,9 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
             )
         }
 
-        private fun absLess(a: Double, vararg b: Double) =
-            b.all { a.absoluteValue < it.absoluteValue + 0.01 }
+        private fun absLess(a: Double, vararg b: Double): Boolean {
+            val abs = a.absoluteValue
+            return b.any { abs < it.absoluteValue + ERROR }
+        }
     }
 }
