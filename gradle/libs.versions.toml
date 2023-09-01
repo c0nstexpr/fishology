@@ -23,6 +23,7 @@ modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 reaktive = { module = "com.badoo.reaktive:reaktive-jvm", version = "latest.release" }
 reaktive-utils = { module = "com.badoo.reaktive:utils-internal-jvm", version = "latest.release" }
 reaktive-annotations = { module = "com.badoo.reaktive:reaktive-annotations-jvm", version = "latest.release" }
+reaktive-coroutines-interop = { module = "com.badoo.reaktive:coroutines-interop-jvm", version = "latest.release" }
 kermit = { module = "co.touchlab:kermit-jvm", version = "latest.release" }
 kermit-core = { module = "co.touchlab:kermit-core-jvm", version = "latest.release" }
 
@@ -30,7 +31,7 @@ kermit-core = { module = "co.touchlab:kermit-core-jvm", version = "latest.releas
 fabric = ["fabric-kotlin", "fabric-api"]
 owo = ["owo", "modmenu"]
 
-reaktive = ["reaktive", "reaktive-utils", "reaktive-annotations"]
+reaktive = ["reaktive", "reaktive-utils", "reaktive-annotations", "reaktive-coroutines-interop"]
 kermit = ["kermit", "kermit-core"]
 
 [plugins]

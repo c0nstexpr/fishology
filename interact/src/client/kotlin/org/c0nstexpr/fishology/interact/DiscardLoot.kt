@@ -59,13 +59,9 @@ class DiscardLoot(
             if (it.stack.isSame(stack)) {
                 when (it.syncId) {
                     ScreenHandlerSlotUpdateS2CPacket.UPDATE_PLAYER_INVENTORY_SYNC_ID -> it.slot
-                    0 -> p.playerScreenHandler.run {
-                        if (this == null) {
-                            logger.w("player screen handler is null")
-                            null
-                        } else {
-                            getSlot(it.slot).index
-                        }
+                    0 -> p.playerScreenHandler?.run { getSlot(it.slot).index } ?: run {
+                        logger.w("player screen handler is null")
+                        null
                     }
 
                     else -> null
@@ -78,17 +74,16 @@ class DiscardLoot(
 
     private fun Pair<ClientPlayerEntity, Int>.onSlotUpdate(stack: ItemStack) =
         if (first.validateSelectedSlot()) {
-            rod.client.interactionManager.run {
-                if (this == null) {
-                    logger.w("interaction manager is null")
-                    maybeOfEmpty()
-                } else {
-                    SelectedSlotUpdateEvent.observable
-                        .filter { stack.isSame(first.inventory?.mainHandStack) }
-                        .firstOrComplete()
-                        .map { first }
-                        .doOnAfterSubscribe { pickFromInventory(second) }
-                }
+            rod.client.interactionManager?.run {
+                SelectedSlotUpdateEvent.observable
+                    .filter { stack.isSame(first.inventory?.mainHandStack) }
+                    .firstOrComplete()
+                    .map { first }
+                    .doOnAfterSubscribe { pickFromInventory(second) }
+
+            } ?: run {
+                logger.w("interaction manager is null")
+                maybeOfEmpty()
             }
         } else {
             maybeOfEmpty()

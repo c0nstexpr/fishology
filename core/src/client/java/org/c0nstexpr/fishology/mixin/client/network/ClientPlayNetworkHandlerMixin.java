@@ -4,12 +4,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
-import org.c0nstexpr.fishology.events.ItemEntityVelPacketEvent;
-import org.c0nstexpr.fishology.events.SelectedSlotUpdateEvent;
-import org.c0nstexpr.fishology.events.SlotUpdateEvent;
+import net.minecraft.network.packet.s2c.play.*;
+import net.minecraft.util.math.Vec3d;
+import org.c0nstexpr.fishology.events.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -41,5 +38,26 @@ public abstract class ClientPlayNetworkHandlerMixin {
     @Inject(method = "onUpdateSelectedSlot", at = @At("TAIL"))
     private void onUpdateSelectedSlot(UpdateSelectedSlotS2CPacket packet, CallbackInfo ci) {
         SelectedSlotUpdateEvent.subject.onNext(new SelectedSlotUpdateEvent.Arg(packet.getSlot()));
+    }
+
+    @Inject(method = "onEntitySpawn", at = @At("TAIL"))
+    private void onEntitySpawn(EntitySpawnS2CPacket packet, CallbackInfo ci) {
+        if (!(world.getEntityById(packet.getId()) instanceof ItemEntity item)) return;
+
+        ItemEntitySpawnEvent.subject.onNext(
+                new ItemEntitySpawnEvent.Arg(
+                        item,
+                        new Vec3d(packet.getX(), packet.getY(), packet.getZ()),
+                        new Vec3d(
+                                packet.getVelocityX(),
+                                packet.getVelocityY(),
+                                packet.getVelocityZ())));
+    }
+
+    @Inject(method = "onEntityTrackerUpdate", at = @At("TAIL"))
+    private void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet, CallbackInfo ci){
+        if (!(world.getEntityById(packet.id()) instanceof ItemEntity item)) return;
+
+        ItemEntityTrackerEvent.subject.onNext(new ItemEntityTrackerEvent.Arg(item));
     }
 }
