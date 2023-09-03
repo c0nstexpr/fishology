@@ -17,6 +17,7 @@ import net.minecraft.entity.ItemEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket
 import net.minecraft.text.Text
+import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
 import org.c0nstexpr.fishology.events.SelectedSlotUpdateEvent
@@ -43,7 +44,12 @@ class DiscardLoot(
             .map { it.stack.copy() }
             .switchMapMaybe(::onCaughtExcluded)
             .tryOn()
-            .subscribe { it.dropSelectedItem(false) }
+            .subscribe {
+                it.run {
+                    dropSelectedItem(false)
+                    swingHand(Hand.MAIN_HAND)
+                }
+            }
     }
 
     private fun onCaughtExcluded(stack: ItemStack) = SlotUpdateEvent.observable
@@ -80,7 +86,6 @@ class DiscardLoot(
                     .firstOrComplete()
                     .map { first }
                     .doOnAfterSubscribe { pickFromInventory(second) }
-
             } ?: run {
                 logger.w("interaction manager is null")
                 maybeOfEmpty()

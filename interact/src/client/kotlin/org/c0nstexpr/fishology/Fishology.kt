@@ -46,12 +46,18 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
 
         config.initObserve(ConfigModel::logLevel) { onChangeLogLevel(it) }
         config.initObserve(ConfigModel::enableAutoFish) { onEnableAutoFish(it) }
+        config.initObserve(ConfigModel::posError) { onChangePosError(it) }
         config.initObserve(ConfigModel::enableChatOnHook) { onEnableChatOnHook(it) }
         config.initObserve(ConfigModel::chatOnCaught) { onChangeChatOnCaught(it) }
         config.initObserve(ConfigModel::discardLoots) { onChangeDiscardLoots(it) }
 
         logger.mutableConfig.addMCWriter(client)
         doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }
+    }
+
+    private fun onChangePosError(it: Double) {
+        logger.d("Change pos error to $it")
+        caughtFish.posError = it
     }
 
     private fun onChangeDiscardLoots(it: Set<FishingLoot>) {

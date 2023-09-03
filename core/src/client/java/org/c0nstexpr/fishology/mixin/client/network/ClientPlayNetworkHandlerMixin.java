@@ -55,7 +55,7 @@ public abstract class ClientPlayNetworkHandlerMixin {
     }
 
     @Inject(method = "onEntityTrackerUpdate", at = @At("TAIL"))
-    private void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet, CallbackInfo ci){
+    private void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet, CallbackInfo ci) {
         if (!(world.getEntityById(packet.id()) instanceof ItemEntity item)) return;
 
         ItemEntityTrackerEvent.subject.onNext(new ItemEntityTrackerEvent.Arg(item));

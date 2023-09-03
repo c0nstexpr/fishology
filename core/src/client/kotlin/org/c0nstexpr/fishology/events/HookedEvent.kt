@@ -6,7 +6,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.projectile.FishingBobberEntity
 
 class HookedEvent private constructor() {
-    data class Arg(val bobber: FishingBobberEntity, val hook: Entity)
+    data class Arg(val bobber: FishingBobberEntity, val hook: Entity?)
 
     companion object {
         @JvmField

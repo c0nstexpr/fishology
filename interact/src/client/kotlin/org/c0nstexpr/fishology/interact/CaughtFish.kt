@@ -3,11 +3,12 @@ package org.c0nstexpr.fishology.interact
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.maybe.Maybe
 import com.badoo.reaktive.maybe.flatMap
+import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.maybe.maybeOfEmpty
 import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.observable.concatMapMaybe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
-import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMapMaybe
@@ -27,6 +28,8 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
 
     val caught: Observable<ItemEntity?> = caughtSubject
 
+    var posError: Double = 0.1
+
     private val rodItemObservable get() = rod.itemObservable.notNull()
 
     override fun onEnable(): Disposable {
@@ -38,15 +41,15 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
             .switchMapMaybe { rodCast }
             .tryOn()
             .subscribe {
-                logger.d("caught item: ${it.displayName}")
+                it.run { logger.d("caught item: ${stack.item.name.string}, pos: $pos, tracked pos: $trackedPos") }
                 caughtSubject.onNext(it)
             }
     }
 
     private fun onRodCast() =
         CaughtFishEvent.observable.filter { it.caught && it.bobber.id == rod.player?.fishHook?.id }
-            .map { it.bobber }
             .firstOrComplete()
+            .map { it.bobber }
             .flatMap(::onCaughtFish)
 
     private fun onCaughtFish(bobber: FishingBobberEntity): Maybe<ItemEntity> {
@@ -65,10 +68,12 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
     }
 
     private fun onRodRetrieve(bPos: Vec3d, bVel: Vec3d, pPos: Vec3d) =
-        ItemEntitySpawnEvent.observable.map { CaughtItem(it) }
-            .switchMapMaybe { e ->
-                ItemEntityTrackerEvent.observable.filter { e.isCaughtItem(bPos, bVel, pPos) }
-                    .firstOrComplete()
+        ItemEntitySpawnEvent.observable.concatMapMaybe { caught ->
+            ItemEntityTrackerEvent.observable.filter {
+                caught.isCaughtItem(bPos, bVel, pPos, posError)
             }
-
+                .firstOrComplete()
+        }
+            .firstOrComplete()
+            .map { it.entity }
 }
