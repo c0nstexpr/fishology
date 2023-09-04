@@ -4,7 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.c0nstexpr.fishology.events.ItemEntityRmovEvent;
+import org.c0nstexpr.fishology.events.ItemEntityRemoveEvent;
 import org.c0nstexpr.fishology.events.ItemEntityVelEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,6 +30,6 @@ abstract class EntityMixin {
     private void onRemoved(CallbackInfo ci) {
         if (!(world.isClient && (Entity) (Object) this instanceof ItemEntity item)) return;
 
-        ItemEntityRmovEvent.subject.onNext(new ItemEntityRmovEvent.Arg(item));
+        ItemEntityRemoveEvent.subject.onNext(new ItemEntityRemoveEvent.Arg(item));
     }
 }
