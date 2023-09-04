@@ -29,6 +29,6 @@ fun ClientPlayNetworkHandler.swapHand() = sendPacket(
     PlayerActionC2SPacket(
         PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND,
         BlockPos.ORIGIN,
-        Direction.DOWN
-    )
+        Direction.DOWN,
+    ),
 )
