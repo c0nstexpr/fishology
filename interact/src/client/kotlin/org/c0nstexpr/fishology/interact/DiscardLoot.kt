@@ -15,6 +15,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
+import org.c0nstexpr.fishology.events.SelectedSlotUpdateEvent
 import org.c0nstexpr.fishology.events.SlotUpdateEvent
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.modId
@@ -30,7 +31,11 @@ class DiscardLoot(
 ) : SwitchDisposable() {
     private var notified = false
 
-    private data class CaughtItemSlot(val player: ClientPlayerEntity, val slot: Int)
+    private data class CaughtItemSlot(
+        val player: ClientPlayerEntity,
+        val slot: Int,
+        val stack: ItemStack,
+    )
 
     override fun onEnable(): Disposable {
         logger.d("enable throw loot interaction")
@@ -38,31 +43,38 @@ class DiscardLoot(
         notified = false
 
         return observableStep(
-            caught.filter { lootsFilter.contains(it.stack.getLoot()) }
-                .map { it.stack.copy() },
+            caught.filter { lootsFilter.contains(it.stack.getLoot()) }.map { it.stack.copy() },
         )
-            .switchMaybe({
-                SlotUpdateEvent.observable
-                    .mapNotNull { mapSlopUpdate(it) }
-                    .firstOrComplete()
-            }) {
+            .switchMaybe(
+                {
+                    SlotUpdateEvent.observable
+                        .mapNotNull { mapSlopUpdate(it) }
+                        .firstOrComplete()
+                },
+            ) {
                 rod.client.interactionManager.let {
                     if (it == null) {
                         logger.w("interaction manager is null")
+                        null
+                    } else if (player.validateSelectedSlot()) {
+                        it
                     } else {
-                        player.run {
-                            if (validateSelectedSlot()) {
-                                it.pickFromInventory(slot)
-                                dropSelectedItem(false)
-                                swingHand(Hand.MAIN_HAND)
-                            }
-                        }
+                        null
                     }
-                }
+                }?.pickFromInventory(slot)
+            }
+            .switchMaybe(
+                {
+                    SelectedSlotUpdateEvent.observable.filter { stack.isSame(player.inventory?.mainHandStack) }
+                        .map { player }
+                        .firstOrComplete()
+                },
+            ) {
+                dropSelectedItem(false)
+                swingHand(Hand.MAIN_HAND)
             }
             .tryOn()
-            .subscribe {
-            }
+            .subscribe { }
     }
 
     private fun ItemStack.mapSlopUpdate(it: SlotUpdateEvent.Arg) = rod.player.let { p ->
@@ -73,34 +85,19 @@ class DiscardLoot(
             if (it.stack.isSame(this)) {
                 when (it.syncId) {
                     ScreenHandlerSlotUpdateS2CPacket.UPDATE_PLAYER_INVENTORY_SYNC_ID -> it.slot
-                    0 -> p.playerScreenHandler?.run { getSlot(it.slot).index } ?: this@DiscardLoot.run {
-                        logger.w("player screen handler is null")
-                        null
-                    }
+                    0 -> p.playerScreenHandler?.run { getSlot(it.slot).index }
+                        ?: this@DiscardLoot.run {
+                            logger.w("player screen handler is null")
+                            null
+                        }
 
                     else -> null
                 }
             } else {
                 null
-            }?.let { CaughtItemSlot(p, it) }
+            }?.let { CaughtItemSlot(p, it, this) }
         }
     }
-
-//    private fun Pair<ClientPlayerEntity, Int>.onSlotUpdate(stack: ItemStack) =
-//        if (first.validateSelectedSlot()) {
-//            rod.client.interactionManager?.run {
-//                SelectedSlotUpdateEvent.observable
-//                    .filter { stack.isSame(first.inventory?.mainHandStack) }
-//                    .firstOrComplete()
-//                    .map { first }
-//                    .doOnAfterSubscribe { pickFromInventory(second) }
-//            } ?: run {
-//                logger.w("interaction manager is null")
-//                maybeOfEmpty()
-//            }
-//        } else {
-//            maybeOfEmpty()
-//        }
 
     private fun ClientPlayerEntity.validateSelectedSlot() = rod.run {
         logger.d("detected excluded loots")

@@ -20,13 +20,6 @@ public abstract class ClientPlayNetworkHandlerMixin {
 
     @Final @Shadow private MinecraftClient client;
 
-    @Inject(method = "onEntityVelocityUpdate", at = @At("TAIL"))
-    private void onEntityVelocityUpdate(EntityVelocityUpdateS2CPacket packet, CallbackInfo ci) {
-        if (!(world.getEntityById(packet.getId()) instanceof ItemEntity item)) return;
-
-        ItemEntityVelPacketEvent.subject.onNext(new ItemEntityVelPacketEvent.Arg(item));
-    }
-
     @Inject(method = "onScreenHandlerSlotUpdate", at = @At("TAIL"))
     private void onScreenHandlerSlotUpdate(
             ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci) {
