@@ -13,7 +13,7 @@ fun ItemEntitySpawnEvent.Arg.isCaughtItem(
     posError: Double,
 ) =
     if (nearBobber(bPos, bVel, posError)) {
-        logger.d("${entity.displayName} is near bobber")
+        logger.d("${entity.stack.item.name.string} is near bobber")
         isCaughtFishVelocity(pPos)
     } else {
         false
@@ -54,7 +54,7 @@ private fun ItemEntitySpawnEvent.Arg.isCaughtFishVelocity(pPos: Vec3d): Boolean 
         return false
     }
 
-    logger.d("caught item ${entity.displayName} matches caught item velocity")
+    logger.d("caught item ${entity.stack.item.name.string} matches caught item velocity")
 
     return true
 }

@@ -42,77 +42,62 @@ class ObservableStep<T>(private val src: Observable<T>, val nextStep: (T.() -> U
     override fun subscribe(observer: ObservableObserver<T>) = src.subscribe(
         object : ObservableObserver<T> by observer {
             override fun onNext(value: T) {
+                observer.onNext(value)
+
                 try {
-                    nextStep?.let { value.it() }
+                    nextStep?.invoke(value)
                 } catch (e: Throwable) {
                     onError(e)
-                    return
                 }
-
-                observer.onNext(value)
             }
         },
     )
 
     fun <U> switch(nextSrc: T.() -> Observable<U>, nextStep: (U.() -> Unit)? = null) =
-        ObservableStep(
-            switchMap { t -> t.nextSrc().doOnAfterSubscribe { this.nextStep?.invoke(t) } },
-            nextStep,
-        )
+        ObservableStep(switchMap { t -> t.nextSrc() }, nextStep)
 
-    fun <U> switch(nextSrc: Observable<U>, nextStep: (U.() -> Unit)? = null) = switch({ nextSrc }, nextStep)
+    fun <U> switch(nextSrc: Observable<U>, nextStep: (U.() -> Unit)? = null) =
+        switch({ nextSrc }, nextStep)
 
     fun <U> concat(nextSrc: T.() -> Observable<U>, nextStep: (U.() -> Unit)? = null) =
-        ObservableStep(
-            concatMap { t -> t.nextSrc().doOnAfterSubscribe { this.nextStep?.invoke(t) } },
-            nextStep,
-        )
+        ObservableStep(concatMap { t -> t.nextSrc() }, nextStep)
 
-    fun <U> concat(nextSrc: Observable<U>, nextStep: (U.() -> Unit)? = null) = concat({ nextSrc }, nextStep)
+    fun <U> concat(nextSrc: Observable<U>, nextStep: (U.() -> Unit)? = null) =
+        concat({ nextSrc }, nextStep)
 
     fun <U> switchMaybe(nextSrc: T.() -> Maybe<U>, nextStep: (U.() -> Unit)? = null) =
-        ObservableStep(
-            switchMapMaybe { t -> t.nextSrc().doOnAfterSubscribe { this.nextStep?.invoke(t) } },
-            nextStep,
-        )
+        ObservableStep(switchMapMaybe { t -> t.nextSrc() }, nextStep)
 
-    fun <U> switch(nextSrc: Maybe<U>, nextStep: (U.() -> Unit)? = null) = switchMaybe({ nextSrc }, nextStep)
+    fun <U> switch(nextSrc: Maybe<U>, nextStep: (U.() -> Unit)? = null) =
+        switchMaybe({ nextSrc }, nextStep)
 
     fun <U> concatMaybe(nextSrc: T.() -> Maybe<U>, nextStep: (U.() -> Unit)? = null) =
-        ObservableStep(
-            concatMapMaybe { t -> t.nextSrc().doOnAfterSubscribe { this.nextStep?.invoke(t) } },
-            nextStep,
-        )
+        ObservableStep(concatMapMaybe { t -> t.nextSrc() }, nextStep)
 
-    fun <U> concat(nextSrc: Maybe<U>, nextStep: (U.() -> Unit)? = null) = concatMaybe({ nextSrc }, nextStep)
+    fun <U> concat(nextSrc: Maybe<U>, nextStep: (U.() -> Unit)? = null) =
+        concatMaybe({ nextSrc }, nextStep)
 
     fun <U> switchSingle(nextSrc: T.() -> Single<U>, nextStep: (U.() -> Unit)? = null) =
-        ObservableStep(
-            switchMapSingle { t -> t.nextSrc().doOnAfterSubscribe { this.nextStep?.invoke(t) } },
-            nextStep,
-        )
+        ObservableStep(switchMapSingle { t -> t.nextSrc() }, nextStep)
 
-    fun <U> switch(nextSrc: Single<U>, nextStep: (U.() -> Unit)? = null) = switchSingle({ nextSrc }, nextStep)
+    fun <U> switch(nextSrc: Single<U>, nextStep: (U.() -> Unit)? = null) =
+        switchSingle({ nextSrc }, nextStep)
 
     fun <U> concatSingle(nextSrc: T.() -> Single<U>, nextStep: (U.() -> Unit)? = null) =
-        ObservableStep(
-            concatMapSingle { t -> t.nextSrc().doOnAfterSubscribe { this.nextStep?.invoke(t) } },
-            nextStep,
-        )
+        ObservableStep(concatMapSingle { t -> t.nextSrc() }, nextStep)
 
-    fun <U> concat(nextSrc: Single<U>, nextStep: (U.() -> Unit)? = null) = concatSingle({ nextSrc }, nextStep)
+    fun <U> concat(nextSrc: Single<U>, nextStep: (U.() -> Unit)? = null) =
+        concatSingle({ nextSrc }, nextStep)
 
     fun switchCompletable(nextSrc: T.() -> Completable, nextStep: () -> Unit) =
-        CompletableStep(
-            switchMapCompletable { t -> t.nextSrc().doOnAfterSubscribe { this.nextStep?.invoke(t) } },
-            nextStep,
-        )
+        CompletableStep(switchMapCompletable { t -> t.nextSrc() }, nextStep)
 
-    fun switch(nextSrc: Completable, nextStep: () -> Unit) = switchCompletable({ nextSrc }, nextStep)
+    fun switch(nextSrc: Completable, nextStep: () -> Unit) =
+        switchCompletable({ nextSrc }, nextStep)
 
     fun concatSingle(nextSrc: T.() -> Completable, nextStep: () -> Unit) =
         CompletableStep(
-            flatMapCompletable { t -> t.nextSrc().doOnAfterSubscribe { this.nextStep?.invoke(t) } },
+            flatMapCompletable { t -> t.nextSrc() },
             nextStep,
         )
 
@@ -123,13 +108,13 @@ class MaybeStep<T>(private val src: Maybe<T>, val next: (T.() -> Unit)? = null) 
     override fun subscribe(observer: MaybeObserver<T>) = src.subscribe(
         object : MaybeObserver<T> by observer {
             override fun onSuccess(value: T) {
+                observer.onSuccess(value)
+
                 try {
                     next?.invoke(value)
                 } catch (e: Throwable) {
                     onError(e)
-                    return
                 }
-                observer.onSuccess(value)
             }
         },
     )
@@ -140,7 +125,8 @@ class MaybeStep<T>(private val src: Maybe<T>, val next: (T.() -> Unit)? = null) 
             nextStep,
         )
 
-    fun <U> flat(nextSrc: Observable<U>, nextStep: (U.() -> Unit)? = null) = flatObservable({ nextSrc }, nextStep)
+    fun <U> flat(nextSrc: Observable<U>, nextStep: (U.() -> Unit)? = null) =
+        flatObservable({ nextSrc }, nextStep)
 
     fun <U> flat(nextSrc: T.() -> Maybe<U>, nextStep: (U.() -> Unit)? = null) =
         MaybeStep(flatMap { t -> t.nextSrc().doOnAfterSubscribe { next?.invoke(t) } }, nextStep)
@@ -148,13 +134,19 @@ class MaybeStep<T>(private val src: Maybe<T>, val next: (T.() -> Unit)? = null) 
     fun <U> flat(nextSrc: Maybe<U>, nextStep: (U.() -> Unit)? = null) = flat({ nextSrc }, nextStep)
 
     fun <U> flatSingle(nextSrc: T.() -> Single<U>, nextStep: (U.() -> Unit)? = null) =
-        MaybeStep(flatMapSingle { t -> t.nextSrc().doOnAfterSubscribe { next?.invoke(t) } }, nextStep)
+        MaybeStep(
+            flatMapSingle { t -> t.nextSrc().doOnAfterSubscribe { next?.invoke(t) } },
+            nextStep,
+        )
 
-    fun <U> flat(nextSrc: Single<U>, nextStep: (U.() -> Unit)? = null) = flatSingle({ nextSrc }, nextStep)
+    fun <U> flat(nextSrc: Single<U>, nextStep: (U.() -> Unit)? = null) =
+        flatSingle({ nextSrc }, nextStep)
 
     fun flatCompletable(nextSrc: T.() -> Completable, nextStep: () -> Unit) =
         CompletableStep(
-            flatMapCompletable { t -> t.nextSrc().doOnAfterSubscribe { next?.invoke(t) } },
+            flatMapCompletable { t ->
+                t.nextSrc().doOnAfterSubscribe { next?.invoke(t) }
+            },
             nextStep,
         )
 
@@ -166,13 +158,12 @@ class SingleStep<T>(private val src: Single<T>, val next: (T.() -> Unit)? = null
     override fun subscribe(observer: SingleObserver<T>) = src.subscribe(
         object : SingleObserver<T> by observer {
             override fun onSuccess(value: T) {
+                observer.onSuccess(value)
                 try {
                     next?.invoke(value)
                 } catch (e: Throwable) {
                     onError(e)
-                    return
                 }
-                observer.onSuccess(value)
             }
         },
     )
@@ -183,17 +174,23 @@ class SingleStep<T>(private val src: Single<T>, val next: (T.() -> Unit)? = null
             nextStep,
         )
 
-    fun <U> flat(nextSrc: Observable<U>, nextStep: (U.() -> Unit)? = null) = flatObservable({ nextSrc }, nextStep)
+    fun <U> flat(nextSrc: Observable<U>, nextStep: (U.() -> Unit)? = null) =
+        flatObservable({ nextSrc }, nextStep)
 
     fun <U> flatMaybe(nextSrc: T.() -> Maybe<U>, nextStep: (U.() -> Unit)? = null) =
-        MaybeStep(flatMapMaybe { t -> t.nextSrc().doOnAfterSubscribe { next?.invoke(t) } }, nextStep)
+        MaybeStep(
+            flatMapMaybe { t -> t.nextSrc().doOnAfterSubscribe { next?.invoke(t) } },
+            nextStep,
+        )
 
-    fun <U> flat(nextSrc: Maybe<U>, nextStep: (U.() -> Unit)? = null) = flatMaybe({ nextSrc }, nextStep)
+    fun <U> flat(nextSrc: Maybe<U>, nextStep: (U.() -> Unit)? = null) =
+        flatMaybe({ nextSrc }, nextStep)
 
     fun <U> flatSingle(nextSrc: T.() -> Single<U>, nextStep: (U.() -> Unit)? = null) =
         SingleStep(flatMap { t -> t.nextSrc().doOnAfterSubscribe { next?.invoke(t) } }, nextStep)
 
-    fun <U> flat(nextSrc: Single<U>, nextStep: (U.() -> Unit)? = null) = flatSingle({ nextSrc }, nextStep)
+    fun <U> flat(nextSrc: Single<U>, nextStep: (U.() -> Unit)? = null) =
+        flatSingle({ nextSrc }, nextStep)
 
     fun flatCompletable(nextSrc: T.() -> Completable, nextStep: () -> Unit) =
         CompletableStep(

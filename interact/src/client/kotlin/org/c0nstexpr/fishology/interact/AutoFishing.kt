@@ -51,12 +51,9 @@ class AutoFishing(
                 rod.use()
             }
 
-        observableStep(observeCaughtItem()).tryOn { _, e -> onRetry(e) }
-            .subscribeScoped { }
+        observeCaughtItem().tryOn { _, e -> onRetry(e) }.subscribeScoped { }
 
-        observableStep(recastSub).switchMaybe({ observeHooked() })
-            .tryOn()
-            .subscribeScoped { }
+        observableStep(recastSub).switchMaybe({ observeHooked() }).tryOn().subscribeScoped { }
     }
 
     private fun Recast.observeHooked(): Maybe<SelectedSlotUpdateEvent.Arg> {
@@ -87,29 +84,27 @@ class AutoFishing(
             }
     }
 
-    private fun observeCaughtItem(): Observable<ItemEntity> {
-        return observableStep(caughtItem.notNull())
-            .switchMaybe(
-                {
-                    fun isSameItem(it: ItemEntity) = it.id == id
+    private fun observeCaughtItem() = observableStep(caughtItem.notNull())
+        .switchMaybe(
+            {
+                fun isSameItem(it: ItemEntity) = it.id == id
 
-                    merge(
-                        ItemEntityVelEvent.observable.map { it.entity }
-                            .filter(::isSameItem)
-                            .filter {
-                                velocity.y <= 0.0 &&
+                merge(
+                    ItemEntityVelEvent.observable.map { it.entity }
+                        .filter(::isSameItem)
+                        .filter {
+                            velocity.y <= 0.0 &&
                                     rod.player?.pos?.y?.minus(pos.y)?.compareTo(0.01) == 1
-                            },
-                        ItemEntityRemoveEvent.observable.map { it.entity }.filter(::isSameItem),
-                    )
-                        .firstOrComplete()
-                        .timeout(timeout, ioScheduler)
-                },
-            ) {
-                logger.d("recast rod")
-                recast()
-            }
-    }
+                        },
+                    ItemEntityRemoveEvent.observable.map { it.entity }.filter(::isSameItem),
+                )
+                    .firstOrComplete()
+                    .timeout(timeout, ioScheduler)
+            },
+        ) {
+            logger.d("recast rod")
+            recast()
+        }
 
     private fun recast(count: Int = 0) {
         if (rod.use()) {

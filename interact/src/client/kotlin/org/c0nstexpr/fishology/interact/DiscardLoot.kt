@@ -1,6 +1,7 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
@@ -45,7 +46,7 @@ class DiscardLoot(
         return observableStep(
             caught.filter { lootsFilter.contains(it.stack.getLoot()) }.map { it.stack.copy() },
         )
-            .switchMaybe(
+            .concatMaybe(
                 {
                     SlotUpdateEvent.observable
                         .mapNotNull { mapSlopUpdate(it) }
@@ -63,15 +64,21 @@ class DiscardLoot(
                     }
                 }?.pickFromInventory(slot)
             }
-            .switchMaybe(
+            .concatMaybe(
                 {
-                    SelectedSlotUpdateEvent.observable.filter { stack.isSame(player.inventory?.mainHandStack) }
-                        .map { player }
+                    SelectedSlotUpdateEvent.observable.filter {
+                        stack.isSame(player.inventory?.getStack(it.slot))
+                    }
                         .firstOrComplete()
+                        .map { player }
                 },
             ) {
-                dropSelectedItem(false)
-                swingHand(Hand.MAIN_HAND)
+                if (!dropSelectedItem(false)) {
+                    logger.w("failed to drop excluded caught item")
+                } else {
+                    logger.d("dropped excluded caught item")
+                    swingHand(Hand.MAIN_HAND)
+                }
             }
             .tryOn()
             .subscribe { }
