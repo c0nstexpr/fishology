@@ -47,7 +47,7 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
 
         config.initObserve(ConfigModel::logLevel) { onChangeLogLevel(it) }
         config.initObserve(ConfigModel::enableAutoFish) { onEnableAutoFish(it) }
-        config.initObserve(ConfigModel::posError) { onChangePosError(it) }
+        config.initObserve(ConfigModel::caughtJudgeThreshold) { onChangeCaughtJudgeThreshold(it) }
         config.initObserve(ConfigModel::enableChatOnHook) { onEnableChatOnHook(it) }
         config.initObserve(ConfigModel::notifyOnCaught) { onChangeNotifyOnCaught(it) }
         config.initObserve(ConfigModel::caughtMsgFmt) { onChangeCaughtMsgFmt(it) }
@@ -58,9 +58,9 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
         doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }
     }
 
-    private fun onChangePosError(it: Double) {
-        logger.d("Change pos error to $it")
-        caughtFish.posError = it
+    private fun onChangeCaughtJudgeThreshold(it: Double) {
+        logger.d("Change caught judge threshold to $it")
+        caughtFish.judgeThreshold = it
     }
 
     private fun onChangeDiscardLoots(it: Set<FishingLoot>) {

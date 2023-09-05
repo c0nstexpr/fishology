@@ -2,6 +2,7 @@ package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.maybe.map
+import com.badoo.reaktive.maybe.zip
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
@@ -16,6 +17,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
+import org.c0nstexpr.fishology.events.ClientTickEvent
 import org.c0nstexpr.fishology.events.SelectedSlotUpdateEvent
 import org.c0nstexpr.fishology.events.SlotUpdateEvent
 import org.c0nstexpr.fishology.logger
@@ -66,11 +68,32 @@ class DiscardLoot(
             }
             .concatMaybe(
                 {
-                    SelectedSlotUpdateEvent.observable.filter {
-                        stack.isSame(player.inventory?.getStack(it.slot))
+                    val inventory = player.inventory
+
+                    val slotUpdateObservable =
+                        SlotUpdateEvent.observable.filter { it.syncId == ScreenHandlerSlotUpdateS2CPacket.UPDATE_PLAYER_INVENTORY_SYNC_ID }
+
+                    zip(
+                        slotUpdateObservable.filter { it.slot == slot }
+                            .firstOrComplete()
+                            .map { logger.d("inventory slot update") },
+                        slotUpdateObservable.filter { it.slot == inventory.selectedSlot }
+                            .firstOrComplete()
+                            .map { logger.d("selected slot update") },
+                        SelectedSlotUpdateEvent.observable.filter {
+                            stack.isSame(inventory.getStack(it.slot))
+                        }
+                            .firstOrComplete()
+                            .map { player },
+                    ) { _, _, player -> player }
+                },
+            )
+            .concatMaybe(
+                {
+                    ClientTickEvent.observable.firstOrComplete().map {
+                        logger.d("client ticked")
+                        this
                     }
-                        .firstOrComplete()
-                        .map { player }
                 },
             ) {
                 if (!dropSelectedItem(false)) {

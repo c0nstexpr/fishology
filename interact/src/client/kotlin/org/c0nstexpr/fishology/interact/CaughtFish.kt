@@ -6,7 +6,6 @@ import com.badoo.reaktive.maybe.flatMap
 import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.maybe.maybeOfEmpty
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.observable.concatMapMaybe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.notNull
@@ -21,6 +20,7 @@ import org.c0nstexpr.fishology.events.ItemEntitySpawnEvent
 import org.c0nstexpr.fishology.events.ItemEntityTrackerEvent
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.SwitchDisposable
+import org.c0nstexpr.fishology.utils.observableStep
 import org.c0nstexpr.fishology.utils.trackedPos
 
 class CaughtFish(private val rod: Rod) : SwitchDisposable() {
@@ -28,7 +28,7 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
 
     val caught: Observable<ItemEntity?> = caughtSubject
 
-    var posError: Double = 0.1
+    var judgeThreshold: Double = 0.1
 
     private val rodItemObservable get() = rod.itemObservable.notNull()
 
@@ -58,22 +58,17 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
 
         return rodItemObservable.filter { !it.inUse }
             .firstOrComplete()
-            .flatMap {
-                onRodRetrieve(
-                    bobber.trackedPos,
-                    bobber.velocity,
-                    bobber.owner?.trackedPos ?: return@flatMap maybeOfEmpty(),
-                )
-            }
+            .flatMap { onRodRetrieve(bobber.owner?.trackedPos ?: return@flatMap maybeOfEmpty()) }
     }
 
-    private fun onRodRetrieve(bPos: Vec3d, bVel: Vec3d, pPos: Vec3d) =
-        ItemEntitySpawnEvent.observable.concatMapMaybe { caught ->
-            ItemEntityTrackerEvent.observable.filter {
-                caught.isCaughtItem(bPos, bVel, pPos, posError)
-            }
-                .firstOrComplete()
-        }
+    private fun onRodRetrieve(pPos: Vec3d) =
+        observableStep(ItemEntitySpawnEvent.observable)
+            .concatMaybe(
+                {
+                    ItemEntityTrackerEvent.observable.filter { isCaughtItem(pPos, judgeThreshold) }
+                        .firstOrComplete()
+                },
+            )
             .firstOrComplete()
             .map { it.entity }
 }

@@ -2,6 +2,7 @@ package org.c0nstexpr.fishology.config
 
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.enchantment.EnchantmentHelper
+import net.minecraft.item.BowItem
 import net.minecraft.item.EnchantedBookItem
 import net.minecraft.item.FishingRodItem
 import net.minecraft.item.InkSacItem
@@ -46,7 +47,7 @@ enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
     companion object {
         fun ItemStack.getLoot() = when (item) {
             is NameTagItem -> NameTag
-            Items.BOW -> Bow
+            is BowItem -> Bow
             is SaddleItem -> Saddle
             is FishingRodItem -> if (EnchantmentHelper.get(this).isEmpty()) {
                 FishingRod

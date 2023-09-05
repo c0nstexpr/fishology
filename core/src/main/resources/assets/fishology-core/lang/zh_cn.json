@@ -1,7 +1,7 @@
 {
   "text.config.fishology-core.title": "fishology-core",
   "text.config.fishology-core.option.enableAutoFish": "启用自动钓鱼",
-  "text.config.fishology-core.option.posError": "设定战利品判定的误差范围",
+  "text.config.fishology-core.option.caughtJudgeThreshold": "战利品判定的误差范围",
   "text.config.fishology-core.option.logLevel": "日志等级",
   "text.config.fishology-core.option.logLevel.value.verbose": "Verbose",
   "text.config.fishology-core.option.logLevel.value.debug": "Debug",

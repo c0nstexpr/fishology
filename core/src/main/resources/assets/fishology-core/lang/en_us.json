@@ -1,7 +1,7 @@
 {
   "text.config.fishology-core.title": "fishology-core",
   "text.config.fishology-core.option.enableAutoFish": "Enable auto fishing",
-  "text.config.fishology-core.option.posError": "Set the error range of judging loots position",
+  "text.config.fishology-core.option.caughtJudgeThreshold": "Range error of judging loots position",
   "text.config.fishology-core.option.logLevel": "Log output level filter",
   "text.config.fishology-core.option.logLevel.value.verbose": "Verbose",
   "text.config.fishology-core.option.logLevel.value.debug": "Debug",

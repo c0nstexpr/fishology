@@ -9,7 +9,7 @@ import org.c0nstexpr.fishology.FishologyCoreKt;
 public class ConfigModel {
     public boolean enableAutoFish = true;
 
-    public double posError = 0.1;
+    public double caughtJudgeThreshold = 0.1;
 
     public Severity logLevel = Severity.Warn;
 
