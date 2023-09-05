@@ -15,7 +15,11 @@ public class ConfigModel {
 
     public boolean enableChatOnHook = true;
 
-    public Set<FishingLoot> chatOnCaught = Set.of();
+    public NotifyLevel notifyOnCaught = NotifyLevel.None;
+
+    public String caughtMsgFmt = "";
+
+    public Set<FishingLoot> notifyLoots = Set.of();
 
     public Set<FishingLoot> discardLoots = Set.of();
 }

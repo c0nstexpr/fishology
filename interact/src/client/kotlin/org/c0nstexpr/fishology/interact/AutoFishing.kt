@@ -94,7 +94,7 @@ class AutoFishing(
                         .filter(::isSameItem)
                         .filter {
                             velocity.y <= 0.0 &&
-                                    rod.player?.pos?.y?.minus(pos.y)?.compareTo(0.01) == 1
+                                rod.player?.pos?.y?.minus(pos.y)?.compareTo(0.01) == 1
                         },
                     ItemEntityRemoveEvent.observable.map { it.entity }.filter(::isSameItem),
                 )

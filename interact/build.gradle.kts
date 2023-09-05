@@ -21,6 +21,8 @@ dependencies {
 }
 
 tasks {
+    remapJar { archiveBaseName.set("fishology") }
+
     this.modrinth { dependsOn(remapJar) }
 
     processResources {
@@ -57,6 +59,6 @@ System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
         versionType.set("alpha")
         uploadFile.set(tasks.remapJar.get())
         loaders.add("fabric")
-        syncBodyFrom.set(rootProject.file("README.md").absolutePath)
+        syncBodyFrom.set(rootProject.file("README.md").readText())
     }
 }

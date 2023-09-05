@@ -9,6 +9,7 @@ import org.c0nstexpr.fishology.config.Config
 import org.c0nstexpr.fishology.config.ConfigControl
 import org.c0nstexpr.fishology.config.ConfigModel
 import org.c0nstexpr.fishology.config.FishingLoot
+import org.c0nstexpr.fishology.config.NotifyLevel
 import org.c0nstexpr.fishology.interact.AutoFishing
 import org.c0nstexpr.fishology.interact.CaughtChat
 import org.c0nstexpr.fishology.interact.CaughtFish
@@ -48,7 +49,9 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
         config.initObserve(ConfigModel::enableAutoFish) { onEnableAutoFish(it) }
         config.initObserve(ConfigModel::posError) { onChangePosError(it) }
         config.initObserve(ConfigModel::enableChatOnHook) { onEnableChatOnHook(it) }
-        config.initObserve(ConfigModel::chatOnCaught) { onChangeChatOnCaught(it) }
+        config.initObserve(ConfigModel::notifyOnCaught) { onChangeNotifyOnCaught(it) }
+        config.initObserve(ConfigModel::caughtMsgFmt) { onChangeCaughtMsgFmt(it) }
+        config.initObserve(ConfigModel::notifyLoots) { onChangeChatOnCaught(it) }
         config.initObserve(ConfigModel::discardLoots) { onChangeDiscardLoots(it) }
 
         logger.mutableConfig.addMCWriter(client)
@@ -68,6 +71,16 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
     private fun onEnableChatOnHook(it: Boolean) {
         logger.d("${if (it) "Enable" else "Disable"} chat on hook")
         hookChat.enable = it
+    }
+
+    private fun onChangeNotifyOnCaught(it: NotifyLevel) {
+        logger.d("Change notify on caught fish level")
+        caughtChat.notifyLevel = it
+    }
+
+    private fun onChangeCaughtMsgFmt(it: String) {
+        logger.d("Change notification message format on caught")
+        caughtChat.fmt = it
     }
 
     private fun onChangeLogLevel(it: Severity) {
