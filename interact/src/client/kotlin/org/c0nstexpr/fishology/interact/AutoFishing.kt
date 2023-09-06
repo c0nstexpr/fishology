@@ -39,8 +39,6 @@ class AutoFishing(
             }
         }
 
-    private data class Recast(val rodItem: RodItem, val count: Int)
-
     private val recastSub = PublishSubject<Recast>()
 
     override fun onEnable() = disposableScope {
@@ -132,5 +130,7 @@ class AutoFishing(
 
     companion object {
         private val timeout = 3.seconds
+
+        private data class Recast(val rodItem: RodItem, val count: Int)
     }
 }

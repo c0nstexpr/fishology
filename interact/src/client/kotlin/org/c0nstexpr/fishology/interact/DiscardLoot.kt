@@ -1,15 +1,17 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.maybe.map
-import com.badoo.reaktive.maybe.zip
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.subscribe
+import com.badoo.reaktive.observable.zip
+import com.badoo.reaktive.subject.publish.PublishSubject
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
+import net.minecraft.client.network.ClientPlayerInteractionManager
 import net.minecraft.entity.ItemEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket
@@ -17,7 +19,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
-import org.c0nstexpr.fishology.events.ClientTickEvent
 import org.c0nstexpr.fishology.events.SelectedSlotUpdateEvent
 import org.c0nstexpr.fishology.events.SlotUpdateEvent
 import org.c0nstexpr.fishology.logger
@@ -34,38 +35,44 @@ class DiscardLoot(
 ) : SwitchDisposable() {
     private var notified = false
 
-    private data class CaughtItemSlot(
+    private class CaughtItemSlot(
         val player: ClientPlayerEntity,
         val slot: Int,
-        val stack: ItemStack,
-    )
+        val stack: ItemStack
+    ) {
+        fun dropItem(manager: ClientPlayerInteractionManager) {
+            if (stack.isSame(stack)) manager.pickFromInventory(slot)
+        }
+    }
+
+    private val discardSubject = PublishSubject<CaughtItemSlot>()
 
     override fun onEnable(): Disposable {
         logger.d("enable throw loot interaction")
 
         notified = false
 
+        discardSubject.subscribe{
+            val manager = rod.client.interactionManager ?: run {
+                logger.w("interaction manager is null")
+                return@subscribe
+            }
+
+            it.
+        }
+
         return observableStep(
-            caught.filter { lootsFilter.contains(it.stack.getLoot()) }.map { it.stack.copy() },
+            caught.filter { lootsFilter.contains(it.stack.getLoot()) }.mapNotNull {
+                rod.player.let { p ->
+                    if (p == null || p.inventory.getEmptySlot() == -1) null
+                    else Loot(p, it.stack.copy())
+                }
+            },
         )
             .concatMaybe(
                 {
-                    SlotUpdateEvent.observable
-                        .mapNotNull { mapSlopUpdate(it) }
-                        .firstOrComplete()
-                },
-            ) {
-                rod.client.interactionManager.let {
-                    if (it == null) {
-                        logger.w("interaction manager is null")
-                        null
-                    } else if (player.validateSelectedSlot()) {
-                        it
-                    } else {
-                        null
-                    }
-                }?.pickFromInventory(slot)
-            }
+                    SlotUpdateEvent.observable.mapNotNull { mapSlopUpdate(it) }.firstOrComplete()
+                }) { discardSubject.onNext(this) }
             .concatMaybe(
                 {
                     val inventory = player.inventory
@@ -75,57 +82,47 @@ class DiscardLoot(
 
                     zip(
                         slotUpdateObservable.filter { it.slot == slot }
-                            .firstOrComplete()
                             .map { logger.d("inventory slot update") },
                         slotUpdateObservable.filter { it.slot == inventory.selectedSlot }
-                            .firstOrComplete()
                             .map { logger.d("selected slot update") },
                         SelectedSlotUpdateEvent.observable.filter {
                             stack.isSame(inventory.getStack(it.slot))
                         }
-                            .firstOrComplete()
                             .map { player },
                     ) { _, _, player -> player }
+                        .firstOrComplete()
                 },
             )
-            .concatMaybe(
-                {
-                    ClientTickEvent.observable.firstOrComplete().map {
-                        logger.d("client ticked")
-                        this
-                    }
-                },
-            ) {
-                if (!dropSelectedItem(false)) {
-                    logger.w("failed to drop excluded caught item")
-                } else {
+//            .concatMaybe(
+//                {
+//                    ClientTickEvent.observable.firstOrComplete().map {
+//                        logger.d("client ticked")
+//                        this
+//                    }
+//                },
+//            )
+            {
+                if (dropSelectedItem(false)) {
                     logger.d("dropped excluded caught item")
                     swingHand(Hand.MAIN_HAND)
+                } else {
+                    logger.w("failed to drop excluded caught item")
                 }
             }
             .tryOn()
             .subscribe { }
     }
 
-    private fun ItemStack.mapSlopUpdate(it: SlotUpdateEvent.Arg) = rod.player.let { p ->
-        if (p == null) {
+    private fun Loot.mapSlopUpdate(arg: SlotUpdateEvent.Arg): CaughtItemSlot? {
+        return if (arg.stack.isSame(stack) && arg.syncId == player.playerScreenHandler.syncId) {
+            CaughtItemSlot(
+                player,
+                player.playerScreenHandler.getSlot(arg.slot).index,
+                stack
+            )
+        } else {
             logger.w("client player is null")
             null
-        } else {
-            if (it.stack.isSame(this)) {
-                when (it.syncId) {
-                    ScreenHandlerSlotUpdateS2CPacket.UPDATE_PLAYER_INVENTORY_SYNC_ID -> it.slot
-                    0 -> p.playerScreenHandler?.run { getSlot(it.slot).index }
-                        ?: this@DiscardLoot.run {
-                            logger.w("player screen handler is null")
-                            null
-                        }
-
-                    else -> null
-                }
-            } else {
-                null
-            }?.let { CaughtItemSlot(p, it, this) }
         }
     }
 
@@ -144,5 +141,12 @@ class DiscardLoot(
         } else {
             true
         }
+    }
+
+    companion object {
+        private data class Loot(
+            val player: ClientPlayerEntity,
+            val stack: ItemStack,
+        )
     }
 }

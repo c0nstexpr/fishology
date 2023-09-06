@@ -10,6 +10,8 @@ repositories {
 
 val modId: String by project
 
+base { archivesName.set("fishology") }
+
 dependencies {
     project(":core", "namedElements").let {
         api(it)
@@ -21,7 +23,7 @@ dependencies {
 }
 
 tasks {
-    remapJar { archiveBaseName.set("fishology") }
+    remapJar { archiveClassifier.set("") }
 
     this.modrinth { dependsOn(remapJar) }
 
