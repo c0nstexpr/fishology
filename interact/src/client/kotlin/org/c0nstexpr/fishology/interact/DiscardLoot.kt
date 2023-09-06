@@ -9,7 +9,6 @@ import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.zip
 import com.badoo.reaktive.subject.publish.PublishSubject
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.client.network.ClientPlayerInteractionManager
 import net.minecraft.entity.ItemEntity
@@ -40,8 +39,17 @@ class DiscardLoot(
         val slot: Int,
         val stack: ItemStack
     ) {
-        fun dropItem(manager: ClientPlayerInteractionManager) {
+        fun pick(manager: ClientPlayerInteractionManager) {
             if (stack.isSame(stack)) manager.pickFromInventory(slot)
+        }
+
+        fun drop() = player.run {
+            if (dropSelectedItem(false)) {
+                logger.d("dropped excluded caught item")
+                swingHand(Hand.MAIN_HAND)
+            } else {
+                logger.w("failed to drop excluded caught item")
+            }
         }
     }
 
@@ -52,13 +60,38 @@ class DiscardLoot(
 
         notified = false
 
-        discardSubject.subscribe{
+        discardSubject.subscribe {
+            if (!it.player.validateSelectedSlot()) return@subscribe
+
             val manager = rod.client.interactionManager ?: run {
                 logger.w("interaction manager is null")
                 return@subscribe
             }
 
-            it.
+            it.pick(manager)
+        }
+
+        observableStep(discardSubject).concatMaybe(
+            {
+                val inventory = player.inventory
+
+                val slotUpdateObservable =
+                    SlotUpdateEvent.observable.filter { it.syncId == ScreenHandlerSlotUpdateS2CPacket.UPDATE_PLAYER_INVENTORY_SYNC_ID }
+
+                zip(
+                    slotUpdateObservable.filter { it.slot == slot }
+                        .map { logger.d("inventory slot update") },
+                    slotUpdateObservable.filter { it.slot == inventory.selectedSlot }
+                        .map { logger.d("selected slot update") },
+                    SelectedSlotUpdateEvent.observable.filter {
+                        stack.isSame(inventory.getStack(it.slot))
+                    }
+                        .map { this },
+                ) { _, _, player -> player }
+                    .firstOrComplete()
+            }
+        ).subscribe {
+            it.drop()
         }
 
         return observableStep(
@@ -73,26 +106,7 @@ class DiscardLoot(
                 {
                     SlotUpdateEvent.observable.mapNotNull { mapSlopUpdate(it) }.firstOrComplete()
                 }) { discardSubject.onNext(this) }
-            .concatMaybe(
-                {
-                    val inventory = player.inventory
 
-                    val slotUpdateObservable =
-                        SlotUpdateEvent.observable.filter { it.syncId == ScreenHandlerSlotUpdateS2CPacket.UPDATE_PLAYER_INVENTORY_SYNC_ID }
-
-                    zip(
-                        slotUpdateObservable.filter { it.slot == slot }
-                            .map { logger.d("inventory slot update") },
-                        slotUpdateObservable.filter { it.slot == inventory.selectedSlot }
-                            .map { logger.d("selected slot update") },
-                        SelectedSlotUpdateEvent.observable.filter {
-                            stack.isSame(inventory.getStack(it.slot))
-                        }
-                            .map { player },
-                    ) { _, _, player -> player }
-                        .firstOrComplete()
-                },
-            )
 //            .concatMaybe(
 //                {
 //                    ClientTickEvent.observable.firstOrComplete().map {
@@ -101,14 +115,6 @@ class DiscardLoot(
 //                    }
 //                },
 //            )
-            {
-                if (dropSelectedItem(false)) {
-                    logger.d("dropped excluded caught item")
-                    swingHand(Hand.MAIN_HAND)
-                } else {
-                    logger.w("failed to drop excluded caught item")
-                }
-            }
             .tryOn()
             .subscribe { }
     }
