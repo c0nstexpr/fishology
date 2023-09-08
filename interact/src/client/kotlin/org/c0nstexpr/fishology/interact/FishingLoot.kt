@@ -1,14 +1,12 @@
 package org.c0nstexpr.fishology.interact
 
+import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.maybe.Maybe
-import com.badoo.reaktive.maybe.doOnBeforeSubscribe
 import com.badoo.reaktive.maybe.map
-import com.badoo.reaktive.maybe.merge
-import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.maybe.subscribe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
-import com.badoo.reaktive.observable.merge
 import com.badoo.reaktive.observable.zip
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.client.network.ClientPlayerInteractionManager
@@ -48,25 +46,23 @@ internal class FishingLoot(val player: ClientPlayerEntity, val slot: Int, val st
         }
     }
 
-    fun dropMaybe(cancelObservable: Observable<Unit?>): Maybe<FishingLoot?> {
+    fun dropMaybe(): Maybe<Unit> {
         val inventory = player.inventory
 
-        return merge(
-            zip(
-                slotUpdateObservable.filter { it.slot == slot }
-                    .map { logger.d("screen loot's slot update") },
-                slotUpdateObservable.filter { it.slot == inventory.selectedSlot }
-                    .map { logger.d("screen selected slot update") },
-                SelectedSlotUpdateEvent.observable.filter { stack.isSame(inventory.mainHandStack) }
-                    .map { logger.d("selected slot update") }
-            ) { _, _, _ -> }.map { this },
-            cancelObservable.map { null }
-        ).firstOrComplete()
+        return zip(
+            slotUpdateObservable.filter { it.slot == slot }
+                .map { logger.d("screen loot's slot update") },
+            slotUpdateObservable.filter { it.slot == inventory.selectedSlot }
+                .map { logger.d("screen selected slot update") },
+            SelectedSlotUpdateEvent.observable.filter { stack.isSame(inventory.mainHandStack) }
+                .map { logger.d("selected slot update") },
+        ) { _, _, _ -> }
+            .firstOrComplete()
+            .map { drop() }
     }
 
     companion object {
         private val slotUpdateObservable =
             SlotUpdateEvent.observable.filter { it.syncId == ScreenHandlerSlotUpdateS2CPacket.UPDATE_PLAYER_INVENTORY_SYNC_ID }
-
     }
 }
