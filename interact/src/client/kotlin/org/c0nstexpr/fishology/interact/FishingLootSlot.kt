@@ -1,9 +1,7 @@
 package org.c0nstexpr.fishology.interact
 
-import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.maybe.Maybe
 import com.badoo.reaktive.maybe.map
-import com.badoo.reaktive.maybe.subscribe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
@@ -18,7 +16,7 @@ import org.c0nstexpr.fishology.events.SlotUpdateEvent
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.isSame
 
-internal class FishingLoot(val player: ClientPlayerEntity, val slot: Int, val stack: ItemStack) {
+internal class FishingLootSlot(val player: ClientPlayerEntity, val slot: Int, val stack: ItemStack) {
     fun pick(manager: ClientPlayerInteractionManager?, rodItem: RodItem?, notify: () -> Unit) =
         if (manager == null) {
             logger.w("interaction manager is null")
