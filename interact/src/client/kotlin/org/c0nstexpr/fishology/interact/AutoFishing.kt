@@ -14,6 +14,7 @@ import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.scheduler.ioScheduler
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
+import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.events.HookedEvent
 import org.c0nstexpr.fishology.events.ItemEntityRemoveEvent
 import org.c0nstexpr.fishology.events.ItemEntityVelEvent
@@ -41,6 +42,8 @@ class AutoFishing(
 
     private val recastSub = PublishSubject<Recast>()
 
+    private val interruptedSub = PublishSubject<Unit>()
+
     override fun onEnable() = disposableScope {
         caughtItem.filter { it == null }
             .tryOn()
@@ -51,10 +54,10 @@ class AutoFishing(
 
         observeCaughtItem().tryOn { _, e -> onRetry(e) }.subscribeScoped { }
 
-        observableStep(recastSub).switchMaybe({ observeHooked() }).tryOn().subscribeScoped { }
+        observableStep(recastSub).switchMaybe({ observeRecast() }).tryOn().subscribeScoped { }
     }
 
-    private fun Recast.observeHooked(): Maybe<SelectedSlotUpdateEvent.Arg> {
+    private fun Recast.observeRecast(): Maybe<SelectedSlotUpdateEvent.Arg> {
         var tryCount = 0
         val handler = rod.client.networkHandler
         if (handler == null) {
@@ -91,8 +94,9 @@ class AutoFishing(
                     ItemEntityVelEvent.observable.map { it.entity }
                         .filter(::isSameItem)
                         .filter {
-                            velocity.y <= 0.0 &&
-                                rod.player?.pos?.y?.minus(pos.y)?.compareTo(0.01) == 1
+                            val playerPos = rod.player?.pos ?: return@filter false
+
+                            vecComponents.any { it(velocity) <= 0.0 && it(playerPos) - it(pos) > 0.01 }
                         },
                     ItemEntityRemoveEvent.observable.map { it.entity }.filter(::isSameItem),
                 )
@@ -132,5 +136,7 @@ class AutoFishing(
         private val timeout = 3.seconds
 
         private data class Recast(val rodItem: RodItem, val count: Int)
+
+        private val vecComponents = arrayOf(Vec3d::x, Vec3d::y, Vec3d::z)
     }
 }
