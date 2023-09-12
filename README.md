@@ -17,7 +17,7 @@ Mod that mainly focuses on auto-fishing, implemented the following features:
 - Discard unneeded loots.
   - Configure list of loot items.
   - By enabling this feature, one might encounter hooking discarded item entity when fishing on 
-    flat water surface. Add water flows to push away the discarded could solve the problem.
+    flat water surface. Add bubble column to push away the discarded may solve the problem.
 
 ## License
 This project is licensed under the MIT license. See the [LICENSE](LICENSE) file for details.
