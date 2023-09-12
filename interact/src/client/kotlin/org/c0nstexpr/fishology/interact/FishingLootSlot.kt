@@ -2,6 +2,7 @@ package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.maybe.Maybe
 import com.badoo.reaktive.maybe.map
+import com.badoo.reaktive.maybe.maybeOfEmpty
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
@@ -16,9 +17,17 @@ import org.c0nstexpr.fishology.events.SlotUpdateEvent
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.isSame
 
-internal class FishingLootSlot(val player: ClientPlayerEntity, val slot: Int, val stack: ItemStack) {
-    fun pick(manager: ClientPlayerInteractionManager?, rodItem: RodItem?, notify: () -> Unit) =
-        if (manager == null) {
+internal class FishingLootSlot(val slot: Int, val stack: ItemStack) {
+    fun pick(
+        player: ClientPlayerEntity?,
+        manager: ClientPlayerInteractionManager?,
+        rodItem: RodItem?,
+        notify: () -> Unit,
+    ) =
+        if (player == null) {
+            logger.w("client player is null")
+            false
+        } else if (manager == null) {
             logger.w("interaction manager is null")
             false
         } else if (rodItem?.slotIndex == player.inventory.selectedSlot) {
@@ -33,7 +42,7 @@ internal class FishingLootSlot(val player: ClientPlayerEntity, val slot: Int, va
             false
         }
 
-    fun drop() = player.run {
+    fun drop(player: ClientPlayerEntity) = player.run {
         if (!inventory.mainHandStack.isSame(stack)) {
             logger.w("selected stack is not same as loot")
         } else if (dropSelectedItem(false)) {
@@ -44,7 +53,12 @@ internal class FishingLootSlot(val player: ClientPlayerEntity, val slot: Int, va
         }
     }
 
-    fun dropMaybe(): Maybe<Unit> {
+    fun dropMaybe(player: ClientPlayerEntity?): Maybe<Unit> {
+        if (player == null) {
+            logger.w("client player is null")
+            return maybeOfEmpty()
+        }
+
         val inventory = player.inventory
 
         return zip(
@@ -56,7 +70,7 @@ internal class FishingLootSlot(val player: ClientPlayerEntity, val slot: Int, va
                 .map { logger.d("selected slot update") },
         ) { _, _, _ -> }
             .firstOrComplete()
-            .map { drop() }
+            .map { drop(player) }
     }
 
     companion object {
