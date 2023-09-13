@@ -14,12 +14,15 @@ abstract class SwitchDisposable : Disposable {
             disposable = if (value && (disposable == null)) {
                 onEnable()
             } else {
+                onDisable()
                 disposable?.dispose()
                 null
             }
         }
 
     protected abstract fun onEnable(): Disposable
+
+    protected open fun onDisable() {}
 
     override fun dispose() {
         enable = false

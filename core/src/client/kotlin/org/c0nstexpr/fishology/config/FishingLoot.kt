@@ -49,11 +49,8 @@ enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
             is NameTagItem -> NameTag
             is BowItem -> Bow
             is SaddleItem -> Saddle
-            is FishingRodItem -> if (EnchantmentHelper.get(this).isEmpty()) {
-                FishingRod
-            } else {
-                EnchantedFishingRod
-            }
+            is FishingRodItem -> if (EnchantmentHelper.get(this).isEmpty())
+                FishingRod else EnchantedFishingRod
 
             is EnchantedBookItem -> Book
             Items.NAUTILUS_SHELL -> NautilusShell
@@ -79,10 +76,6 @@ enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
 
     fun translate(): Text {
         val key = "$coreModId.${FishingLoot::class.simpleName}.$name"
-        return if (I18n.hasTranslation(key)) {
-            Text.translatable(key)
-        } else {
-            item.name
-        }
+        return if (I18n.hasTranslation(key)) Text.translatable(key) else item.name
     }
 }

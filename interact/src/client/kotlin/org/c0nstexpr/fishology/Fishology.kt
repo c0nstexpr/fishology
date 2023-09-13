@@ -4,6 +4,9 @@ import co.touchlab.kermit.Severity
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.disposable.scope.doOnDispose
 import com.badoo.reaktive.observable.notNull
+import com.mojang.brigadier.Command
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.minecraft.client.MinecraftClient
 import org.c0nstexpr.fishology.config.Config
 import org.c0nstexpr.fishology.config.ConfigControl
@@ -14,6 +17,7 @@ import org.c0nstexpr.fishology.interact.AutoFishing
 import org.c0nstexpr.fishology.interact.CaughtChat
 import org.c0nstexpr.fishology.interact.CaughtFish
 import org.c0nstexpr.fishology.interact.DiscardLoot
+import org.c0nstexpr.fishology.interact.FishingStatTrack
 import org.c0nstexpr.fishology.interact.HookChat
 import org.c0nstexpr.fishology.interact.Rod
 import org.c0nstexpr.fishology.log.MCMessageWriter
@@ -23,8 +27,6 @@ import org.c0nstexpr.fishology.utils.initObserve
 
 class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScope() {
     val config: Config by ConfigControl.config
-
-    private val playerUUID = client.networkHandler!!.profile.id
 
     private val rod by lazy { Rod(client).apply { enable = true }.scope() }
 
@@ -42,6 +44,10 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
         DiscardLoot(rod, caughtFish.caught.notNull()).apply { enable = true }.scope()
     }
 
+    private val fishingStatTrack by lazy {
+        FishingStatTrack(rod, caughtFish.caught.notNull()).apply { enable = true }.scope()
+    }
+
     init {
         logger.d("Initializing Fishology module")
 
@@ -56,11 +62,31 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
 
         logger.mutableConfig.addMCWriter(client)
         doOnDispose { logger.mutableConfig.removeWriterWhere { w -> w is MCMessageWriter } }
+
+        registerCommand()
     }
 
     private fun onChangeCaughtJudgeThreshold(it: Double) {
         logger.d("Change caught judge threshold to $it")
         caughtFish.judgeThreshold = it
+    }
+
+    private fun registerCommand() = ClientCommandRegistrationCallback.EVENT.register { d, _ ->
+        d.register(
+            literal(modId).then(
+                literal("stat")
+                    .then(
+                        literal("print").executes {
+                            client.msg(fishingStatTrack.printStat())
+                            Command.SINGLE_SUCCESS
+                        })
+                    .then(
+                        literal("clear").executes {
+                            fishingStatTrack.clear()
+                            Command.SINGLE_SUCCESS
+                        })
+            )
+        )
     }
 
     private fun onChangeDiscardLoots(it: Set<FishingLoot>) {
