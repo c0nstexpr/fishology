@@ -44,9 +44,8 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
         DiscardLoot(rod, caughtFish.caught.notNull()).apply { enable = true }.scope()
     }
 
-    private val fishingStatTrack by lazy {
+    private val fishingStatTrack =
         FishingStatTrack(rod, caughtFish.caught.notNull()).apply { enable = true }.scope()
-    }
 
     init {
         logger.d("Initializing Fishology module")
@@ -79,13 +78,15 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
                         literal("print").executes {
                             client.msg(fishingStatTrack.printStat())
                             Command.SINGLE_SUCCESS
-                        })
+                        },
+                    )
                     .then(
                         literal("clear").executes {
                             fishingStatTrack.clear()
                             Command.SINGLE_SUCCESS
-                        })
-            )
+                        },
+                    ),
+            ),
         )
     }
 

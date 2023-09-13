@@ -23,6 +23,10 @@ class FishingStatTrack(val rod: Rod, val caughtItem: Observable<ItemEntity>) : S
 
     val statMap: Map<FishingLoot, UInt> get() = stat
 
+    init {
+        FishingLoot.entries.forEach { stat[it] = 0u }
+    }
+
     override fun onEnable(): Disposable {
         load()
 
@@ -39,25 +43,28 @@ class FishingStatTrack(val rod: Rod, val caughtItem: Observable<ItemEntity>) : S
 
         if (Files.exists(dir)) {
             val jsonFile = dir.resolve(STAT_JSON).toFile()
-            if (jsonFile.exists())
+            if (jsonFile.exists()) {
                 stat.putAll(Json.decodeFromString<Map<FishingLoot, UInt>>(jsonFile.readText()))
+            }
         } else {
             Files.createDirectories(dir)
         }
     }
 
-    fun save() = dataDir.resolve(STAT_JSON).toFile().writeText(json.encodeToString(stat))
+    fun save() = dataDir.resolve(STAT_JSON).toFile().writeText(json.encodeToString(statMap))
 
     fun clear() = stat.clear()
 
     fun printStat(): MutableText {
-        val txt = Text.translatable("$modId.stat_title\n")
+        val txt = Text.literal("[$modId]")
+            .append(Text.translatable("$modId.stat_title"))
+            .append("\n")
         statMap.forEach { (loot, count) ->
             txt.append(
                 Text.empty()
                     .setStyle(Style.EMPTY.withColor(loot.color()))
                     .append(loot.translate())
-                    .append(" $count\n")
+                    .append(" $count\n"),
             )
         }
 

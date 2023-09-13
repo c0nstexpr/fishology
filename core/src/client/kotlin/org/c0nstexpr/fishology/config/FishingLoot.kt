@@ -49,8 +49,11 @@ enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
             is NameTagItem -> NameTag
             is BowItem -> Bow
             is SaddleItem -> Saddle
-            is FishingRodItem -> if (EnchantmentHelper.get(this).isEmpty())
-                FishingRod else EnchantedFishingRod
+            is FishingRodItem -> if (EnchantmentHelper.get(this).isEmpty()) {
+                FishingRod
+            } else {
+                EnchantedFishingRod
+            }
 
             is EnchantedBookItem -> Book
             Items.NAUTILUS_SHELL -> NautilusShell

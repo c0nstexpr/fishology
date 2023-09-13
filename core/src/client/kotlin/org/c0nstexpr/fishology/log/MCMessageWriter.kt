@@ -22,9 +22,9 @@ class MCMessageWriter(
                     Style.EMPTY.withColor(
                         levelColor.getOrElse(severity) {
                             TextColor.fromFormatting(defaultColor(severity))
-                        }
-                    )
-                )
+                        },
+                    ),
+                ),
         )
 
     companion object {
