@@ -20,8 +20,14 @@ import org.c0nstexpr.fishology.utils.observableStep
 class DiscardLoot(
     private val rod: Rod,
     private val caught: Observable<ItemEntity>,
-    var lootsFilter: Set<FishingLoot> = setOf(),
+    lootsFilter: Set<FishingLoot> = setOf(),
 ) : SwitchDisposable() {
+    var lootsFilter = lootsFilter
+        set(value) {
+            field = value
+            logger.d("Change discard loots")
+        }
+
     private val lootsQueue = LootsQueue(rod)
 
     override fun onEnable(): Disposable {

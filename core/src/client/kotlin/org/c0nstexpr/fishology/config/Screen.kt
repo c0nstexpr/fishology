@@ -12,7 +12,7 @@ import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.jvm.kotlinProperty
 import kotlin.reflect.typeOf
 
-class Screen(modelId: Identifier?, config: ConfigWrapper<*>?, parent: Screen?) :
+class Screen(modelId: Identifier, config: ConfigWrapper<*>, parent: Screen?) :
     ConfigScreen(modelId, config, parent) {
     init {
         extraFactories[Predicate(::isFishingLootSet)] =

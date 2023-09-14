@@ -10,6 +10,8 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import org.c0nstexpr.fishology.appendStyled
+import org.c0nstexpr.fishology.appendTranslatable
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
 import org.c0nstexpr.fishology.config.FishingLootType
@@ -57,15 +59,11 @@ class FishingStatTrack(val rod: Rod, val caughtItem: Observable<ItemEntity>) : S
 
     fun printStat(): MutableText {
         val txt = Text.literal("[$modId]")
-            .append(Text.translatable("$modId.stat_title"))
+            .appendTranslatable("$modId.stat_title")
             .append("\n")
+
         statMap.forEach { (loot, count) ->
-            txt.append(
-                Text.empty()
-                    .setStyle(Style.EMPTY.withColor(loot.color()))
-                    .append(loot.translate())
-                    .append(" $count\n"),
-            )
+            txt.appendStyled(loot.color, loot.translate(), Text.of(" $count\n"))
         }
 
         return txt
@@ -74,13 +72,19 @@ class FishingStatTrack(val rod: Rod, val caughtItem: Observable<ItemEntity>) : S
     companion object {
         private const val STAT_JSON = "stats.json"
 
-        private fun FishingLoot.color() =
-            when (lootType) {
-                FishingLootType.Treasure -> Formatting.GOLD
-                FishingLootType.Fish -> Formatting.WHITE
-                FishingLootType.Junk -> Formatting.GRAY
-                else -> Formatting.DARK_GRAY
-            }
+        private val fishingLootColors = FishingLootType.entries.associateWith {
+            Style.EMPTY.withColor(
+                when (it) {
+                    FishingLootType.Treasure -> Formatting.GOLD
+                    FishingLootType.Fish -> Formatting.AQUA
+                    FishingLootType.Junk -> Formatting.WHITE
+                },
+            )
+                .withBold(true)
+                .withItalic(true)
+        }
+
+        private val FishingLoot.color get() = fishingLootColors[lootType]!!
 
         private val json = Json { prettyPrint = true }
     }

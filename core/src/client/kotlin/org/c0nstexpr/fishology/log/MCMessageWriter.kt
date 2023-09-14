@@ -5,30 +5,24 @@ import co.touchlab.kermit.Message
 import co.touchlab.kermit.Severity
 import co.touchlab.kermit.Tag
 import net.minecraft.client.MinecraftClient
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.text.TextColor
 import net.minecraft.util.Formatting
+import org.c0nstexpr.fishology.coloredText
 import org.c0nstexpr.fishology.msg
 
 class MCMessageWriter(
     var client: MinecraftClient,
-    val levelColor: MutableMap<Severity, TextColor> = mutableMapOf(),
+    val levelFmt: MutableMap<Severity, Formatting> = mutableMapOf(),
 ) : LogWriter() {
     override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) =
         client.msg(
-            Text.literal(AttributionFormatter.formatMessage(severity, Tag(tag), Message(message)))
-                .setStyle(
-                    Style.EMPTY.withColor(
-                        levelColor.getOrElse(severity) {
-                            TextColor.fromFormatting(defaultColor(severity))
-                        },
-                    ),
-                ),
+            coloredText(
+                levelFmt.getOrElse(severity) { severity.defaultFmt() },
+                AttributionFormatter.formatMessage(severity, Tag(tag), Message(message)),
+            ),
         )
 
     companion object {
-        private fun defaultColor(level: Severity) = when (level) {
+        private fun Severity.defaultFmt() = when (this) {
             Severity.Verbose -> Formatting.GRAY
             Severity.Debug -> Formatting.DARK_PURPLE
             Severity.Info -> Formatting.WHITE
