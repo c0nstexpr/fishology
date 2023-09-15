@@ -41,7 +41,7 @@ class DiscardLoot(
             )
                 .switchMaybe(
                     {
-                        SlotUpdateEvent.observable.mapNotNull { mapSlopUpdate(it) }
+                        SlotUpdateEvent.observable.mapNotNull { mapSlopUpdate(this, it) }
                             .firstOrComplete()
                     },
                 ) {
@@ -53,19 +53,19 @@ class DiscardLoot(
         }
     }
 
-    private fun ItemStack.mapSlopUpdate(arg: SlotUpdateEvent.Arg): FishingLootSlot? {
-        val player = rod.player ?: run {
+    private fun mapSlopUpdate(stack: ItemStack, arg: SlotUpdateEvent.Arg): FishingLootSlot? {
+        val player = rod.player ?: stack.run {
             logger.w<DiscardLoot> { "client player is null" }
             return null
         }
 
-        return if (arg.stack.isSame(this) && arg.syncId == player.playerScreenHandler.syncId) {
+        return if (arg.stack.isSame(stack) && arg.syncId == player.playerScreenHandler.syncId) {
             FishingLootSlot(
                 player.playerScreenHandler.getSlot(arg.slot).index,
-                this,
+                stack,
             )
         } else {
-            logger.w<DiscardLoot> { "client player is null" }
+            logger.d<DiscardLoot> { "stack not matches" }
             null
         }
     }
