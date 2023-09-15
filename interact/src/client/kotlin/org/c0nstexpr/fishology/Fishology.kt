@@ -19,6 +19,7 @@ import org.c0nstexpr.fishology.interact.HookChat
 import org.c0nstexpr.fishology.interact.Rod
 import org.c0nstexpr.fishology.log.MCMessageWriter
 import org.c0nstexpr.fishology.log.addMCWriter
+import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.log.removeWriterWhere
 import org.c0nstexpr.fishology.utils.observe
 import org.c0nstexpr.fishology.utils.propertyOption
@@ -46,11 +47,11 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
         FishingStatTrack(rod, caughtFish.caught.notNull()).apply { enable = true }.scope()
 
     init {
-        logger.d("Initializing Fishology module")
+        logger.d<Fishology> { "Initializing Fishology module" }
 
         config.apply {
             observe(ConfigModel::logLevel) {
-                logger.d("set log level to $it")
+                logger.d<Fishology> { "set log level to $it" }
                 logger.mutableConfig.minSeverity = it
             }
 

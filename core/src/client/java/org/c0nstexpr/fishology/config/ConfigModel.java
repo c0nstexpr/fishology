@@ -42,7 +42,10 @@ public class ConfigModel {
         public static boolean isFmtValid(String str) {
             try {
                 FishologyCoreKt.getCoreLogger()
-                        .d("test format: %s".formatted(String.format(str, "test")));
+                        .d(
+                                "test format: %s".formatted(String.format(str, "test")),
+                                null,
+                                Notification.class.getName());
                 return true;
             } catch (Exception e) {
                 return false;

@@ -7,6 +7,7 @@ import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.subject.behavior.BehaviorSubject
 import net.minecraft.client.MinecraftClient
 import org.c0nstexpr.fishology.events.UseRodEvent
+import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 import org.c0nstexpr.fishology.utils.interactItem
@@ -23,23 +24,23 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
     val bobber get() = player?.fishHook
 
     override fun onEnable(): Disposable {
-        logger.d("enable rod interaction")
+        logger.d<Rod> { "enable rod interaction" }
         return UseRodEvent.observable.filter { it.player.uuid == client.player?.uuid }
             .tryOn()
             .subscribe {
-                logger.d("detected rod use, saving rod status")
+                logger.d<Rod> { "detected rod use, saving rod status" }
                 itemSubject.onNext(RodItem(it.hand, it.player, it.isThrow))
             }
     }
 
     fun use() = rodItem.run {
         if (this == null) {
-            logger.d("no rod item, aborting")
+            logger.d<Rod> { "no rod item, aborting" }
             return@run false
         }
 
         client.execute {
-            logger.d("use rod")
+            logger.d<Rod> { "use rod" }
             client.interactItem(hand)
             player.swingHand(hand)
         }

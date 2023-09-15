@@ -18,8 +18,6 @@ abstract class SwitchDisposable : Disposable {
                 disposable?.dispose()
                 null
             }
-
-            logger.d("${if (value) "Enable" else "Disable"} auto fishing")
         }
 
     protected abstract fun onEnable(): Disposable

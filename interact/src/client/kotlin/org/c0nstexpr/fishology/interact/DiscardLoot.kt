@@ -12,6 +12,8 @@ import net.minecraft.item.ItemStack
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
 import org.c0nstexpr.fishology.events.SlotUpdateEvent
+import org.c0nstexpr.fishology.log.d
+import org.c0nstexpr.fishology.log.w
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 import org.c0nstexpr.fishology.utils.isSame
@@ -25,13 +27,13 @@ class DiscardLoot(
     var lootsFilter = lootsFilter
         set(value) {
             field = value
-            logger.d("Change discard loots")
+            logger.d<DiscardLoot> { "Change discard loots" }
         }
 
     private val lootsQueue = LootsQueue(rod)
 
     override fun onEnable(): Disposable {
-        logger.d("enable throw loot interaction")
+        logger.d<DiscardLoot> { "enable throw loot interaction" }
 
         return disposableScope {
             observableStep(
@@ -43,7 +45,7 @@ class DiscardLoot(
                             .firstOrComplete()
                     },
                 ) {
-                    logger.d("detected excluded loots")
+                    logger.d<DiscardLoot> { "detected excluded loots" }
                     lootsQueue.add(this)
                 }
                 .tryOn()
@@ -53,7 +55,7 @@ class DiscardLoot(
 
     private fun ItemStack.mapSlopUpdate(arg: SlotUpdateEvent.Arg): FishingLootSlot? {
         val player = rod.player ?: run {
-            logger.w("client player is null")
+            logger.w<DiscardLoot> { "client player is null" }
             return null
         }
 
@@ -63,7 +65,7 @@ class DiscardLoot(
                 this,
             )
         } else {
-            logger.w("client player is null")
+            logger.w<DiscardLoot> { "client player is null" }
             null
         }
     }

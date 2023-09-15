@@ -13,6 +13,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
+import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.modId
 import org.c0nstexpr.fishology.toMutableText
@@ -24,7 +25,7 @@ class CaughtChat(
     var lootsFilter = setOf<FishingLoot>()
         set(value) {
             field = value
-            logger.d("Change chat on caught loot filter")
+            logger.d<CaughtChat> { "Change chat on caught loot filter" }
         }
 
     private fun getCaughtItemTxt(stack: ItemStack, name: Text): MutableText {
@@ -46,7 +47,7 @@ class CaughtChat(
     }
 
     override fun onEnable(): Disposable {
-        logger.d("enable caught chat interaction")
+        logger.d<CaughtChat> { "enable caught chat interaction" }
         return caught.map { Pair(it.stack, it.stack.getLoot()) }
             .filter { lootsFilter.contains(it.second) }
             .tryOn()
