@@ -1,5 +1,5 @@
 <h1 style="text-align:center">
-<img alt= "fishology logo" src="./interact/src/main/resources/assets/fishology-interact/icon.png" width=200 height=200 />
+<img alt= "fishology logo" src="https://raw.githubusercontent.com/c0nstexpr/fishology/main/interact/src/main/resources/assets/fishology-interact/icon.png" width=200 height=200 />
 
 [![build](https://github.com/c0nstexpr/fishology/actions/workflows/build.yml/badge.svg)](https://github.com/c0nstexpr/fishology/actions/workflows/build-and-test.yml)
 [![wakatime](https://wakatime.com/badge/github/c0nstexpr/fishology.svg)](https://wakatime.com/badge/github/c0nstexpr/fishology)

@@ -25,7 +25,7 @@ dependencies {
 tasks {
     remapJar { archiveClassifier.set("") }
 
-    this.modrinth { dependsOn(remapJar) }
+    this.modrinth { dependsOn(remapJar, modrinthSyncBody) }
 
     processResources {
         doFirst {
