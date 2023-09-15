@@ -13,7 +13,7 @@
   "text.config.fishology-core.section.hookNotify": "Notification for hooking entity",
   "text.config.fishology-core.section.caughtNotify": "Notification for caught fish",
   "text.config.fishology-core.section.discardLoots": "Discard loot items",
-  "text.config.fishology-core.section.other": "other",
+  "text.config.fishology-core.section.other": "Other",
   "text.config.fishology-core.option.enableAutoFish": "Enable auto fishing",
   "text.config.fishology-core.option.caughtJudgeThreshold": "Range error of judging loots position",
   "text.config.fishology-core.option.logLevel": "Log output level filter",
