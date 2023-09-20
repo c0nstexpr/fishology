@@ -8,8 +8,6 @@ repositories {
     maven("https://maven.terraformersmc.com")
 }
 
-val modId: String by project
-
 base { archivesName.set("fishology") }
 
 dependencies {
@@ -36,16 +34,11 @@ tasks {
                 put("fabric", libs.versions.fabric)
 
                 val fabricKotlin = libs.fabric.kotlin.get()
-                val dep = configurations
-                    .modApi
+                val dep = configurations.modApi
                     .get()
                     .resolvedConfiguration
                     .firstLevelModuleDependencies
-                    .single {
-                        it.children
-                        it.moduleName == fabricKotlin.name &&
-                                it.moduleGroup == fabricKotlin.group
-                    }
+                    .single { it.moduleName == fabricKotlin.name && it.moduleGroup == fabricKotlin.group }
 
                 put("fabricKotlin", dep.moduleVersion)
             }
