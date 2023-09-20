@@ -3,6 +3,8 @@
 
 [![build](https://github.com/c0nstexpr/fishology/actions/workflows/build.yml/badge.svg)](https://github.com/c0nstexpr/fishology/actions/workflows/build-and-test.yml)
 [![wakatime](https://wakatime.com/badge/github/c0nstexpr/fishology.svg)](https://wakatime.com/badge/github/c0nstexpr/fishology)
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/fishology)](https://modrinth.com/mod/fishology)
+
 </h1>
 
 ## Features
