@@ -6,15 +6,15 @@ import org.c0nstexpr.fishology.log.LogBuilder
 import org.c0nstexpr.fishology.log.greeting
 import java.nio.file.Path
 
-const val modId = "fishology"
-const val modName = "Fishology"
+const val MOD_ID = "fishology"
+const val MOD_NAME = "Fishology"
 
-internal val logger = LogBuilder().apply { tag = modId }.build()
+internal val logger = LogBuilder().apply { tag = MOD_ID }.build()
 
 var fishology: Fishology? = null
     private set
 
-val dataDir: Path get() = FabricLoader.getInstance().gameDir.resolve(modId)
+val dataDir: Path get() = FabricLoader.getInstance().gameDir.resolve(MOD_ID)
 
 internal fun init() {
     logger.greeting()

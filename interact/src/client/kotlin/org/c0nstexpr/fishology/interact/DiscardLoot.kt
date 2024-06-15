@@ -53,11 +53,15 @@ class DiscardLoot(
         }
     }
 
-    private fun mapSlopUpdate(stack: ItemStack, arg: SlotUpdateEvent.Arg): FishingLootSlot? {
-        val player = rod.player ?: stack.run {
-            logger.w<DiscardLoot> { "client player is null" }
-            return null
-        }
+    private fun mapSlopUpdate(
+        stack: ItemStack,
+        arg: SlotUpdateEvent.Arg,
+    ): FishingLootSlot? {
+        val player =
+            rod.player ?: stack.run {
+                logger.w<DiscardLoot> { "client player is null" }
+                return null
+            }
 
         return if (arg.stack.isSame(stack) && arg.syncId == player.playerScreenHandler.syncId) {
             FishingLootSlot(

@@ -13,17 +13,18 @@ import net.minecraft.client.MinecraftClient
 fun Logger.greeting(who: String = tag) = i("Hello, this is $who")
 
 object AttributionFormatter : MessageStringFormatter {
-    override fun formatSeverity(severity: Severity) = "$severity"
-    override fun formatTag(tag: Tag) = tag.tag
-
-    override fun formatMessage(severity: Severity?, tag: Tag?, message: Message) =
-        "[${severity?.run(::formatSeverity)}] [${tag?.run(::formatTag)}]: ${message.message}"
+    override fun formatMessage(
+        severity: Severity?,
+        tag: Tag?,
+        message: Message,
+    ) = "[${severity?.run(::formatSeverity)}] [${tag?.run(::formatTag)}]: ${message.message}"
 }
 
-fun mutableLoggerConfigOf(c: LoggerConfig? = null) = object : MutableLoggerConfig {
-    override var logWriterList: List<LogWriter> = c?.logWriterList ?: listOf()
-    override var minSeverity: Severity = c?.minSeverity ?: Severity.Warn
-}
+fun mutableLoggerConfigOf(c: LoggerConfig? = null) =
+    object : MutableLoggerConfig {
+        override var logWriterList: List<LogWriter> = c?.logWriterList ?: listOf()
+        override var minSeverity: Severity = c?.minSeverity ?: Severity.Warn
+    }
 
 fun MutableLoggerConfig.addWriter(w: LogWriter): MutableLoggerConfig {
     logWriterList = logWriterList + w
@@ -35,9 +36,7 @@ inline fun MutableLoggerConfig.removeWriterWhere(p: (LogWriter) -> Boolean): Mut
     return this
 }
 
-fun MutableLoggerConfig.addMCWriter(
-    client: MinecraftClient = MinecraftClient.getInstance(),
-): MutableLoggerConfig {
+fun MutableLoggerConfig.addMCWriter(client: MinecraftClient = MinecraftClient.getInstance()): MutableLoggerConfig {
     for (writer in logWriterList) if (writer is MCMessageWriter) {
         writer.client = client
         return this

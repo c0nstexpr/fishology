@@ -26,48 +26,51 @@ class AutoFishing(
     private val caughtItem: Observable<ItemEntity?>,
 ) : SwitchDisposable() {
     private val playerId
-        get() = rod.player.let {
-            if (it == null) {
-                logger.w<AutoFishing> { "player is null" }
-                null
-            } else {
-                it.id
-            }
-        }
-
-    override fun onEnable() = disposableScope {
-        caughtItem.filter { it == null }
-            .tryOn()
-            .subscribeScoped {
-                logger.d<AutoFishing> { "retrieve rod" }
-                rod.use()
+        get() =
+            rod.player.let {
+                if (it == null) {
+                    logger.w<AutoFishing> { "player is null" }
+                    null
+                } else {
+                    it.id
+                }
             }
 
-        observeCaughtItem().tryOn { _, e -> onRetry(e) }.subscribeScoped { }
-    }
+    override fun onEnable() =
+        disposableScope {
+            caughtItem.filter { it == null }
+                .tryOn()
+                .subscribeScoped {
+                    logger.d<AutoFishing> { "retrieve rod" }
+                    rod.use()
+                }
 
-    private fun observeCaughtItem() = observableStep(caughtItem.notNull())
-        .switchMaybe(
-            {
-                fun isSameItem(it: ItemEntity) = it.id == id
-
-                merge(
-                    ItemEntityVelEvent.observable.map { it.entity }
-                        .filter(::isSameItem)
-                        .filter {
-                            val playerPos = rod.player?.pos ?: return@filter false
-
-                            vecComponents.any { it(velocity) <= 0.0 && it(playerPos) - it(pos) > 0.01 }
-                        },
-                    ItemEntityRemoveEvent.observable.map { it.entity }.filter(::isSameItem),
-                )
-                    .firstOrComplete()
-                    .timeout(timeout, ioScheduler)
-            },
-        ) {
-            logger.d<AutoFishing> { "recast rod" }
-            recast()
+            observeCaughtItem().tryOn { _, e -> onRetry(e) }.subscribeScoped { }
         }
+
+    private fun observeCaughtItem() =
+        observableStep(caughtItem.notNull())
+            .switchMaybe(
+                {
+                    fun isSameItem(it: ItemEntity) = it.id == id
+
+                    merge(
+                        ItemEntityVelEvent.observable.map { it.entity }
+                            .filter(::isSameItem)
+                            .filter {
+                                val playerPos = rod.player?.pos ?: return@filter false
+
+                                vecComponents.any { it(velocity) <= 0.0 && it(playerPos) - it(pos) > 0.01 }
+                            },
+                        ItemEntityRemoveEvent.observable.map { it.entity }.filter(::isSameItem),
+                    )
+                        .firstOrComplete()
+                        .timeout(timeout, ioScheduler)
+                },
+            ) {
+                logger.d<AutoFishing> { "recast rod" }
+                recast()
+            }
 
     private fun recast() {
         if (rod.use()) {

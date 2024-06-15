@@ -6,16 +6,17 @@ import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.subscribe
 import net.minecraft.client.MinecraftClient
+import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.ItemEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import org.c0nstexpr.fishology.MOD_ID
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
 import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
-import org.c0nstexpr.fishology.modId
 import org.c0nstexpr.fishology.toMutableText
 
 class CaughtChat(
@@ -28,20 +29,23 @@ class CaughtChat(
             logger.d<CaughtChat> { "Change chat on caught loot filter" }
         }
 
-    private fun getCaughtItemTxt(stack: ItemStack, name: Text): MutableText {
+    private fun getCaughtItemTxt(
+        stack: ItemStack,
+        name: Text,
+    ): MutableText {
         val txt = name.toMutableText()
-        val enchantTxt = EnchantmentHelper.get(stack)
-            .map { (enchantment, level) -> enchantment.getName(level).string }
-            .takeIf { it.isNotEmpty() }
-            ?: return txt
+        val enchantments = EnchantmentHelper.getEnchantments(stack)
 
-        txt.append(
-            enchantTxt.joinToString(
-                Text.translatable("$modId.comma").string,
-                Text.translatable("$modId.left_brace").string,
-                Text.translatable("$modId.right_brace").string,
-            ),
-        )
+        if (enchantments.isEmpty) return txt
+
+        txt.append(Text.translatable("$MOD_ID.left_brace"))
+
+        enchantments.enchantments.forEach { entry ->
+            txt.append(Enchantment.getName(entry, EnchantmentHelper.getLevel(entry, stack)))
+            txt.append(Text.translatable("$MOD_ID.comma"))
+        }
+
+        txt.append(Text.translatable("$MOD_ID.right_brace"))
 
         return txt
     }

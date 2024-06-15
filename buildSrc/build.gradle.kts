@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.config.LanguageVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     `kotlin-dsl`
@@ -13,10 +13,7 @@ repositories {
 
 dependencies {
     listOf(
-        libs.plugins.kotlin.jvm,
-        libs.plugins.loom,
-        libs.plugins.spotless,
-        libs.plugins.vineflower
+        libs.plugins.kotlin.jvm, libs.plugins.loom, libs.plugins.spotless
     ).forEach { provider ->
         val p = provider.get()
         val id = p.pluginId
@@ -28,19 +25,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:latest.release")
 }
 
-tasks {
-    compileJava {
-        sourceCompatibility = libs.versions.jvm.get()
-        targetCompatibility = sourceCompatibility
-        options.encoding = Charsets.UTF_8.name()
-    }
+tasks { compileJava { options.encoding = Charsets.UTF_8.name() } }
 
-    compileKotlin {
-        kotlinOptions {
-            jvmTarget = compileJava.get().targetCompatibility
-            allWarningsAsErrors = true
-            languageVersion = LanguageVersion.LATEST_STABLE.versionString
-            apiVersion = languageVersion
-        }
-    }
-}
+inline fun <reified T : Enum<T>> maxEnumValue() = enumValues<T>().maxOrNull()!!

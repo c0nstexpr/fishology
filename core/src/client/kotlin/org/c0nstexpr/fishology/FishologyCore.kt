@@ -11,23 +11,24 @@ import org.c0nstexpr.fishology.log.MCMessageWriter
 import org.c0nstexpr.fishology.log.greeting
 import org.c0nstexpr.fishology.log.removeWriterWhere
 
-const val coreModId = "fishology-core"
-const val coreModName = "Fishology Core"
+const val CORE_MOD_ID = "fishology-core"
+const val CORE_MOD_NAME = "Fishology Core"
 
-internal val CoreLogger = LogBuilder().apply { tag = coreModId }.build()
+internal val CoreLogger = LogBuilder().apply { tag = CORE_MOD_ID }.build()
 
-internal fun init() = ClientLifecycleEvents.CLIENT_STARTED.register {
-    val loggerConfig = CoreLogger.mutableConfig
-    CoreLogger.greeting()
-    ConfigControl.init()
+internal fun init() =
+    ClientLifecycleEvents.CLIENT_STARTED.register {
+        val loggerConfig = CoreLogger.mutableConfig
+        CoreLogger.greeting()
+        ConfigControl.init()
 
-    overrideSchedulers(
-        { it.asCoroutineDispatcher().asScheduler() },
-        { Util.getMainWorkerExecutor().asCoroutineDispatcher().asScheduler() },
-        { Util.getIoWorkerExecutor().asCoroutineDispatcher().asScheduler() },
-    )
+        overrideSchedulers(
+            { it.asCoroutineDispatcher().asScheduler() },
+            { Util.getMainWorkerExecutor().asCoroutineDispatcher().asScheduler() },
+            { Util.getIoWorkerExecutor().asCoroutineDispatcher().asScheduler() },
+        )
 
-    ClientLifecycleEvents.CLIENT_STOPPING.register {
-        loggerConfig.removeWriterWhere { writer -> writer is MCMessageWriter }
+        ClientLifecycleEvents.CLIENT_STOPPING.register {
+            loggerConfig.removeWriterWhere { writer -> writer is MCMessageWriter }
+        }
     }
-}

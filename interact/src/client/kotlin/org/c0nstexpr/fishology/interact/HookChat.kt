@@ -15,7 +15,7 @@ class HookChat(client: MinecraftClient) : ChatInteraction(client, "hooked_on_cha
         return HookedEvent.observable.filter {
             client.player?.run { it.bobber.owner?.id == id } ?: false
         }
-            .mapNotNull { it.hook }
-            .subscribe { notify(it.displayName) }
+            .mapNotNull { it.hook?.displayName }
+            .subscribe { notify(it) }
     }
 }

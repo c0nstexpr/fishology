@@ -1,11 +1,9 @@
-import juuxel.vineflowerforloom.api.DecompilerBrand
 import kotlinx.datetime.Clock.System.now
 import net.fabricmc.loom.task.ValidateMixinNameTask
 
 plugins {
     id("kotlin-common")
     id("fabric-loom")
-    id("io.github.juuxel.loom-vineflower")
 }
 
 val modVersion: String by project
@@ -39,8 +37,6 @@ dependencies {
     modApi(libs["fabric-loader"])
 }
 
-vineflower.brand.set(DecompilerBrand.VINEFLOWER)
-
 loom {
     splitEnvironmentSourceSets()
 
@@ -48,9 +44,7 @@ loom {
         sourceSet(srcMain)
         sourceSet(srcClient)
     }
-}
 
-loom {
     runs {
         // named("server") {
         //     isIdeConfigGenerated = true

@@ -10,11 +10,12 @@ data class RodItem(val hand: Hand, val player: PlayerEntity, val inUse: Boolean)
     val slotIndex = player.inventory.getSlotInHand(hand)
     val stack: ItemStack = player.getStackInHand(hand)
 
-    override fun equals(other: Any?) = (other is RodItem) &&
-        hand == other.hand &&
-        player.uuid == other.player.uuid &&
-        slotIndex == other.slotIndex &&
-        stack.isSame(other.stack)
+    override fun equals(other: Any?) =
+        (other is RodItem) &&
+            hand == other.hand &&
+            player.uuid == other.player.uuid &&
+            slotIndex == other.slotIndex &&
+            stack.isSame(other.stack)
 
     override fun hashCode(): Int {
         var result = hand.hashCode()

@@ -1,13 +1,11 @@
 package org.c0nstexpr.fishology.mixin.client.network;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.util.math.Vec3d;
 import org.c0nstexpr.fishology.events.*;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,14 +16,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ClientPlayNetworkHandlerMixin {
     @Shadow private ClientWorld world;
 
-    @Final @Shadow private MinecraftClient client;
-
     @Inject(method = "onScreenHandlerSlotUpdate", at = @At("TAIL"))
     private void onScreenHandlerSlotUpdate(
             ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci) {
         SlotUpdateEvent.subject.onNext(
-                new SlotUpdateEvent.Arg(
-                        packet.getSlot(), packet.getItemStack(), packet.getSyncId()));
+                new SlotUpdateEvent.Arg(packet.getSlot(), packet.getStack(), packet.getSyncId()));
     }
 
     @Inject(method = "onUpdateSelectedSlot", at = @At("TAIL"))

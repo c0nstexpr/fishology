@@ -45,9 +45,10 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
             active = isActive()
         }
 
-    private fun isActive() = option.run {
-        !detached() && defaultValue().run { (count() != valueSet.count()) || containsAll(valueSet) }
-    }
+    private fun isActive() =
+        option.run {
+            !detached() && defaultValue().run { (count() != valueSet.count()) || containsAll(valueSet) }
+        }
 
     init {
         titleLayout.apply {
@@ -78,15 +79,16 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
         }
     }
 
-    override fun shouldDrawTooltip(mouseX: Double, mouseY: Double) =
-        mouseY - y <= titleLayout.height() && super.shouldDrawTooltip(mouseX, mouseY)
+    override fun shouldDrawTooltip(
+        mouseX: Double,
+        mouseY: Double,
+    ) = mouseY - y <= titleLayout.height() && super.shouldDrawTooltip(mouseX, mouseY)
 
     override fun isValid() = true
 
     override fun parsedValue(): Set<FishingLoot> = valueSet
 
     companion object {
-        private fun LabelComponent.setTextColor(f: Formatting) =
-            text(text().copy().styled { it.withColor(f) })
+        private fun LabelComponent.setTextColor(f: Formatting) = text(text().copy().styled { it.withColor(f) })
     }
 }

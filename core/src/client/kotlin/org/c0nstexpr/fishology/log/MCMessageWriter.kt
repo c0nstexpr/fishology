@@ -13,7 +13,12 @@ class MCMessageWriter(
     var client: MinecraftClient,
     val levelFmt: MutableMap<Severity, Formatting> = mutableMapOf(),
 ) : LogWriter() {
-    override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
+    override fun log(
+        severity: Severity,
+        message: String,
+        tag: String,
+        throwable: Throwable?,
+    ) {
         val msg =
             throwable?.let { "$message\nException occurred ${it.localizedMessage}" } ?: message
 
@@ -26,13 +31,14 @@ class MCMessageWriter(
     }
 
     companion object {
-        private fun Severity.defaultFmt() = when (this) {
-            Severity.Verbose -> Formatting.GRAY
-            Severity.Debug -> Formatting.DARK_PURPLE
-            Severity.Info -> Formatting.WHITE
-            Severity.Warn -> Formatting.YELLOW
-            Severity.Error -> Formatting.RED
-            else -> Formatting.DARK_GRAY
-        }
+        private fun Severity.defaultFmt() =
+            when (this) {
+                Severity.Verbose -> Formatting.GRAY
+                Severity.Debug -> Formatting.DARK_PURPLE
+                Severity.Info -> Formatting.WHITE
+                Severity.Warn -> Formatting.YELLOW
+                Severity.Error -> Formatting.RED
+                else -> Formatting.DARK_GRAY
+            }
     }
 }

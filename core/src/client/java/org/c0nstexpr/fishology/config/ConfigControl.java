@@ -18,7 +18,7 @@ public class ConfigControl {
                         null,
                         ConfigControl.class.getName());
         ConfigScreen.registerProvider(
-                coreModId,
-                screen -> new Screen(new Identifier("owo:config"), config.getValue(), screen));
+                CORE_MOD_ID,
+                screen -> new Screen(Identifier.of("owo:config"), config.getValue(), screen));
     }
 }

@@ -1,3 +1,8 @@
+
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.dsl.jvm.JvmTargetValidationMode
+
 plugins {
     kotlin("jvm")
     id("com.diffplug.spotless")
@@ -19,16 +24,15 @@ val libs = versionCatalog
 tasks {
     compileJava {
         sourceCompatibility = libs.versions["jvm"]
-        targetCompatibility = sourceCompatibility
         options.encoding = Charsets.UTF_8.name()
     }
 
     compileKotlin {
-        kotlinOptions {
-            jvmTarget = compileJava.get().targetCompatibility
+        compilerOptions {
+            jvmTargetValidationMode.set(JvmTargetValidationMode.ERROR)
+            jvmTarget.set(JvmTarget.fromTarget(compileJava.get().targetCompatibility))
             allWarningsAsErrors = true
-            languageVersion = libs.versions["kotlin"]
-            apiVersion = languageVersion
+            languageVersion.set(KotlinVersion.fromVersion(libs.versions["kotlin"]))
         }
     }
 

@@ -10,13 +10,13 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import org.c0nstexpr.fishology.MOD_ID
 import org.c0nstexpr.fishology.appendStyled
 import org.c0nstexpr.fishology.appendTranslatable
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
 import org.c0nstexpr.fishology.config.FishingLootType
 import org.c0nstexpr.fishology.dataDir
-import org.c0nstexpr.fishology.modId
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 import java.nio.file.Files
 
@@ -58,9 +58,10 @@ class FishingStatTrack(val rod: Rod, val caughtItem: Observable<ItemEntity>) : S
     fun clear() = stat.clear()
 
     fun printStat(): MutableText {
-        val txt = Text.literal("[$modId]")
-            .appendTranslatable("$modId.stat_title")
-            .append("\n")
+        val txt =
+            Text.literal("[$MOD_ID]")
+                .appendTranslatable("$MOD_ID.stat_title")
+                .append("\n")
 
         statMap.forEach { (loot, count) ->
             txt.appendStyled(loot.color, loot.translate(), Text.of(" $count\n"))
@@ -72,17 +73,18 @@ class FishingStatTrack(val rod: Rod, val caughtItem: Observable<ItemEntity>) : S
     companion object {
         private const val STAT_JSON = "stats.json"
 
-        private val fishingLootColors = FishingLootType.entries.associateWith {
-            Style.EMPTY.withColor(
-                when (it) {
-                    FishingLootType.Treasure -> Formatting.GOLD
-                    FishingLootType.Fish -> Formatting.AQUA
-                    FishingLootType.Junk -> Formatting.WHITE
-                },
-            )
-                .withBold(true)
-                .withItalic(true)
-        }
+        private val fishingLootColors =
+            FishingLootType.entries.associateWith {
+                Style.EMPTY.withColor(
+                    when (it) {
+                        FishingLootType.Treasure -> Formatting.GOLD
+                        FishingLootType.Fish -> Formatting.AQUA
+                        FishingLootType.Junk -> Formatting.WHITE
+                    },
+                )
+                    .withBold(true)
+                    .withItalic(true)
+            }
 
         private val FishingLoot.color get() = fishingLootColors[lootType]!!
 

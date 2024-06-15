@@ -1,16 +1,11 @@
 import org.gradle.api.Project
-import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.provider.MapProperty
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.api.tasks.TaskContainer
-import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.named
 import java.util.*
 
 inline fun Project.fabricProperty(block: MapProperty<String, String>.() -> Unit) =
@@ -37,7 +32,7 @@ val VersionCatalog.versions get() = VCVersionsAccess(this)
 
 class VCVersionsAccess internal constructor(versionCatalog: VersionCatalog) :
     VersionCatalog by versionCatalog {
-    operator fun get(name: String) = getByName(name, VersionCatalog::findVersion).run {
+    operator fun get(name: String): String = getByName(name, VersionCatalog::findVersion).run {
         requiredVersion.ifEmpty { strictVersion.ifEmpty { preferredVersion } }
     }
 }

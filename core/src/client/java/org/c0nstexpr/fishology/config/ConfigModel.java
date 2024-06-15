@@ -9,7 +9,7 @@ import io.wispforest.owo.config.annotation.SectionHeader;
 import java.util.Set;
 import org.c0nstexpr.fishology.FishologyCoreKt;
 
-@Config(name = FishologyCoreKt.coreModId, wrapperName = "Config")
+@Config(name = FishologyCoreKt.CORE_MOD_ID, wrapperName = "Config", defaultHook = true)
 public class ConfigModel {
     @SectionHeader("general")
     public boolean enableAutoFish = true;

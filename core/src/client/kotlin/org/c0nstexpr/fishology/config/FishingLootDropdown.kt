@@ -4,7 +4,7 @@ import io.wispforest.owo.ui.component.DropdownComponent
 import io.wispforest.owo.ui.core.Insets
 import io.wispforest.owo.ui.core.Sizing
 import net.minecraft.text.Text
-import org.c0nstexpr.fishology.coreModId
+import org.c0nstexpr.fishology.CORE_MOD_ID
 import java.util.function.Consumer
 import kotlin.enums.EnumEntries
 
@@ -26,22 +26,23 @@ class FishingLootDropdown :
     }
 
     private fun EnumEntries<FishingLoot>.addLoots(lootType: FishingLootType) {
-        text(Text.translatable("$coreModId.${FishingLootType::class.simpleName}.${lootType.name}"))
+        text(Text.translatable("$CORE_MOD_ID.${FishingLootType::class.simpleName}.${lootType.name}"))
         filter { it.lootType == lootType }.forEach(::addValues)
     }
 
-    private fun addValues(it: FishingLoot) = entries.child(
-        FishingLootCheckBox(this) { selected ->
-            if (selected) {
-                valueSet.add(it)
-            } else {
-                valueSet.remove(it)
-            }
-        }.apply {
-            loot = it
-            margins(Insets.of(2))
-        },
-    )
+    private fun addValues(it: FishingLoot) =
+        entries.child(
+            FishingLootCheckBox(this) { selected ->
+                if (selected) {
+                    valueSet.add(it)
+                } else {
+                    valueSet.remove(it)
+                }
+            }.apply {
+                loot = it
+                margins(Insets.of(2))
+            },
+        )
 
     companion object {
         private class FishingLootCheckBox(

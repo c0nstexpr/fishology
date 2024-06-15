@@ -11,13 +11,13 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 
-fun PlayerInventory.getSlotInHand(hand: Hand) = when (hand) {
-    Hand.MAIN_HAND -> selectedSlot
-    Hand.OFF_HAND -> PlayerInventory.OFF_HAND_SLOT
-}
+fun PlayerInventory.getSlotInHand(hand: Hand) =
+    when (hand) {
+        Hand.MAIN_HAND -> selectedSlot
+        Hand.OFF_HAND -> PlayerInventory.OFF_HAND_SLOT
+    }
 
-fun MinecraftClient.interactItem(hand: Hand) =
-    this.interactionManager?.interactItem(player, hand)
+fun MinecraftClient.interactItem(hand: Hand) = this.interactionManager?.interactItem(player, hand)
 
 fun ItemStack.isSame(other: ItemStack?): Boolean {
     return ItemStack.areEqual(this, other ?: return false)
@@ -25,10 +25,11 @@ fun ItemStack.isSame(other: ItemStack?): Boolean {
 
 val Entity.trackedPos: Vec3d get() = this.trackedPosition.withDelta(0, 0, 0)
 
-fun ClientPlayNetworkHandler.swapHand() = sendPacket(
-    PlayerActionC2SPacket(
-        PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND,
-        BlockPos.ORIGIN,
-        Direction.DOWN,
-    ),
-)
+fun ClientPlayNetworkHandler.swapHand() =
+    sendPacket(
+        PlayerActionC2SPacket(
+            PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND,
+            BlockPos.ORIGIN,
+            Direction.DOWN,
+        ),
+    )

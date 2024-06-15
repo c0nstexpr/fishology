@@ -33,18 +33,19 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
             }
     }
 
-    fun use() = rodItem.run {
-        if (this == null) {
-            logger.d<Rod> { "no rod item, aborting" }
-            return@run false
-        }
+    fun use() =
+        rodItem.run {
+            if (this == null) {
+                logger.d<Rod> { "no rod item, aborting" }
+                return@run false
+            }
 
-        client.execute {
-            logger.d<Rod> { "use rod" }
-            client.interactItem(hand)
-            player.swingHand(hand)
-        }
+            client.execute {
+                logger.d<Rod> { "use rod" }
+                client.interactItem(hand)
+                player.swingHand(hand)
+            }
 
-        return@run true
-    }
+            return@run true
+        }
 }

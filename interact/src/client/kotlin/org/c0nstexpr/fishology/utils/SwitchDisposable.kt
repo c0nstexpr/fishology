@@ -11,13 +11,14 @@ abstract class SwitchDisposable : Disposable {
     var enable
         get() = disposable != null
         set(value) {
-            disposable = if (value && (disposable == null)) {
-                onEnable()
-            } else {
-                onDisable()
-                disposable?.dispose()
-                null
-            }
+            disposable =
+                if (value && (disposable == null)) {
+                    onEnable()
+                } else {
+                    onDisable()
+                    disposable?.dispose()
+                    null
+                }
         }
 
     protected abstract fun onEnable(): Disposable
@@ -30,21 +31,20 @@ abstract class SwitchDisposable : Disposable {
 
     override val isDisposed get() = !enable
 
-    protected fun <T> Observable<T>.tryOn(
-        predicate: (Long, Throwable) -> Boolean = { _, _ -> false },
-    ) = retry { i, e ->
-        if (!predicate(i, e)) {
-            logger.e(e.localizedMessage)
-        }
+    protected fun <T> Observable<T>.tryOn(predicate: (Long, Throwable) -> Boolean = { _, _ -> false }) =
+        retry { i, e ->
+            if (!predicate(i, e)) {
+                logger.e(e.localizedMessage)
+            }
 
-        if (enable) {
-            logger.d("Resubscribe events on $i times")
-            enable = false
-            enable = true
+            if (enable) {
+                logger.d("Resubscribe events on $i times")
+                enable = false
+                enable = true
 
-            true
-        } else {
-            false
+                true
+            } else {
+                false
+            }
         }
-    }
 }

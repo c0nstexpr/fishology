@@ -10,8 +10,9 @@ class ClientTickEvent private constructor() {
 
     companion object {
         @JvmField
-        internal val subject = PublishSubject<Arg>()
-            .apply { ClientTickEvents.END_CLIENT_TICK.register { onNext(Arg(it)) } }
+        internal val subject =
+            PublishSubject<Arg>()
+                .apply { ClientTickEvents.END_CLIENT_TICK.register { onNext(Arg(it)) } }
 
         val observable: Observable<Arg> = subject
     }

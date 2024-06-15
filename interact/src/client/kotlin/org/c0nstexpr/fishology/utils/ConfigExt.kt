@@ -24,18 +24,21 @@ abstract class PropertyOption<Model, Type> {
         }
     }
 
-    fun observe(init: Boolean = true, block: (Type) -> Unit) = option.run {
+    fun observe(
+        init: Boolean = true,
+        block: (Type) -> Unit,
+    ) = option.run {
         observe(block)
         if (init) block(value())
     }
 }
 
-fun <Model> ConfigWrapper<Model>.propertyOption() = object : PropertyOption<Model, Model>() {
-    override val config: ConfigWrapper<Model> get() = this@propertyOption
-}
+fun <Model> ConfigWrapper<Model>.propertyOption() =
+    object : PropertyOption<Model, Model>() {
+        override val config: ConfigWrapper<Model> get() = this@propertyOption
+    }
 
-fun <Model, Type> ConfigWrapper<Model>.propertyOption(prop: KProperty1<Model, Type>) =
-    propertyOption().from(prop)
+fun <Model, Type> ConfigWrapper<Model>.propertyOption(prop: KProperty1<Model, Type>) = propertyOption().from(prop)
 
 fun <Model, Type> ConfigWrapper<Model>.observe(
     prop: KProperty1<Model, Type>,
