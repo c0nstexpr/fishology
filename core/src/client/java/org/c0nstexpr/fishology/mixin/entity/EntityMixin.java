@@ -28,7 +28,9 @@ abstract class EntityMixin {
 
     @Inject(method = "onRemoved", at = @At("TAIL"))
     private void onRemoved(CallbackInfo ci) {
-        if (!(world.isClient && (Entity) (Object) this instanceof ItemEntity item)) return;
+        final var entity = (Entity) (Object) this;
+
+        if (!(world.isClient && entity instanceof ItemEntity item)) return;
 
         ItemEntityRemoveEvent.subject.onNext(new ItemEntityRemoveEvent.Arg(item));
     }

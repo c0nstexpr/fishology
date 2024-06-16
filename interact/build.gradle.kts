@@ -51,7 +51,7 @@ System.getenv().getOrDefault("MODRINTH_TOKEN", null)?.let {
         projectId.set("rjuXQb7H")
         token.set(it)
         versionNumber.set(version.toString())
-        versionType.set("alpha")
+        versionType.set("beta")
         uploadFile.set(tasks.remapJar.get())
         loaders.add("fabric")
         syncBodyFrom.set(rootProject.file("README.md").readText())

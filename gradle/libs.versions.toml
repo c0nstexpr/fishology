@@ -4,8 +4,8 @@ kotlin = "2.0"
 minecraft = "1.21"
 yarn = "1.21+build.2"
 fabric = "0.100.1+1.21"
-owo = "0.12.9+1.20.5"
-modmenu = "11.0.0-beta.2"
+owo = "0.12.10+1.21"
+modmenu = "11.0.0-rc.2"
 
 [libraries]
 # fabric dependencies

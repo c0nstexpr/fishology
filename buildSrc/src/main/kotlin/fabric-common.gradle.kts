@@ -46,12 +46,6 @@ loom {
     }
 
     runs {
-        // named("server") {
-        //     isIdeConfigGenerated = true
-        //     server()
-        //     configName = "$modName Server"
-        // }
-
         named("client") {
             isIdeConfigGenerated = true
             client()

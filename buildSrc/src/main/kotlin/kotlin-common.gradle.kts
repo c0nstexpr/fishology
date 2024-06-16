@@ -24,6 +24,7 @@ val libs = versionCatalog
 tasks {
     compileJava {
         sourceCompatibility = libs.versions["jvm"]
+        targetCompatibility = sourceCompatibility
         options.encoding = Charsets.UTF_8.name()
     }
 

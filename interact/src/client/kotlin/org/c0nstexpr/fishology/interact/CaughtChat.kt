@@ -34,18 +34,20 @@ class CaughtChat(
         name: Text,
     ): MutableText {
         val txt = name.toMutableText()
-        val enchantments = EnchantmentHelper.getEnchantments(stack)
+        val enchantments = EnchantmentHelper.getEnchantments(stack).enchantments
 
-        if (enchantments.isEmpty) return txt
+        if (enchantments.isEmpty()) return txt
 
-        txt.append(Text.translatable("$MOD_ID.left_brace"))
-
-        enchantments.enchantments.forEach { entry ->
-            txt.append(Enchantment.getName(entry, EnchantmentHelper.getLevel(entry, stack)))
-            txt.append(Text.translatable("$MOD_ID.comma"))
-        }
-
-        txt.append(Text.translatable("$MOD_ID.right_brace"))
+        listOf(Text.translatable("$MOD_ID.left_brace")).plus(
+            enchantments.map { entry ->
+                listOf(
+                    Enchantment.getName(entry, EnchantmentHelper.getLevel(entry, stack)),
+                    Text.translatable("$MOD_ID.comma"),
+                )
+            }.flatten().dropLast(1),
+        )
+            .plusElement(Text.translatable("$MOD_ID.right_brace"))
+            .forEach(txt::append)
 
         return txt
     }
@@ -53,8 +55,7 @@ class CaughtChat(
     override fun onEnable(): Disposable {
         logger.d<CaughtChat> { "enable caught chat interaction" }
         return caught.map { Pair(it.stack, it.stack.getLoot()) }
-            .filter { lootsFilter.contains(it.second) }
-            .tryOn()
+            .filter { lootsFilter.contains(it.second) }.tryOn()
             .subscribe { notify(getCaughtItemTxt(it.first, it.second.translate())) }
     }
 }
