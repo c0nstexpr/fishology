@@ -11,7 +11,7 @@ modmenu = "11.0.0-rc.2"
 # fabric dependencies
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 yarn = { module = "net.fabricmc:yarn", version.ref = "yarn" }
-fabric-loader = { module = "net.fabricmc:fabric-loader",  version = "latest.release" }
+fabric-loader = { module = "net.fabricmc:fabric-loader", version = "latest.release" }
 fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric" }
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version = "latest.release" }
 
@@ -29,7 +29,6 @@ kermit-core = { module = "co.touchlab:kermit-core-jvm", version = "latest.releas
 
 [bundles]
 fabric = ["fabric-kotlin", "fabric-api"]
-owo = ["owo", "modmenu"]
 
 reaktive = ["reaktive", "reaktive-utils", "reaktive-annotations", "reaktive-coroutines-interop"]
 kermit = ["kermit", "kermit-core"]
