@@ -27,6 +27,11 @@ jobs:
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Gradle build
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build
+
       - name: Modrinth publish
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
