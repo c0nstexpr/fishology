@@ -12,6 +12,7 @@ classes/
 # idea
 
 .idea/
+.kotlin/
 *.iml
 *.ipr
 *.iws
