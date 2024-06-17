@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @SuppressWarnings({"DataFlowIssue"})
 @Mixin(Entity.class)
-abstract class EntityMixin {
+public abstract class EntityMixin {
     @Shadow private World world;
 
     @Inject(method = "setVelocity(Lnet/minecraft/util/math/Vec3d;)V", at = @At("TAIL"))

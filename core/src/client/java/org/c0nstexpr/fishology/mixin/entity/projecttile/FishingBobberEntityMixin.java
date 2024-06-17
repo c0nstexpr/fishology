@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @SuppressWarnings({"DataFlowIssue"})
 @Mixin(FishingBobberEntity.class)
-abstract class FishingBobberEntityMixin {
+public abstract class FishingBobberEntityMixin {
     @Final @Shadow private static TrackedData<Boolean> CAUGHT_FISH;
     @Final @Shadow private static TrackedData<Boolean> HOOK_ENTITY_ID;
 
