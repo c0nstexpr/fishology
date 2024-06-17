@@ -8,10 +8,8 @@ repositories {
     maven("https://maven.terraformersmc.com")
 }
 
-base { archivesName.set("fishology") }
-
 dependencies {
-    project(":core", "namedElements").let {
+    project(":core").let {
         api(it)
         include(it)
         clientImplementation(it.dependencyProject.srcClient.output)

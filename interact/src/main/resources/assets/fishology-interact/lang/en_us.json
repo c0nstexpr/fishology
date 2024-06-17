@@ -5,5 +5,5 @@
   "fishology.left_brace": "(",
   "fishology.right_brace": ")",
   "fishology.comma": ",",
-  "fishology.discard_loots_notification": "Rod is selected, discard loots feature will not work"
+  "fishology.discard_loots_notification": "Rod is selected, discard loots feature will not work. If needed, please move the rod to secondary slot."
 }

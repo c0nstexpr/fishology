@@ -28,7 +28,7 @@ abstract class ChatInteraction(val client: MinecraftClient, val defaultTranslate
 
     protected fun notify(txt: Text) =
         when (notifyLevel) {
-            NotifyLevel.HUD -> client.msg(defaultMsg.append(txt))
+            NotifyLevel.HUD -> client.msg(txt)
             NotifyLevel.Chat -> client.chat(fmt.format(txt.string), logger)
             NotifyLevel.None -> {}
         }
