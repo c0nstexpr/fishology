@@ -1,4 +1,3 @@
-
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.dsl.jvm.JvmTargetValidationMode
@@ -41,13 +40,3 @@ tasks {
 
     java { withSourcesJar() }
 }
-
-spotless {
-    java {
-        googleJavaFormat().aosp()
-        formatAnnotations()
-    }
-
-    kotlin { ktlint() }
-}
-
