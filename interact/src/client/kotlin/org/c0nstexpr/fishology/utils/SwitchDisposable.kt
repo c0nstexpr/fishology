@@ -31,20 +31,19 @@ abstract class SwitchDisposable : Disposable {
 
     override val isDisposed get() = !enable
 
-    protected fun <T> Observable<T>.tryOn(predicate: (Long, Throwable) -> Boolean = { _, _ -> false }) =
-        retry { i, e ->
-            if (!predicate(i, e)) {
-                logger.e(e.localizedMessage)
-            }
-
-            if (enable) {
-                logger.d("Resubscribe events on $i times")
-                enable = false
-                enable = true
-
-                true
-            } else {
-                false
-            }
+    protected fun <T> Observable<T>.tryOn(predicate: (Long, Throwable) -> Boolean = { _, _ -> false }) = retry { i, e ->
+        if (!predicate(i, e)) {
+            logger.e(e.localizedMessage)
         }
+
+        if (enable) {
+            logger.d("Resubscribe events on $i times")
+            enable = false
+            enable = true
+
+            true
+        } else {
+            false
+        }
+    }
 }

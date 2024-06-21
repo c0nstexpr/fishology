@@ -33,10 +33,9 @@ abstract class PropertyOption<Model, Type> {
     }
 }
 
-fun <Model> ConfigWrapper<Model>.propertyOption() =
-    object : PropertyOption<Model, Model>() {
-        override val config: ConfigWrapper<Model> get() = this@propertyOption
-    }
+fun <Model> ConfigWrapper<Model>.propertyOption() = object : PropertyOption<Model, Model>() {
+    override val config: ConfigWrapper<Model> get() = this@propertyOption
+}
 
 fun <Model, Type> ConfigWrapper<Model>.propertyOption(prop: KProperty1<Model, Type>) = propertyOption().from(prop)
 

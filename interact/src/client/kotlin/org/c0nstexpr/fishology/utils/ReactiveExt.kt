@@ -51,20 +51,19 @@ fun completableStep(
 
 class ObservableStep<T>(private val src: Observable<T>, val nextStep: (T.() -> Unit)? = null) :
     Observable<T> by src {
-    override fun subscribe(observer: ObservableObserver<T>) =
-        src.subscribe(
-            object : ObservableObserver<T> by observer {
-                override fun onNext(value: T) {
-                    observer.onNext(value)
+    override fun subscribe(observer: ObservableObserver<T>) = src.subscribe(
+        object : ObservableObserver<T> by observer {
+            override fun onNext(value: T) {
+                observer.onNext(value)
 
-                    try {
-                        nextStep?.invoke(value)
-                    } catch (e: Throwable) {
-                        onError(e)
-                    }
+                try {
+                    nextStep?.invoke(value)
+                } catch (e: Throwable) {
+                    onError(e)
                 }
-            },
-        )
+            }
+        },
+    )
 
     fun <U> switch(
         nextSrc: T.() -> Observable<U>,
@@ -151,20 +150,19 @@ class ObservableStep<T>(private val src: Observable<T>, val nextStep: (T.() -> U
 }
 
 class MaybeStep<T>(private val src: Maybe<T>, val next: (T.() -> Unit)? = null) : Maybe<T> by src {
-    override fun subscribe(observer: MaybeObserver<T>) =
-        src.subscribe(
-            object : MaybeObserver<T> by observer {
-                override fun onSuccess(value: T) {
-                    observer.onSuccess(value)
+    override fun subscribe(observer: MaybeObserver<T>) = src.subscribe(
+        object : MaybeObserver<T> by observer {
+            override fun onSuccess(value: T) {
+                observer.onSuccess(value)
 
-                    try {
-                        next?.invoke(value)
-                    } catch (e: Throwable) {
-                        onError(e)
-                    }
+                try {
+                    next?.invoke(value)
+                } catch (e: Throwable) {
+                    onError(e)
                 }
-            },
-        )
+            }
+        },
+    )
 
     fun <U> flatObservable(
         nextSrc: T.() -> Observable<U>,
@@ -220,19 +218,18 @@ class MaybeStep<T>(private val src: Maybe<T>, val next: (T.() -> Unit)? = null) 
 
 class SingleStep<T>(private val src: Single<T>, val next: (T.() -> Unit)? = null) :
     Single<T> by src {
-    override fun subscribe(observer: SingleObserver<T>) =
-        src.subscribe(
-            object : SingleObserver<T> by observer {
-                override fun onSuccess(value: T) {
-                    observer.onSuccess(value)
-                    try {
-                        next?.invoke(value)
-                    } catch (e: Throwable) {
-                        onError(e)
-                    }
+    override fun subscribe(observer: SingleObserver<T>) = src.subscribe(
+        object : SingleObserver<T> by observer {
+            override fun onSuccess(value: T) {
+                observer.onSuccess(value)
+                try {
+                    next?.invoke(value)
+                } catch (e: Throwable) {
+                    onError(e)
                 }
-            },
-        )
+            }
+        },
+    )
 
     fun <U> flatObservable(
         nextSrc: T.() -> Observable<U>,
@@ -286,18 +283,17 @@ class SingleStep<T>(private val src: Single<T>, val next: (T.() -> Unit)? = null
 
 class CompletableStep(private val src: Completable, val next: (() -> Unit)? = null) :
     Completable by src {
-    override fun subscribe(observer: CompletableObserver) =
-        src.subscribe(
-            object : CompletableObserver by observer {
-                override fun onComplete() {
-                    try {
-                        next?.invoke()
-                    } catch (e: Throwable) {
-                        onError(e)
-                        return
-                    }
-                    observer.onComplete()
+    override fun subscribe(observer: CompletableObserver) = src.subscribe(
+        object : CompletableObserver by observer {
+            override fun onComplete() {
+                try {
+                    next?.invoke()
+                } catch (e: Throwable) {
+                    onError(e)
+                    return
                 }
-            },
-        )
+                observer.onComplete()
+            }
+        },
+    )
 }

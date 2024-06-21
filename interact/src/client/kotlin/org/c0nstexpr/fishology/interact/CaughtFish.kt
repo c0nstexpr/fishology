@@ -53,11 +53,10 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
             }
     }
 
-    private fun onRodCast() =
-        CaughtFishEvent.observable.filter { it.caught && it.bobber.id == rod.player?.fishHook?.id }
-            .firstOrComplete()
-            .map { it.bobber }
-            .flatMap(::onCaughtFish)
+    private fun onRodCast() = CaughtFishEvent.observable.filter { it.caught && it.bobber.id == rod.player?.fishHook?.id }
+        .firstOrComplete()
+        .map { it.bobber }
+        .flatMap(::onCaughtFish)
 
     private fun onCaughtFish(bobber: FishingBobberEntity): Maybe<ItemEntity> {
         logger.d<CaughtFish> { "caught fish" }
@@ -68,16 +67,15 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
             .flatMap { onRodRetrieve(bobber.owner?.trackedPos ?: return@flatMap maybeOfEmpty()) }
     }
 
-    private fun onRodRetrieve(pPos: Vec3d) =
-        observableStep(ItemEntitySpawnEvent.observable)
-            .concatMaybe(
-                {
-                    ItemEntityTrackerEvent.observable.filter { isCaughtItem(pPos, judgeThreshold) }
-                        .firstOrComplete()
-                },
-            )
-            .firstOrComplete()
-            .map { it.entity }
+    private fun onRodRetrieve(pPos: Vec3d) = observableStep(ItemEntitySpawnEvent.observable)
+        .concatMaybe(
+            {
+                ItemEntityTrackerEvent.observable.filter { isCaughtItem(pPos, judgeThreshold) }
+                    .firstOrComplete()
+            },
+        )
+        .firstOrComplete()
+        .map { it.entity }
 
     companion object {
         fun ItemEntitySpawnEvent.Arg.isCaughtItem(
@@ -92,13 +90,12 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
             // double g = 0.1;
             // itemEntity.setVelocity(d * 0.1, e * 0.1 + sqrt(sqrt(d * d + e * e + f * f)) * 0.08, f * 0.1);
 
-            fun isErrorAccepted(error: Double) =
-                if (error > errorThreshold) {
-                    logger.d<CaughtFish> { "caught item candidate out of threshold, error: $error, threshold: $errorThreshold" }
-                    true
-                } else {
-                    false
-                }
+            fun isErrorAccepted(error: Double) = if (error > errorThreshold) {
+                logger.d<CaughtFish> { "caught item candidate out of threshold, error: $error, threshold: $errorThreshold" }
+                true
+            } else {
+                false
+            }
 
             var relative = Vec3d(pPos.x - pos.x, 0.0, 0.0)
             var errorVec = Vec3d((relative.x * G - vel.x).absoluteValue, 0.0, 0.0)

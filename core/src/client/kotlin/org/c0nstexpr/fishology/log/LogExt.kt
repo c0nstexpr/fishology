@@ -20,11 +20,10 @@ object AttributionFormatter : MessageStringFormatter {
     ) = "[${severity?.run(::formatSeverity)}] [${tag?.run(::formatTag)}]: ${message.message}"
 }
 
-fun mutableLoggerConfigOf(c: LoggerConfig? = null) =
-    object : MutableLoggerConfig {
-        override var logWriterList: List<LogWriter> = c?.logWriterList ?: listOf()
-        override var minSeverity: Severity = c?.minSeverity ?: Severity.Warn
-    }
+fun mutableLoggerConfigOf(c: LoggerConfig? = null) = object : MutableLoggerConfig {
+    override var logWriterList: List<LogWriter> = c?.logWriterList ?: listOf()
+    override var minSeverity: Severity = c?.minSeverity ?: Severity.Warn
+}
 
 fun MutableLoggerConfig.addWriter(w: LogWriter): MutableLoggerConfig {
     logWriterList = logWriterList + w

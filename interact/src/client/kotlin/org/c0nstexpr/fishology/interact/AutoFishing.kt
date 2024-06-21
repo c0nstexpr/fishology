@@ -102,7 +102,7 @@ class AutoFishing(
 
                         vecComponents.run {
                             any { it(caught.velocity) <= 0.0 } ||
-                                    all { (it(playerPos) - it(caught.pos) > 0.01) }
+                                all { (it(playerPos) - it(caught.pos) > 0.01) }
                         }
                     },
                 ItemEntityRemoveEvent.observable.map { it.entity }

@@ -29,35 +29,32 @@ internal class LootsQueue(val rod: Rod) : DisposableScope by DisposableScope() {
         }
     }
 
-    fun add(loot: FishingLootSlot) =
-        synchronized<Unit>(lock) {
-            if (current.isDisposed) {
-                current = subscribeTo(loot.dropMaybe(player))
+    fun add(loot: FishingLootSlot) = synchronized<Unit>(lock) {
+        if (current.isDisposed) {
+            current = subscribeTo(loot.dropMaybe(player))
 
-                if (!loot.pick()) current.dispose()
-            } else {
-                queue.add(loot)
-            }
+            if (!loot.pick()) current.dispose()
+        } else {
+            queue.add(loot)
         }
+    }
 
-    private fun subscribeTo(maybe: Maybe<Unit>): Disposable =
-        maybe.subscribe {
-            synchronized(lock) {
-                current.dispose()
+    private fun subscribeTo(maybe: Maybe<Unit>): Disposable = maybe.subscribe {
+        synchronized(lock) {
+            current.dispose()
 
-                if (queue.isEmpty()) return@subscribe
+            if (queue.isEmpty()) return@subscribe
 
-                val loot = queue.removeFirst()
-                current = subscribeTo(loot.dropMaybe(player))
-                if (!loot.pick()) current.dispose()
-            }
+            val loot = queue.removeFirst()
+            current = subscribeTo(loot.dropMaybe(player))
+            if (!loot.pick()) current.dispose()
         }
+    }
 
-    private fun FishingLootSlot.pick() =
-        pick(player, rod.client.interactionManager, rod.rodItem) {
-            if (!notified) {
-                rod.client.msg(Text.translatable("$MOD_ID.discard_loots_notification"))
-                notified = true
-            }
+    private fun FishingLootSlot.pick() = pick(player, rod.client.interactionManager, rod.rodItem) {
+        if (!notified) {
+            rod.client.msg(Text.translatable("$MOD_ID.discard_loots_notification"))
+            notified = true
         }
+    }
 }

@@ -22,8 +22,7 @@ class Screen(modelId: Identifier, config: ConfigWrapper<*>, parent: Screen?) :
             }
     }
 
-    private fun isFishingLootSet(it: Option<*>) =
-        typeOf<Set<FishingLoot>>().isSupertypeOf(
-            it.backingField().field.kotlinProperty!!.returnType,
-        )
+    private fun isFishingLootSet(it: Option<*>) = typeOf<Set<FishingLoot>>().isSupertypeOf(
+        it.backingField().field.kotlinProperty!!.returnType,
+    )
 }

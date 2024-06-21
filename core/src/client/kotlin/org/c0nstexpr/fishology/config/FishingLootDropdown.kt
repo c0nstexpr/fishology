@@ -30,19 +30,18 @@ class FishingLootDropdown :
         filter { it.lootType == lootType }.forEach(::addValues)
     }
 
-    private fun addValues(it: FishingLoot) =
-        entries.child(
-            FishingLootCheckBox(this) { selected ->
-                if (selected) {
-                    valueSet.add(it)
-                } else {
-                    valueSet.remove(it)
-                }
-            }.apply {
-                loot = it
-                margins(Insets.of(2))
-            },
-        )
+    private fun addValues(it: FishingLoot) = entries.child(
+        FishingLootCheckBox(this) { selected ->
+            if (selected) {
+                valueSet.add(it)
+            } else {
+                valueSet.remove(it)
+            }
+        }.apply {
+            loot = it
+            margins(Insets.of(2))
+        },
+    )
 
     companion object {
         private class FishingLootCheckBox(

@@ -26,12 +26,11 @@ abstract class ChatInteraction(val client: MinecraftClient, val defaultTranslate
             } ?: defaultMsg.string
         }
 
-    protected fun notify(txt: Text) =
-        when (notifyLevel) {
-            NotifyLevel.HUD -> client.msg(txt)
-            NotifyLevel.Chat -> client.chat(fmt.format(txt.string), logger)
-            NotifyLevel.None -> {}
-        }
+    protected fun notify(txt: Text) = when (notifyLevel) {
+        NotifyLevel.HUD -> client.msg(txt)
+        NotifyLevel.Chat -> client.chat(fmt.format(txt.string), logger)
+        NotifyLevel.None -> {}
+    }
 
     protected val defaultMsg: MutableText get() = Text.translatable("$MOD_ID.$defaultTranslateKey")
 }

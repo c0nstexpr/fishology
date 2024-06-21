@@ -45,10 +45,9 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
             active = isActive()
         }
 
-    private fun isActive() =
-        option.run {
-            !detached() && defaultValue().run { (count() != valueSet.count()) || containsAll(valueSet) }
-        }
+    private fun isActive() = option.run {
+        !detached() && defaultValue().run { (count() != valueSet.count()) || containsAll(valueSet) }
+    }
 
     init {
         titleLayout.apply {

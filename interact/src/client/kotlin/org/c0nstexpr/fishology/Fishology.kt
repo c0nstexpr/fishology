@@ -86,23 +86,22 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
         caughtFish.judgeThreshold = it
     }
 
-    private fun registerCommand() =
-        ClientCommandRegistrationCallback.EVENT.register { d, _ ->
-            d.register(
-                literal(MOD_ID).then(
-                    literal("stat")
-                        .then(
-                            literal("print").executes {
-                                client.msg(fishingStatTrack.printStat())
-                                Command.SINGLE_SUCCESS
-                            },
-                        ).then(
-                            literal("clear").executes {
-                                fishingStatTrack.clear()
-                                Command.SINGLE_SUCCESS
-                            },
-                        ),
-                ),
-            )
-        }
+    private fun registerCommand() = ClientCommandRegistrationCallback.EVENT.register { d, _ ->
+        d.register(
+            literal(MOD_ID).then(
+                literal("stat")
+                    .then(
+                        literal("print").executes {
+                            client.msg(fishingStatTrack.printStat())
+                            Command.SINGLE_SUCCESS
+                        },
+                    ).then(
+                        literal("clear").executes {
+                            fishingStatTrack.clear()
+                            Command.SINGLE_SUCCESS
+                        },
+                    ),
+            ),
+        )
+    }
 }

@@ -31,14 +31,13 @@ class MCMessageWriter(
     }
 
     companion object {
-        private fun Severity.defaultFmt() =
-            when (this) {
-                Severity.Verbose -> Formatting.GRAY
-                Severity.Debug -> Formatting.DARK_PURPLE
-                Severity.Info -> Formatting.WHITE
-                Severity.Warn -> Formatting.YELLOW
-                Severity.Error -> Formatting.RED
-                else -> Formatting.DARK_GRAY
-            }
+        private fun Severity.defaultFmt() = when (this) {
+            Severity.Verbose -> Formatting.GRAY
+            Severity.Debug -> Formatting.DARK_PURPLE
+            Severity.Info -> Formatting.WHITE
+            Severity.Warn -> Formatting.YELLOW
+            Severity.Error -> Formatting.RED
+            else -> Formatting.DARK_GRAY
+        }
     }
 }

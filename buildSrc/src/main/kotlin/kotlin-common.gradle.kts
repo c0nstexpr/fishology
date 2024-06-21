@@ -24,15 +24,30 @@ tasks {
     compileJava {
         sourceCompatibility = libs.versions["jvm"]
         targetCompatibility = sourceCompatibility
-        options.encoding = Charsets.UTF_8.name()
+        options.encoding =
+            Charsets.UTF_8
+                .name()
     }
 
     compileKotlin {
         compilerOptions {
-            jvmTargetValidationMode.set(JvmTargetValidationMode.ERROR)
-            jvmTarget.set(JvmTarget.fromTarget(compileJava.get().targetCompatibility))
+            jvmTargetValidationMode
+                .set(JvmTargetValidationMode.ERROR)
+            jvmTarget
+                .set(
+                    JvmTarget
+                        .fromTarget(
+                            compileJava
+                                .get()
+                                .targetCompatibility,
+                        ),
+                )
             allWarningsAsErrors = true
-            languageVersion.set(KotlinVersion.fromVersion(libs.versions["kotlin"]))
+            languageVersion
+                .set(
+                    KotlinVersion
+                        .fromVersion(libs.versions["kotlin"]),
+                )
         }
     }
 
@@ -42,20 +57,7 @@ tasks {
 }
 
 spotless {
-    java {
-        googleJavaFormat().aosp()
-        formatAnnotations()
-    }
+    java { eclipse() }
 
-    kotlin {
-        ktlint().editorConfigOverride(
-            mapOf(
-                "ktlint_chain_method_rule_force_multiline_when_chain_operator_count_greater_or_equal_than" to 1,
-                "ktlint_standard_if-else-bracing" to "disabled",
-                "ktlint_standard_multiline-if-else" to "disabled",
-                "ktlint_standard_multiline-loop" to "disabled",
-                "ktlint_standard_multiline-expression-wrapping" to "disabled"
-            )
-        )
-    }
+    kotlin { ktlint() }
 }

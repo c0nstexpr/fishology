@@ -43,17 +43,16 @@ internal class FishingLootSlot(val slot: Int, val stack: ItemStack) {
         false
     }
 
-    fun drop(player: ClientPlayerEntity) =
-        player.run {
-            if (!inventory.mainHandStack.isSame(stack)) {
-                logger.w<FishingLootSlot> { "selected stack is not same as loot" }
-            } else if (dropSelectedItem(false)) {
-                logger.d<FishingLootSlot> { "dropped excluded loot" }
-                swingHand(Hand.MAIN_HAND)
-            } else {
-                logger.w<FishingLootSlot> { "failed to drop discard loot" }
-            }
+    fun drop(player: ClientPlayerEntity) = player.run {
+        if (!inventory.mainHandStack.isSame(stack)) {
+            logger.w<FishingLootSlot> { "selected stack is not same as loot" }
+        } else if (dropSelectedItem(false)) {
+            logger.d<FishingLootSlot> { "dropped excluded loot" }
+            swingHand(Hand.MAIN_HAND)
+        } else {
+            logger.w<FishingLootSlot> { "failed to drop discard loot" }
         }
+    }
 
     fun dropMaybe(player: ClientPlayerEntity?): Maybe<Unit> {
         if (player == null) {

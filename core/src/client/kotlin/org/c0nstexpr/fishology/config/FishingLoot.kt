@@ -71,38 +71,37 @@ enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
     Unknown(FishingLootType.Junk, Items.AIR), ;
 
     companion object {
-        fun ItemStack.getLoot() =
-            when (item) {
-                is NameTagItem -> NameTag
-                is BowItem -> Bow
-                is SaddleItem -> Saddle
-                is FishingRodItem ->
-                    if (EnchantmentHelper.hasEnchantments(this)) {
-                        FishingRod
-                    } else {
-                        EnchantedFishingRod
-                    }
+        fun ItemStack.getLoot() = when (item) {
+            is NameTagItem -> NameTag
+            is BowItem -> Bow
+            is SaddleItem -> Saddle
+            is FishingRodItem ->
+                if (EnchantmentHelper.hasEnchantments(this)) {
+                    FishingRod
+                } else {
+                    EnchantedFishingRod
+                }
 
-                is EnchantedBookItem -> Book
-                Items.NAUTILUS_SHELL -> NautilusShell
-                Items.COD -> Cod
-                Items.SALMON -> Salmon
-                Items.TROPICAL_FISH -> Tropical
-                Items.PUFFERFISH -> Puffer
-                Items.LILY_PAD -> LilyPad
-                Items.LEATHER_BOOTS -> LeatherBoots
-                Items.LEATHER -> Leather
-                Items.BONE -> Bone
-                is PotionItem -> Potion
-                Items.STRING -> String
-                Items.BOWL -> Bowl
-                Items.STICK -> Stick
-                is InkSacItem -> InkSac
-                Items.TRIPWIRE_HOOK -> TripwireHook
-                Items.ROTTEN_FLESH -> RottenFlesh
-                Items.BAMBOO -> Bamboo
-                else -> Unknown
-            }
+            is EnchantedBookItem -> Book
+            Items.NAUTILUS_SHELL -> NautilusShell
+            Items.COD -> Cod
+            Items.SALMON -> Salmon
+            Items.TROPICAL_FISH -> Tropical
+            Items.PUFFERFISH -> Puffer
+            Items.LILY_PAD -> LilyPad
+            Items.LEATHER_BOOTS -> LeatherBoots
+            Items.LEATHER -> Leather
+            Items.BONE -> Bone
+            is PotionItem -> Potion
+            Items.STRING -> String
+            Items.BOWL -> Bowl
+            Items.STICK -> Stick
+            is InkSacItem -> InkSac
+            Items.TRIPWIRE_HOOK -> TripwireHook
+            Items.ROTTEN_FLESH -> RottenFlesh
+            Items.BAMBOO -> Bamboo
+            else -> Unknown
+        }
     }
 
     fun translate(): Text {
