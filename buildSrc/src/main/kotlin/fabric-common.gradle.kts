@@ -20,9 +20,6 @@ repositories {
 base { archivesName.set(modId) }
 
 val libs = versionCatalog
-
-val minecraftLib = libs["minecraft"]
-val fabricLib = libs.bundles["fabric"]
 val extension = extensions.create<ModPropertyPluginExtension>("modProperties")
 
 extension.properties.run {
@@ -32,9 +29,9 @@ extension.properties.run {
 }
 
 dependencies {
-    minecraft(minecraftLib) { isTransitive = false }
+    minecraft(libs["minecraft"]) { isTransitive = false }
     mappings(variantOf(libs["yarn"]) { classifier("v2") }) { isTransitive = false }
-    modApi(libs["fabric-loader"])
+    listOf(libs.bundles["fabric"]).forEach(::modApi)
 }
 
 loom {

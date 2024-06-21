@@ -9,13 +9,11 @@ repositories {
 }
 
 dependencies {
-    project(":core").let {
-        api(it)
-        include(it)
-        clientImplementation(it.dependencyProject.srcClient.output)
-    }
-    listOf(libs.owo, libs.bundles.fabric).forEach(::modApi)
-    modRuntimeOnly(libs.modmenu)
+    implementation(project(":core", "namedElements"))
+    include(project(":core"))
+
+    modApi(libs.owo)
+    modClientRuntimeOnly(libs.modmenu)
 }
 
 tasks {
@@ -28,17 +26,7 @@ tasks {
             fabricProperty {
                 put("owo", libs.versions.owo)
                 put("modmenu", libs.versions.modmenu)
-                put("minecraft", libs.versions.minecraft)
-                put("fabric", libs.versions.fabric)
-
-                val fabricKotlin = libs.fabric.kotlin.get()
-                val dep = configurations.modApi
-                    .get()
-                    .resolvedConfiguration
-                    .firstLevelModuleDependencies
-                    .single { it.moduleName == fabricKotlin.name && it.moduleGroup == fabricKotlin.group }
-
-                put("fabricKotlin", dep.moduleVersion)
+                put("fabricKotlin", libs.versions.fabric.kotlin)
             }
         }
     }
