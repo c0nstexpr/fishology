@@ -22,7 +22,7 @@ import org.c0nstexpr.fishology.utils.observableStep
 class DiscardLoot(
     private val rod: Rod,
     private val caught: Observable<ItemEntity>,
-    lootsFilter: Set<FishingLoot> = setOf(),
+    lootsFilter: Set<FishingLoot> = setOf()
 ) : SwitchDisposable() {
     var lootsFilter = lootsFilter
         set(value) {
@@ -37,13 +37,13 @@ class DiscardLoot(
 
         return disposableScope {
             observableStep(
-                caught.filter { lootsFilter.contains(it.stack.getLoot()) }.map { it.stack.copy() },
+                caught.filter { lootsFilter.contains(it.stack.getLoot()) }.map { it.stack.copy() }
             )
                 .switchMaybe(
                     {
                         SlotUpdateEvent.observable.mapNotNull { mapSlopUpdate(this, it) }
                             .firstOrComplete()
-                    },
+                    }
                 ) {
                     logger.d<DiscardLoot> { "detected excluded loots" }
                     lootsQueue.add(this)
@@ -53,10 +53,7 @@ class DiscardLoot(
         }
     }
 
-    private fun mapSlopUpdate(
-        stack: ItemStack,
-        arg: SlotUpdateEvent.Arg,
-    ): FishingLootSlot? {
+    private fun mapSlopUpdate(stack: ItemStack, arg: SlotUpdateEvent.Arg): FishingLootSlot? {
         val player =
             rod.player ?: stack.run {
                 logger.w<DiscardLoot> { "client player is null" }
@@ -66,7 +63,7 @@ class DiscardLoot(
         return if (arg.stack.isSame(stack) && arg.syncId == player.playerScreenHandler.syncId) {
             FishingLootSlot(
                 player.playerScreenHandler.getSlot(arg.slot).index,
-                stack,
+                stack
             )
         } else {
             logger.d<DiscardLoot> { "stack not matches" }

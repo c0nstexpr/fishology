@@ -56,7 +56,7 @@ loom {
 tasks {
     processResources {
         inputs.property("timestamp", "${now()}")
-        filesMatching(modJson) { expand(extension.properties.get()) }
+        filesMatching(MOD_JSON) { expand(extension.properties.get()) }
     }
 
     val validateMixinName = register<ValidateMixinNameTask>("validateMixinName") {

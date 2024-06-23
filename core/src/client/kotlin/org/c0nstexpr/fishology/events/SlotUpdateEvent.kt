@@ -5,11 +5,7 @@ import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.item.ItemStack
 
 class SlotUpdateEvent private constructor() {
-    data class Arg(
-        val slot: Int,
-        val stack: ItemStack,
-        val syncId: Int,
-    )
+    data class Arg(val slot: Int, val stack: ItemStack, val syncId: Int)
 
     companion object {
         @JvmField

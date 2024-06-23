@@ -24,7 +24,7 @@ internal fun init() = ClientLifecycleEvents.CLIENT_STARTED.register {
     overrideSchedulers(
         { it.asCoroutineDispatcher().asScheduler() },
         { Util.getMainWorkerExecutor().asCoroutineDispatcher().asScheduler() },
-        { Util.getIoWorkerExecutor().asCoroutineDispatcher().asScheduler() },
+        { Util.getIoWorkerExecutor().asCoroutineDispatcher().asScheduler() }
     )
 
     ClientLifecycleEvents.CLIENT_STOPPING.register {

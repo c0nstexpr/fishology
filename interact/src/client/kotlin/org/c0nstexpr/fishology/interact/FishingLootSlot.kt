@@ -24,7 +24,7 @@ internal class FishingLootSlot(val slot: Int, val stack: ItemStack) {
         player: ClientPlayerEntity?,
         manager: ClientPlayerInteractionManager?,
         rodItem: RodItem?,
-        notify: () -> Unit,
+        notify: () -> Unit
     ) = if (player == null) {
         logger.w<FishingLootSlot> { "client player is null" }
         false
@@ -68,7 +68,7 @@ internal class FishingLootSlot(val slot: Int, val stack: ItemStack) {
             slotUpdateObservable.filter { it.slot == inventory.selectedSlot }
                 .map { logger.d<FishingLootSlot> { "screen selected slot update" } },
             SelectedSlotUpdateEvent.observable.filter { stack.isSame(inventory.mainHandStack) }
-                .map { logger.d<FishingLootSlot> { "selected slot update" } },
+                .map { logger.d<FishingLootSlot> { "selected slot update" } }
         ) { _, _, _ -> }
             .firstOrComplete()
             .map { drop(player) }
@@ -76,6 +76,9 @@ internal class FishingLootSlot(val slot: Int, val stack: ItemStack) {
 
     companion object {
         private val slotUpdateObservable =
-            SlotUpdateEvent.observable.filter { it.syncId == ScreenHandlerSlotUpdateS2CPacket.UPDATE_PLAYER_INVENTORY_SYNC_ID }
+            SlotUpdateEvent.observable.filter {
+                it.syncId ==
+                    ScreenHandlerSlotUpdateS2CPacket.UPDATE_PLAYER_INVENTORY_SYNC_ID
+            }
     }
 }

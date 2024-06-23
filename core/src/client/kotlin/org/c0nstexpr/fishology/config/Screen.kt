@@ -12,8 +12,7 @@ import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.jvm.kotlinProperty
 import kotlin.reflect.typeOf
 
-class Screen(modelId: Identifier, config: ConfigWrapper<*>, parent: Screen?) :
-    ConfigScreen(modelId, config, parent) {
+class Screen(modelId: Identifier, config: ConfigWrapper<*>, parent: Screen?) : ConfigScreen(modelId, config, parent) {
     init {
         extraFactories[Predicate(::isFishingLootSet)] =
             OptionComponentFactory { _, option ->
@@ -23,6 +22,6 @@ class Screen(modelId: Identifier, config: ConfigWrapper<*>, parent: Screen?) :
     }
 
     private fun isFishingLootSet(it: Option<*>) = typeOf<Set<FishingLoot>>().isSupertypeOf(
-        it.backingField().field.kotlinProperty!!.returnType,
+        it.backingField().field.kotlinProperty!!.returnType
     )
 }

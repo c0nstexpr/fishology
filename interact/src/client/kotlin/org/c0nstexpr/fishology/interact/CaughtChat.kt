@@ -19,20 +19,15 @@ import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.toMutableText
 
-class CaughtChat(
-    client: MinecraftClient,
-    private val caught: Observable<ItemEntity>,
-) : ChatInteraction(client, "caught_on_chat") {
+class CaughtChat(client: MinecraftClient, private val caught: Observable<ItemEntity>) :
+    ChatInteraction(client, "caught_on_chat") {
     var lootsFilter = setOf<FishingLoot>()
         set(value) {
             field = value
             logger.d<CaughtChat> { "Change chat on caught loot filter" }
         }
 
-    private fun getCaughtItemTxt(
-        stack: ItemStack,
-        name: Text,
-    ): MutableText {
+    private fun getCaughtItemTxt(stack: ItemStack, name: Text): MutableText {
         val txt = name.toMutableText()
         val enchantments = EnchantmentHelper.getEnchantments(stack).enchantments
 
@@ -42,9 +37,9 @@ class CaughtChat(
             enchantments.map { entry ->
                 listOf(
                     Enchantment.getName(entry, EnchantmentHelper.getLevel(entry, stack)),
-                    Text.translatable("$MOD_ID.comma"),
+                    Text.translatable("$MOD_ID.comma")
                 )
-            }.flatten().dropLast(1),
+            }.flatten().dropLast(1)
         )
             .plusElement(Text.translatable("$MOD_ID.right_brace"))
             .forEach(txt::append)

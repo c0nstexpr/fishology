@@ -22,7 +22,7 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
         Sizing.fill(100),
         Sizing.content(),
         Text.translatable(option.translationKey()),
-        option.backingField().field().isAnnotationPresent(Expanded::class.java),
+        option.backingField().field().isAnnotationPresent(Expanded::class.java)
     ),
     OptionValueProvider {
     private val dropdown = FishingLootDropdown().apply { valueSet.addAll(option.value()) }
@@ -60,9 +60,9 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
                     SearchAnchorComponent(
                         this,
                         option.key(),
-                        { I18n.translate(option.translationKey()) },
-                    ),
-                ),
+                        { I18n.translate(option.translationKey()) }
+                    )
+                )
             )
         }
 
@@ -72,16 +72,12 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
             if (it) {
                 dropdown.valueSet = HashSet<FishingLoot>().apply { addAll(option.value()) }
                 focusHandler()?.focus(dropdown.children().last(), FocusSource.MOUSE_CLICK)
-            } else {
-                option.set(dropdown.valueSet)
-            }
+            } else option.set(dropdown.valueSet)
         }
     }
 
-    override fun shouldDrawTooltip(
-        mouseX: Double,
-        mouseY: Double,
-    ) = mouseY - y <= titleLayout.height() && super.shouldDrawTooltip(mouseX, mouseY)
+    override fun shouldDrawTooltip(mouseX: Double, mouseY: Double) =
+        mouseY - y <= titleLayout.height() && super.shouldDrawTooltip(mouseX, mouseY)
 
     override fun isValid() = true
 

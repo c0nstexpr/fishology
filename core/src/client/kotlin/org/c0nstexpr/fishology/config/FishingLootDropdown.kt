@@ -8,11 +8,11 @@ import org.c0nstexpr.fishology.CORE_MOD_ID
 import java.util.function.Consumer
 import kotlin.enums.EnumEntries
 
-class FishingLootDropdown :
-    DropdownComponent(Sizing.fill(100)) {
+class FishingLootDropdown : DropdownComponent(Sizing.fill(100)) {
     var valueSet: MutableSet<FishingLoot> = HashSet()
         set(value) {
-            entries.children().mapNotNull { it as? FishingLootCheckBox }
+            entries.children()
+                .mapNotNull { it as? FishingLootCheckBox }
                 .forEach { it.mutableState = value.contains(it.loot) }
             field = value
         }
@@ -32,22 +32,17 @@ class FishingLootDropdown :
 
     private fun addValues(it: FishingLoot) = entries.child(
         FishingLootCheckBox(this) { selected ->
-            if (selected) {
-                valueSet.add(it)
-            } else {
-                valueSet.remove(it)
-            }
+            if (selected) valueSet.add(it)
+            else valueSet.remove(it)
         }.apply {
             loot = it
             margins(Insets.of(2))
-        },
+        }
     )
 
     companion object {
-        private class FishingLootCheckBox(
-            dropdown: FishingLootDropdown,
-            onClick: Consumer<Boolean>,
-        ) : Checkbox(dropdown, Text.empty(), false, onClick) {
+        private class FishingLootCheckBox(dropdown: FishingLootDropdown, onClick: Consumer<Boolean>) :
+            Checkbox(dropdown, Text.empty(), false, onClick) {
             var loot = FishingLoot.Unknown
                 set(value) {
                     text = value.translate()

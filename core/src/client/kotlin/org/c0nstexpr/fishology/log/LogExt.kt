@@ -13,11 +13,8 @@ import net.minecraft.client.MinecraftClient
 fun Logger.greeting(who: String = tag) = i("Hello, this is $who")
 
 object AttributionFormatter : MessageStringFormatter {
-    override fun formatMessage(
-        severity: Severity?,
-        tag: Tag?,
-        message: Message,
-    ) = "[${severity?.run(::formatSeverity)}] [${tag?.run(::formatTag)}]: ${message.message}"
+    override fun formatMessage(severity: Severity?, tag: Tag?, message: Message) =
+        "[${severity?.run(::formatSeverity)}] [${tag?.run(::formatTag)}]: ${message.message}"
 }
 
 fun mutableLoggerConfigOf(c: LoggerConfig? = null) = object : MutableLoggerConfig {
@@ -45,10 +42,7 @@ fun MutableLoggerConfig.addMCWriter(client: MinecraftClient = MinecraftClient.ge
     return this
 }
 
-fun LogBuilder.forMC(
-    modId: String,
-    client: MinecraftClient = MinecraftClient.getInstance(),
-): LogBuilder {
+fun LogBuilder.forMC(modId: String, client: MinecraftClient = MinecraftClient.getInstance()): LogBuilder {
     tag = modId
     config.addMCWriter(client)
     return this
@@ -56,32 +50,20 @@ fun LogBuilder.forMC(
 
 fun Logger.combineTag(str: String) = "$str in $tag"
 
-inline fun <reified T> Logger.v(
-    throwable: Throwable? = null,
-    message: () -> String,
-) = v(throwable, combineTag(T::class.qualifiedName!!), message)
+inline fun <reified T> Logger.v(throwable: Throwable? = null, message: () -> String) =
+    v(throwable, combineTag(T::class.qualifiedName!!), message)
 
-inline fun <reified T> Logger.d(
-    throwable: Throwable? = null,
-    message: () -> String,
-) = d(throwable, combineTag(T::class.qualifiedName!!), message)
+inline fun <reified T> Logger.d(throwable: Throwable? = null, message: () -> String) =
+    d(throwable, combineTag(T::class.qualifiedName!!), message)
 
-inline fun <reified T> Logger.i(
-    throwable: Throwable? = null,
-    message: () -> String,
-) = i(throwable, combineTag(T::class.qualifiedName!!), message)
+inline fun <reified T> Logger.i(throwable: Throwable? = null, message: () -> String) =
+    i(throwable, combineTag(T::class.qualifiedName!!), message)
 
-inline fun <reified T> Logger.w(
-    throwable: Throwable? = null,
-    message: () -> String,
-) = w(throwable, combineTag(T::class.qualifiedName!!), message)
+inline fun <reified T> Logger.w(throwable: Throwable? = null, message: () -> String) =
+    w(throwable, combineTag(T::class.qualifiedName!!), message)
 
-inline fun <reified T> Logger.e(
-    throwable: Throwable? = null,
-    message: () -> String,
-) = e(throwable, combineTag(T::class.qualifiedName!!), message)
+inline fun <reified T> Logger.e(throwable: Throwable? = null, message: () -> String) =
+    e(throwable, combineTag(T::class.qualifiedName!!), message)
 
-inline fun <reified T> Logger.a(
-    throwable: Throwable? = null,
-    message: () -> String,
-) = a(throwable, combineTag(T::class.qualifiedName!!), message)
+inline fun <reified T> Logger.a(throwable: Throwable? = null, message: () -> String) =
+    a(throwable, combineTag(T::class.qualifiedName!!), message)

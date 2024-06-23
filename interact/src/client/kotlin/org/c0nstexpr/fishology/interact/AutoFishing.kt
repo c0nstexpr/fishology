@@ -30,10 +30,7 @@ import org.c0nstexpr.fishology.utils.isSame
 import org.c0nstexpr.fishology.utils.swapHand
 import kotlin.time.Duration.Companion.seconds
 
-class AutoFishing(
-    private val rod: Rod,
-    private val caughtItem: Observable<ItemEntity?>,
-) : SwitchDisposable() {
+class AutoFishing(private val rod: Rod, private val caughtItem: Observable<ItemEntity?>) : SwitchDisposable() {
     private val playerId
         get() = rod.player.let {
             if (it == null) {
@@ -106,7 +103,7 @@ class AutoFishing(
                         }
                     },
                 ItemEntityRemoveEvent.observable.map { it.entity }
-                    .filter(::isSameItem),
+                    .filter(::isSameItem)
             ).firstOrComplete().timeout(timeout, ioScheduler)
         }.switchMap { recastOnHooked() }
 

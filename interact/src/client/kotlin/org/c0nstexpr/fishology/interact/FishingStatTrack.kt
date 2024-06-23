@@ -80,7 +80,7 @@ class FishingStatTrack(val rod: Rod, val caughtItem: Observable<ItemEntity>) : S
                         FishingLootType.Treasure -> Formatting.GOLD
                         FishingLootType.Fish -> Formatting.AQUA
                         FishingLootType.Junk -> Formatting.WHITE
-                    },
+                    }
                 )
                     .withBold(true)
                     .withItalic(true)

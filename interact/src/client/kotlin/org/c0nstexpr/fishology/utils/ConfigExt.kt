@@ -24,10 +24,7 @@ abstract class PropertyOption<Model, Type> {
         }
     }
 
-    fun observe(
-        init: Boolean = true,
-        block: (Type) -> Unit,
-    ) = option.run {
+    fun observe(init: Boolean = true, block: (Type) -> Unit) = option.run {
         observe(block)
         if (init) block(value())
     }
@@ -42,5 +39,5 @@ fun <Model, Type> ConfigWrapper<Model>.propertyOption(prop: KProperty1<Model, Ty
 fun <Model, Type> ConfigWrapper<Model>.observe(
     prop: KProperty1<Model, Type>,
     init: Boolean = true,
-    block: (Type) -> Unit,
+    block: (Type) -> Unit
 ) = propertyOption(prop).observe(init, block)

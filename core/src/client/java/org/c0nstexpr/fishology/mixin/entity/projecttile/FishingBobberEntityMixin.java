@@ -1,23 +1,17 @@
 package org.c0nstexpr.fishology.mixin.entity.projecttile;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.projectile.FishingBobberEntity;
+import net.minecraft.entity.*;
+import net.minecraft.entity.data.*;
+import net.minecraft.entity.projectile.*;
 import org.c0nstexpr.fishology.events.*;
-import org.c0nstexpr.fishology.log.EntityExtKt;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.c0nstexpr.fishology.log.*;
+import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.*;
 
-@SuppressWarnings({"DataFlowIssue"})
-@Mixin(FishingBobberEntity.class)
-public abstract class FishingBobberEntityMixin {
+@SuppressWarnings({"DataFlowIssue"}) @Mixin(FishingBobberEntity.class) public abstract class FishingBobberEntityMixin {
     @Final @Shadow private static TrackedData<Boolean> CAUGHT_FISH;
     @Final @Shadow private static TrackedData<Boolean> HOOK_ENTITY_ID;
-
     @Shadow private boolean caughtFish;
     @Shadow private Entity hookedEntity;
 

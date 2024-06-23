@@ -94,14 +94,14 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
                         literal("print").executes {
                             client.msg(fishingStatTrack.printStat())
                             Command.SINGLE_SUCCESS
-                        },
+                        }
                     ).then(
                         literal("clear").executes {
                             fishingStatTrack.clear()
                             Command.SINGLE_SUCCESS
-                        },
-                    ),
-            ),
+                        }
+                    )
+            )
         )
     }
 }

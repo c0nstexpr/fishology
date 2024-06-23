@@ -10,8 +10,7 @@ import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.msg
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 
-abstract class ChatInteraction(val client: MinecraftClient, val defaultTranslateKey: String) :
-    SwitchDisposable() {
+abstract class ChatInteraction(val client: MinecraftClient, val defaultTranslateKey: String) : SwitchDisposable() {
     var notifyLevel = NotifyLevel.None
 
     var fmt = ""
