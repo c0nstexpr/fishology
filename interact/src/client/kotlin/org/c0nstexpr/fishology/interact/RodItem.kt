@@ -1,27 +1,17 @@
 package org.c0nstexpr.fishology.interact
 
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.utils.getSlotInHand
 import org.c0nstexpr.fishology.utils.isSame
 
-data class RodItem(val hand: Hand, val player: PlayerEntity, val inUse: Boolean) {
-    val slotIndex = player.inventory.getSlotInHand(hand)
-    val stack: ItemStack = player.getStackInHand(hand)
+class RodItem(hand: Hand = Hand.MAIN_HAND, player: PlayerEntity? = null, val isThrow: Boolean = false) {
+    val slotIndex = player?.inventory?.getSlotInHand(hand) ?: -1
+    val stack: ItemStack = player?.getStackInHand(hand) ?: ItemStack.EMPTY
 
-    override fun equals(other: Any?) = (other is RodItem) &&
-        hand == other.hand &&
-        player.uuid == other.player.uuid &&
-        slotIndex == other.slotIndex &&
-        stack.isSame(other.stack)
+    val hand get() = if (slotIndex == PlayerInventory.OFF_HAND_SLOT) Hand.OFF_HAND else Hand.MAIN_HAND
 
-    override fun hashCode(): Int {
-        var result = hand.hashCode()
-        result = 31 * result + player.hashCode()
-        result = 31 * result + slotIndex
-        result = 31 * result + stack.hashCode()
-        result = 31 * result + inUse.hashCode()
-        return result
-    }
+    fun isValid(player: PlayerEntity?) = player?.inventory?.getStack(slotIndex)?.isSame(stack) ?: false
 }

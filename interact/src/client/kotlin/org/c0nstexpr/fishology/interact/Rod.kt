@@ -13,11 +13,11 @@ import org.c0nstexpr.fishology.utils.SwitchDisposable
 import org.c0nstexpr.fishology.utils.interactItem
 
 class Rod(val client: MinecraftClient) : SwitchDisposable() {
-    private val itemSubject = BehaviorSubject(null as RodItem?)
+    private val itemSubject = BehaviorSubject(RodItem())
 
-    val itemObservable: Observable<RodItem?> = itemSubject
+    val itemObservable: Observable<RodItem> = itemSubject
 
-    val rodItem get() = itemSubject.value?.takeIf { it == RodItem(it.hand, it.player, it.inUse) }
+    val rodItem get() = itemSubject.value
 
     val player get() = client.player
 
@@ -25,26 +25,25 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
 
     override fun onEnable(): Disposable {
         logger.d<Rod> { "enable rod interaction" }
-        return UseRodEvent.observable.filter { it.player.uuid == client.player?.uuid }
-            .tryOn()
-            .subscribe {
-                logger.d<Rod> { "detected rod use, saving rod status" }
-                itemSubject.onNext(RodItem(it.hand, it.player, it.isThrow))
-            }
+        return UseRodEvent.observable.filter { it.player.uuid == client.player?.uuid }.subscribe {
+            logger.d<Rod> { "detected rod use, saving rod status" }
+            itemSubject.onNext(RodItem(it.hand, it.player, it.isThrow))
+        }
     }
 
-    fun use() = rodItem.run {
-        if (this == null) {
-            logger.d<Rod> { "no rod item, aborting" }
-            return@run false
+    fun use(): Boolean {
+        val p = player
+
+        if (!rodItem.isValid(p)) {
+            logger.d<Rod> { "no rod item in ${rodItem.hand}, aborting" }
+            return false
         }
 
-        client.execute {
-            logger.d<Rod> { "use rod" }
-            client.interactItem(hand)
-            player.swingHand(hand)
-        }
+        val hand = rodItem.hand
 
-        return@run true
+        client.interactItem(hand)
+        p!!.swingHand(hand)
+
+        return true
     }
 }

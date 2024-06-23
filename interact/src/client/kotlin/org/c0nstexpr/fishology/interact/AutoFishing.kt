@@ -2,6 +2,9 @@ package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.base.exceptions.TimeoutException
 import com.badoo.reaktive.disposable.scope.disposableScope
+import com.badoo.reaktive.maybe.filter
+import com.badoo.reaktive.maybe.map
+import com.badoo.reaktive.maybe.maybeOfEmpty
 import com.badoo.reaktive.maybe.timeout
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.doOnBeforeSubscribe
@@ -11,12 +14,12 @@ import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.merge
 import com.badoo.reaktive.observable.notNull
-import com.badoo.reaktive.observable.observableOfEmpty
 import com.badoo.reaktive.observable.switchMap
 import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.scheduler.ioScheduler
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.util.Hand
 import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.events.HookedEvent
 import org.c0nstexpr.fishology.events.ItemEntityRemoveEvent
@@ -26,19 +29,10 @@ import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.log.w
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.SwitchDisposable
-import org.c0nstexpr.fishology.utils.isSame
 import org.c0nstexpr.fishology.utils.swapHand
 import kotlin.time.Duration.Companion.seconds
 
 class AutoFishing(private val rod: Rod, private val caughtItem: Observable<ItemEntity?>) : SwitchDisposable() {
-    private val playerId
-        get() = rod.player.let {
-            if (it == null) {
-                logger.w<AutoFishing> { "player is null" }
-                null
-            } else it.id
-        }
-
     override fun onEnable() = disposableScope {
         caughtItem.filter { it == null }
             .tryOn()
@@ -50,16 +44,16 @@ class AutoFishing(private val rod: Rod, private val caughtItem: Observable<ItemE
         observeCaughtItem().tryOn { _, e -> onRetry(e) }.subscribeScoped { }
     }
 
-    private fun recastOnHooked() = HookedEvent.observable
+    private fun recastOnFailed() = HookedEvent.observable
         .filter {
             val id = rod.bobber?.id ?: return@filter false
             it.bobber.id == id
         }.mapNotNull { it.hook }
         .doOnBeforeSubscribe { recast() }
-        .switchMap {
-            val emptyObservable = observableOfEmpty<Unit>()
-            val player = rod.player ?: return@switchMap emptyObservable
-            val manager = rod.client.interactionManager ?: return@switchMap emptyObservable
+        .switchMapMaybe {
+            val emptyObservable = maybeOfEmpty<Unit>()
+            val player = rod.player ?: return@switchMapMaybe emptyObservable
+            val manager = rod.client.interactionManager ?: return@switchMapMaybe emptyObservable
             val inv = player.inventory
             var selected = inv.selectedSlot
 
@@ -67,20 +61,20 @@ class AutoFishing(private val rod: Rod, private val caughtItem: Observable<ItemE
                 manager.pickFromInventory(if (selected == 0) 1 else 0)
                 manager.pickFromInventory(selected)
                 recast()
-                return@switchMap emptyObservable
+                return@switchMapMaybe emptyObservable
             }
 
             val offHandUpdate = offHandUpdate().doOnBeforeSubscribe {
                 player.networkHandler.swapHand()
-            }
+            }.firstOrComplete()
 
-            offHandUpdate.switchMap {
+            offHandUpdate.map {
                 selected = inv.selectedSlot
                 manager.pickFromInventory(if (selected == 0) 1 else 0)
                 manager.pickFromInventory(selected)
                 offHandUpdate
             }
-                .filter { arg -> rod.rodItem?.stack?.isSame(arg.stack) == true }
+                .filter { _ -> rod.rodItem?.hand == Hand.OFF_HAND }
                 .map { recast() }
         }
 
@@ -105,7 +99,7 @@ class AutoFishing(private val rod: Rod, private val caughtItem: Observable<ItemE
                 ItemEntityRemoveEvent.observable.map { it.entity }
                     .filter(::isSameItem)
             ).firstOrComplete().timeout(timeout, ioScheduler)
-        }.switchMap { recastOnHooked() }
+        }.switchMap { recastOnFailed() }
 
     private fun recast() {
         logger.d<AutoFishing> { "recast rod" }
