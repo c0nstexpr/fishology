@@ -9,8 +9,10 @@ import net.minecraft.util.Formatting
 import org.c0nstexpr.fishology.coloredText
 import org.c0nstexpr.fishology.msg
 
-class MCMessageWriter(var client: MinecraftClient, val levelFmt: MutableMap<Severity, Formatting> = mutableMapOf()) :
-    LogWriter() {
+class MCMessageWriter(
+    var client: MinecraftClient,
+    val levelFmt: MutableMap<Severity, Formatting> = mutableMapOf()
+) : LogWriter() {
     override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
         val msg =
             throwable?.let { "$message\nException occurred ${it.localizedMessage}" } ?: message

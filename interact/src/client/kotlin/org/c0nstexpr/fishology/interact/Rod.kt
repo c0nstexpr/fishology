@@ -35,7 +35,7 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
         val p = player
 
         if (!rodItem.isValid(p)) {
-            logger.d<Rod> { "no rod item in ${rodItem.hand}, aborting" }
+            logger.d<Rod> { "invalid rod item in ${rodItem.hand}, aborting" }
             return false
         }
 

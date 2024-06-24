@@ -27,8 +27,8 @@ class CaughtChat(client: MinecraftClient, private val caught: Observable<ItemEnt
             logger.d<CaughtChat> { "Change chat on caught loot filter" }
         }
 
-    private fun getCaughtItemTxt(stack: ItemStack, name: Text): MutableText {
-        val txt = name.toMutableText()
+    private fun getCaughtItemTxt(stack: ItemStack): MutableText {
+        val txt = stack.name.toMutableText()
         val enchantments = EnchantmentHelper.getEnchantments(stack).enchantments
 
         if (enchantments.isEmpty()) return txt
@@ -49,8 +49,8 @@ class CaughtChat(client: MinecraftClient, private val caught: Observable<ItemEnt
 
     override fun onEnable(): Disposable {
         logger.d<CaughtChat> { "enable caught chat interaction" }
-        return caught.map { Pair(it.stack, it.stack.getLoot()) }
-            .filter { lootsFilter.contains(it.second) }.tryOn()
-            .subscribe { notify(getCaughtItemTxt(it.first, it.second.translate())) }
+        return caught.filter { lootsFilter.contains(it.stack.getLoot()) }
+            .map { Pair(it.stack, it.stack.getLoot()) }
+            .subscribe { notify(getCaughtItemTxt(it.first)) }
     }
 }

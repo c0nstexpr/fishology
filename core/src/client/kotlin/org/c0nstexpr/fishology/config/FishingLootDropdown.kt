@@ -26,7 +26,9 @@ class FishingLootDropdown : DropdownComponent(Sizing.fill(100)) {
     }
 
     private fun EnumEntries<FishingLoot>.addLoots(lootType: FishingLootType) {
-        text(Text.translatable("$CORE_MOD_ID.${FishingLootType::class.simpleName}.${lootType.name}"))
+        text(
+            Text.translatable("$CORE_MOD_ID.${FishingLootType::class.simpleName}.${lootType.name}")
+        )
         filter { it.lootType == lootType }.forEach(::addValues)
     }
 
@@ -41,8 +43,10 @@ class FishingLootDropdown : DropdownComponent(Sizing.fill(100)) {
     )
 
     companion object {
-        private class FishingLootCheckBox(dropdown: FishingLootDropdown, onClick: Consumer<Boolean>) :
-            Checkbox(dropdown, Text.empty(), false, onClick) {
+        private class FishingLootCheckBox(
+            dropdown: FishingLootDropdown,
+            onClick: Consumer<Boolean>
+        ) : Checkbox(dropdown, Text.empty(), false, onClick) {
             var loot = FishingLoot.Unknown
                 set(value) {
                     text = value.translate()

@@ -50,6 +50,7 @@ enum class FishingLoot(val lootType: FishingLootType, val item: Item) {
             is SaddleItem -> Saddle
             is FishingRodItem -> if (EnchantmentHelper.hasEnchantments(this)) FishingRod
             else EnchantedFishingRod
+
             is EnchantedBookItem -> Book
             Items.NAUTILUS_SHELL -> NautilusShell
             Items.COD -> Cod

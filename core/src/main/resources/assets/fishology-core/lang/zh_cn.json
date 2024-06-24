@@ -28,6 +28,7 @@
   "text.config.fishology-core.option.notifyLoots": "钓到以下战利品时触发通知",
   "text.config.fishology-core.option.discardLoots": "扔掉指定的战利品",
   "fishology-core.FishingLoot.EnchantedFishingRod": "附魔钓鱼竿",
+    "fishology-core.FishingLoot.Bow": "附魔弓",
   "fishology-core.FishingLoot.Unknown": "其他未知物品",
   "fishology-core.FishingLootType.Treasure": "宝藏",
   "fishology-core.FishingLootType.Junk": "垃圾",

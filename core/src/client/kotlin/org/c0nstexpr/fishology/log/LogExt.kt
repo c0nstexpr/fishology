@@ -32,7 +32,9 @@ inline fun MutableLoggerConfig.removeWriterWhere(p: (LogWriter) -> Boolean): Mut
     return this
 }
 
-fun MutableLoggerConfig.addMCWriter(client: MinecraftClient = MinecraftClient.getInstance()): MutableLoggerConfig {
+fun MutableLoggerConfig.addMCWriter(
+    client: MinecraftClient = MinecraftClient.getInstance()
+): MutableLoggerConfig {
     for (writer in logWriterList) if (writer is MCMessageWriter) {
         writer.client = client
         return this
@@ -42,7 +44,10 @@ fun MutableLoggerConfig.addMCWriter(client: MinecraftClient = MinecraftClient.ge
     return this
 }
 
-fun LogBuilder.forMC(modId: String, client: MinecraftClient = MinecraftClient.getInstance()): LogBuilder {
+fun LogBuilder.forMC(
+    modId: String,
+    client: MinecraftClient = MinecraftClient.getInstance()
+): LogBuilder {
     tag = modId
     config.addMCWriter(client)
     return this

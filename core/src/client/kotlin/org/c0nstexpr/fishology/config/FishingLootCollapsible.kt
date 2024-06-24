@@ -84,6 +84,7 @@ class FishingLootCollapsible(private val option: Option<Set<FishingLoot>>) :
     override fun parsedValue(): Set<FishingLoot> = valueSet
 
     companion object {
-        private fun LabelComponent.setTextColor(f: Formatting) = text(text().copy().styled { it.withColor(f) })
+        private fun LabelComponent.setTextColor(f: Formatting) =
+            text(text().copy().styled { it.withColor(f) })
     }
 }

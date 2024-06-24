@@ -12,8 +12,10 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
-@Mixin(FishingRodItem.class) public abstract class FishingRodItemMixin {
-    @Inject(method = "use", at = @At("HEAD")) private void use(
+@Mixin(FishingRodItem.class)
+public abstract class FishingRodItemMixin {
+    @Inject(method = "use", at = @At("HEAD"))
+    private void use(
         @NotNull World world,
         PlayerEntity player,
         Hand hand,

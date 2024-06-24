@@ -10,11 +10,14 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
-@Mixin(ClientPlayNetworkHandler.class) abstract class ClientPlayNetworkHandlerMixin {
+@Mixin(ClientPlayNetworkHandler.class)
+abstract class ClientPlayNetworkHandlerMixin {
     @Shadow private ClientWorld world;
 
     @Inject(method = "onScreenHandlerSlotUpdate", at = @At("TAIL"))
-    private void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci) {
+    private void onScreenHandlerSlotUpdate(
+        ScreenHandlerSlotUpdateS2CPacket packet,
+        CallbackInfo ci) {
         SlotUpdateEvent.subject.onNext(
             new SlotUpdateEvent.Arg(packet.getSlot(), packet.getStack(), packet.getSyncId()));
     }

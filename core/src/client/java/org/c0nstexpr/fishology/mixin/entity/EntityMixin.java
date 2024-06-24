@@ -8,7 +8,9 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
-@SuppressWarnings({"DataFlowIssue"}) @Mixin(Entity.class) public abstract class EntityMixin {
+@SuppressWarnings({"DataFlowIssue"})
+@Mixin(Entity.class)
+public abstract class EntityMixin {
     @Shadow private World world;
 
     @Inject(method = "setVelocity(Lnet/minecraft/util/math/Vec3d;)V", at = @At("TAIL"))
@@ -20,11 +22,12 @@ import org.spongepowered.asm.mixin.injection.callback.*;
         ItemEntityVelEvent.subject.onNext(new ItemEntityVelEvent.Arg(item));
     }
 
-    @Inject(method = "onRemoved", at = @At("TAIL")) private void onRemoved(CallbackInfo ci) {
+    @Inject(method = "onRemoved", at = @At("TAIL"))
+    private void onRemoved(CallbackInfo ci) {
         final var entity = (Entity) (Object) this;
 
-        if (!(world.isClient && entity instanceof ItemEntity item)) return;
+        if (!world.isClient) return;
 
-        ItemEntityRemoveEvent.subject.onNext(new ItemEntityRemoveEvent.Arg(item));
+        EntityRemoveEvent.subject.onNext(new EntityRemoveEvent.Arg(entity));
     }
 }

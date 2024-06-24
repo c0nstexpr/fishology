@@ -7,9 +7,11 @@ import org.c0nstexpr.fishology.*;
 
 import java.util.*;
 
-@Config(name = FishologyCoreKt.CORE_MOD_ID, wrapperName = "Config", defaultHook = true) public class ConfigModel {
+@Config(name = FishologyCoreKt.CORE_MOD_ID, wrapperName = "Config", defaultHook = true)
+public class ConfigModel {
     @SectionHeader("general") public boolean enableAutoFish = true;
-    @RangeConstraint(min = Double.MIN_VALUE, max = 100, decimalPlaces = 5) public double caughtJudgeThreshold = 0.1;
+    @RangeConstraint(min = Double.MIN_VALUE, max = 100, decimalPlaces = 5) public double
+        caughtJudgeThreshold = 0.1;
     @SectionHeader("hookNotify") @Nest public Notification hookNotify = new Notification();
     @SectionHeader("caughtNotify") @Nest public Notification caughtNotify = new Notification();
     public Set<FishingLoot> notifyLoots = Set.of();
@@ -23,7 +25,10 @@ import java.util.*;
         public static boolean isFmtValid(String str) {
             try {
                 FishologyCoreKt.getCoreLogger()
-                    .d("test format: %s".formatted(String.format(str, "test")), null, Notification.class.getName());
+                    .d(
+                        "test format: %s".formatted(String.format(str, "test")),
+                        null,
+                        Notification.class.getName());
                 return true;
             } catch (Exception e) {
                 return false;

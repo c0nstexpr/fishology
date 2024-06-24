@@ -1,17 +1,22 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
-import com.badoo.reaktive.maybe.flatMap
 import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.observable.concatMap
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
+import com.badoo.reaktive.observable.mapNotNull
+import com.badoo.reaktive.observable.merge
+import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
+import net.minecraft.entity.projectile.FishingBobberEntity
 import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.events.CaughtFishEvent
+import org.c0nstexpr.fishology.events.EntityRemoveEvent
 import org.c0nstexpr.fishology.events.ItemEntitySpawnEvent
 import org.c0nstexpr.fishology.events.ItemEntityTrackerEvent
 import org.c0nstexpr.fishology.log.d
@@ -37,14 +42,23 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
 
         return CaughtFishEvent.observable.filter { it.caught }
             .switchMapMaybe {
-                rod.itemObservable.filter { !it.isThrow }
-                    .firstOrComplete()
-                    .flatMap {
-                        ItemEntitySpawnEvent.observable.switchMapMaybe { spawnArg ->
-                            ItemEntityTrackerEvent.observable.filter { spawnArg.isCaughtItem() }.map { spawnArg.entity }
-                                .firstOrComplete()
-                        }.firstOrComplete()
+                merge(
+                    rod.itemObservable.filter { !it.isThrow }
+                        .mapNotNull { rod.player?.trackedPos },
+                    EntityRemoveEvent.observable.mapNotNull {
+                        (it.entity as? FishingBobberEntity)?.owner?.id
                     }
+                        .filter { it == rod.player?.id }
+                        .map { null }
+                ).firstOrComplete()
+            }
+            .notNull()
+            .concatMap { ItemEntitySpawnEvent.observable.map { spawnArg -> Pair(it, spawnArg) } }
+            .switchMapMaybe { (pos, spawnArg) ->
+                ItemEntityTrackerEvent.observable.map { spawnArg }
+                    .filter { it.isCaughtItem(pos) }
+                    .map { it.entity }
+                    .firstOrComplete()
             }
             .subscribe {
                 it.run {
@@ -56,9 +70,7 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
             }
     }
 
-    private fun ItemEntitySpawnEvent.Arg.isCaughtItem(): Boolean {
-        val pPos = rod.player?.trackedPos ?: return false
-
+    private fun ItemEntitySpawnEvent.Arg.isCaughtItem(pPos: Vec3d): Boolean {
         // FishingBobberEntity.use(ItemStack usedItem):
         // ItemEntity itemEntity = new ItemEntity(world, x, y, z, itemStack2);
         // double d = playerEntity.x - x;
@@ -92,7 +104,9 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
         )
         if (isErrorAccepted(errorVec.y)) return false
 
-        logger.d<CaughtFish> { "caught item candidate accepted, error vec: $errorVec, threshold: $judgeThreshold" }
+        logger.d<CaughtFish> {
+            "caught item candidate accepted, error vec: $errorVec, threshold: $judgeThreshold"
+        }
 
         return true
     }

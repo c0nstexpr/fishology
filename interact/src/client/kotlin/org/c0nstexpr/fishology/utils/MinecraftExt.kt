@@ -1,7 +1,7 @@
 package org.c0nstexpr.fishology.utils
 
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.network.ClientPlayNetworkHandler
+import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemStack
@@ -18,16 +18,22 @@ fun PlayerInventory.getSlotInHand(hand: Hand) = when (hand) {
 
 fun MinecraftClient.interactItem(hand: Hand) = this.interactionManager?.interactItem(player, hand)
 
-fun ItemStack.isSame(other: ItemStack?): Boolean {
-    return ItemStack.areEqual(this, other ?: return false)
-}
+fun ItemStack.isSame(other: ItemStack?) =
+    if (other == null) false else ItemStack.areItemsAndComponentsEqual(this, other)
 
 val Entity.trackedPos: Vec3d get() = this.trackedPosition.withDelta(0, 0, 0)
 
-fun ClientPlayNetworkHandler.swapHand() = sendPacket(
-    PlayerActionC2SPacket(
-        PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND,
-        BlockPos.ORIGIN,
-        Direction.DOWN
+fun ClientPlayerEntity.swapHand() {
+    val offHandStack = offHandStack
+
+    setStackInHand(Hand.OFF_HAND, mainHandStack)
+    setStackInHand(Hand.MAIN_HAND, offHandStack)
+
+    networkHandler.sendPacket(
+        PlayerActionC2SPacket(
+            PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND,
+            BlockPos.ORIGIN,
+            Direction.DOWN
+        )
     )
-)
+}

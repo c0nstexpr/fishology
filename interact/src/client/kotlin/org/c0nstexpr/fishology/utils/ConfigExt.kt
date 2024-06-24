@@ -34,7 +34,8 @@ fun <Model> ConfigWrapper<Model>.propertyOption() = object : PropertyOption<Mode
     override val config: ConfigWrapper<Model> get() = this@propertyOption
 }
 
-fun <Model, Type> ConfigWrapper<Model>.propertyOption(prop: KProperty1<Model, Type>) = propertyOption().from(prop)
+fun <Model, Type> ConfigWrapper<Model>.propertyOption(prop: KProperty1<Model, Type>) =
+    propertyOption().from(prop)
 
 fun <Model, Type> ConfigWrapper<Model>.observe(
     prop: KProperty1<Model, Type>,

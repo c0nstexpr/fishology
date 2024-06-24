@@ -28,6 +28,7 @@
   "text.config.fishology-core.option.notifyLoots": "Notify on catching following item",
   "text.config.fishology-core.option.discardLoots": "Discard loot items",
   "fishology-core.FishingLoot.EnchantedFishingRod": "Enchanted fishing rod",
+    "fishology-core.FishingLoot.Bow": "Enchanted bow",
   "fishology-core.FishingLoot.Unknown": "Other unknown items",
   "fishology-core.FishingLootType.Treasure": "Treasure",
   "fishology-core.FishingLootType.Junk": "Junk",
