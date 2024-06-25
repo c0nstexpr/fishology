@@ -28,7 +28,7 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
 
     private val rod by lazy { Rod(client).apply { enable = true }.scope() }
 
-    private val caughtFish by lazy { CaughtFish(rod).apply { enable = true }.scope() }
+    private val caughtFish by lazy { CaughtFish().apply { enable = true }.scope() }
 
     private val autoFish by lazy { AutoFishing(rod, lootFilter.loot).scope() }
 
@@ -83,6 +83,7 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
     private fun onChangeCaughtJudgeThreshold(it: Double) {
         logger.d("Change caught judge threshold to $it")
         caughtFish.judgeThreshold = it
+        lootFilter.judgeThreshold = it
     }
 
     private fun registerCommand() = ClientCommandRegistrationCallback.EVENT.register { d, _ ->

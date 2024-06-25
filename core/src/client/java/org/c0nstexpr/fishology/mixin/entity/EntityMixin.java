@@ -1,12 +1,10 @@
 package org.c0nstexpr.fishology.mixin.entity;
 
 import net.minecraft.entity.*;
-import net.minecraft.entity.projectile.*;
 import net.minecraft.util.math.*;
 import net.minecraft.world.*;
 import org.c0nstexpr.fishology.events.*;
 import org.c0nstexpr.fishology.log.*;
-import org.objectweb.asm.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;

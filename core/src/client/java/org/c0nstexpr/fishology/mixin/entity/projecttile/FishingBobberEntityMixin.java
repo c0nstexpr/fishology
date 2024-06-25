@@ -1,12 +1,12 @@
 package org.c0nstexpr.fishology.mixin.entity.projecttile;
 
 import net.minecraft.client.*;
+import net.minecraft.client.network.*;
 import net.minecraft.entity.*;
 import net.minecraft.entity.data.*;
 import net.minecraft.entity.projectile.*;
 import org.c0nstexpr.fishology.events.*;
 import org.c0nstexpr.fishology.log.*;
-import org.objectweb.asm.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
@@ -38,5 +38,15 @@ abstract class FishingBobberEntityMixin {
             CaughtFishEvent.subject.onNext(new CaughtFishEvent.Arg(bobber, caughtFish));
         else if (HOOK_ENTITY_ID.equals(trackedData))
             HookedEvent.subject.onNext(new HookedEvent.Arg(bobber, hookedEntity));
+    }
+
+    @Inject(method = "setPlayerFishHook", at = @At("TAIL"))
+    private void setPlayerFishHook(FishingBobberEntity entity, CallbackInfo ci) {
+        final var bobber = (FishingBobberEntity) (Object) this;
+
+        if (!EntityExtKt.getInClient(bobber) ||
+                !(bobber.getPlayerOwner() instanceof ClientPlayerEntity)) return;
+
+        SetFishHookEvent.subject.onNext(new SetFishHookEvent.Arg(entity));
     }
 }

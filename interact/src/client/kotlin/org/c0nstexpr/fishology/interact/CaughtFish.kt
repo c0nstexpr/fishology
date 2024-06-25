@@ -6,28 +6,25 @@ import com.badoo.reaktive.observable.concatMapMaybe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
-import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.merge
 import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
-import com.badoo.reaktive.observable.switchMap
 import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
-import net.minecraft.entity.projectile.FishingBobberEntity
 import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.events.CaughtFishEvent
-import org.c0nstexpr.fishology.events.EntityRemoveEvent
-import org.c0nstexpr.fishology.events.ItemEntitySpawnEvent
-import org.c0nstexpr.fishology.events.ItemEntityTrackerEvent
+import org.c0nstexpr.fishology.events.UseRodEvent
 import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.SwitchDisposable
+import org.c0nstexpr.fishology.utils.fishHookRemovedObservable
+import org.c0nstexpr.fishology.utils.spawnedItemMaybe
 import org.c0nstexpr.fishology.utils.trackedPos
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
-class CaughtFish(private val rod: Rod) : SwitchDisposable() {
+class CaughtFish : SwitchDisposable() {
     private val caughtSubject = PublishSubject<ItemEntity>()
 
     val caught: Observable<ItemEntity> = caughtSubject
@@ -44,25 +41,12 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
         return CaughtFishEvent.observable.filter { it.caught }
             .switchMapMaybe {
                 merge(
-                    rod.itemObservable.filter { !it.isThrow }
-                        .mapNotNull { rod.player?.trackedPos },
-                    EntityRemoveEvent.observable.mapNotNull {
-                        (it.entity as? FishingBobberEntity)?.owner?.id
-                    }
-                        .filter { it == rod.player?.id }
-                        .map { null }
+                    UseRodEvent.observable.filter { !it.isThrow }.map { it.player.trackedPos },
+                    fishHookRemovedObservable().map { null }
                 ).firstOrComplete()
             }
             .notNull()
-            .concatMapMaybe {
-                ItemEntitySpawnEvent.observable.map { spawnArg -> Pair(it, spawnArg) }
-                    .switchMap { (pos, spawnArg) ->
-                        ItemEntityTrackerEvent.observable.map { spawnArg }
-                            .filter { it.isCaughtItem(pos) }
-                            .map { it.entity }
-                    }
-                    .firstOrComplete()
-            }
+            .concatMapMaybe { pos -> spawnedItemMaybe { it.isCaughtItem(pos) } }
             .subscribe {
                 it.run {
                     logger.d<CaughtFish> {
@@ -73,7 +57,7 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
             }
     }
 
-    private fun ItemEntitySpawnEvent.Arg.isCaughtItem(pPos: Vec3d): Boolean {
+    private fun ItemEntity.isCaughtItem(pPos: Vec3d): Boolean {
         // FishingBobberEntity.use(ItemStack usedItem):
         // ItemEntity itemEntity = new ItemEntity(world, x, y, z, itemStack2);
         // double d = playerEntity.x - x;
@@ -92,18 +76,18 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
         }
 
         var relative = Vec3d(pPos.x - pos.x, 0.0, 0.0)
-        var errorVec = Vec3d((relative.x * G - vel.x).absoluteValue, 0.0, 0.0)
+        var errorVec = Vec3d((relative.x * G - velocity.x).absoluteValue, 0.0, 0.0)
         if (isErrorUnaccepted(errorVec.x)) return false
 
         relative = Vec3d(relative.x, 0.0, pPos.z - pos.z)
-        errorVec = Vec3d(errorVec.x, (relative.z * G - vel.z).absoluteValue, 0.0)
+        errorVec = Vec3d(errorVec.x, (relative.z * G - velocity.z).absoluteValue, 0.0)
         if (isErrorUnaccepted(errorVec.y)) return false
 
         relative = Vec3d(relative.x, pPos.y - pos.y, relative.z)
         errorVec = Vec3d(
             errorVec.x,
             errorVec.y,
-            (relative.y * G + sqrt(relative.length()) * 0.08 - vel.y).absoluteValue
+            (relative.y * G + sqrt(relative.length()) * 0.08 - velocity.y).absoluteValue
         )
         if (isErrorUnaccepted(errorVec.y)) return false
 

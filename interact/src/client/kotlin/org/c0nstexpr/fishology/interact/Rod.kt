@@ -7,6 +7,7 @@ import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.subject.behavior.BehaviorSubject
 import net.minecraft.client.MinecraftClient
+import net.minecraft.item.Items
 import org.c0nstexpr.fishology.events.UseRodEvent
 import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
@@ -17,6 +18,12 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
     private val itemSubject = BehaviorSubject<RodItem?>(null)
 
     val itemObservable: Observable<RodItem> = itemSubject.notNull()
+        .filter {
+            if (isUsing) false else {
+                logger.d<Rod> { "detected rod use, saving rod status" }
+                true
+            }
+        }
 
     val rodItem get() = itemSubject.value
 
@@ -24,10 +31,13 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
 
     val bobber get() = player?.fishHook
 
+    val isCooldown get() = player?.itemCooldownManager?.isCoolingDown(Items.FISHING_ROD)
+
+    private var isUsing = false
+
     override fun onEnable(): Disposable {
         logger.d<Rod> { "enable rod interaction" }
-        return UseRodEvent.observable.filter { it.player.uuid == client.player?.uuid }.subscribe {
-            logger.d<Rod> { "detected rod use, saving rod status" }
+        return UseRodEvent.observable.subscribe {
             itemSubject.onNext(RodItem(it.player, it.isThrow, it.hand))
         }
     }
@@ -40,10 +50,19 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
             return false
         }
 
+        if (isCooldown == true) {
+            logger.d<Rod> { "rod is on cooldown" }
+            return false
+        }
+
+        isUsing = true
+
         val hand = item.hand
 
         client.interactItem(hand)
         item.player.swingHand(hand)
+
+        isUsing = false
 
         return true
     }

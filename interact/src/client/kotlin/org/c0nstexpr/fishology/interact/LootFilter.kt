@@ -9,11 +9,9 @@ import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.flatMapMaybe
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.subscribe
-import com.badoo.reaktive.observable.switchMap
 import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
@@ -22,8 +20,6 @@ import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.MOD_ID
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
-import org.c0nstexpr.fishology.events.ItemEntitySpawnEvent
-import org.c0nstexpr.fishology.events.ItemEntityTrackerEvent
 import org.c0nstexpr.fishology.events.SelectedSlotUpdateEvent
 import org.c0nstexpr.fishology.events.SlotUpdateEvent
 import org.c0nstexpr.fishology.log.d
@@ -32,6 +28,7 @@ import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.msg
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 import org.c0nstexpr.fishology.utils.isSame
+import org.c0nstexpr.fishology.utils.spawnedItemMaybe
 import org.c0nstexpr.fishology.utils.trackedPos
 import org.c0nstexpr.fishology.utils.vecComponents
 import kotlin.math.absoluteValue
@@ -52,7 +49,13 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
             logger.d<LootFilter> { "Change loot judge threshold to $value" }
         }
 
-    val loot: Observable<Loot> = lootSubject
+    var loot: Observable<Loot> = caught.map { Loot(it, false) }
+        private set
+
+    override fun onDisable() {
+        super.onDisable()
+        loot = caught.map { Loot(it, false) }
+    }
 
     override fun onEnable(): Disposable {
         logger.d<LootFilter> { "enable throw loot interaction" }
@@ -66,19 +69,22 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
             }
         }
 
+        loot = lootSubject
+
         return caught.switchMapMaybe switch@{ entity ->
             val stack = entity.stack
+
+            if (!lootSet.contains(stack.getLoot())) {
+                lootSubject.onNext(Loot(entity, false))
+                return@switch maybeOfEmpty()
+            }
+
             val rodItem = rod.rodItem ?: return@switch maybeOfEmpty()
             val player = rodItem.player
 
             if (rodItem.slotIndex == player.inventory.selectedSlot) {
                 logger.d<LootFilter> { "rod is selected, aborting" }
                 notify()
-                lootSubject.onNext(Loot(entity, false))
-                return@switch maybeOfEmpty()
-            }
-
-            if (!lootSet.contains(stack.getLoot())) {
                 lootSubject.onNext(Loot(entity, false))
                 return@switch maybeOfEmpty()
             }
@@ -120,11 +126,8 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
                     logger.d<LootFilter> { "dropped excluded loot" }
                     p.swingHand(Hand.MAIN_HAND)
 
-                    ItemEntitySpawnEvent.observable.switchMap {
-                        ItemEntityTrackerEvent.observable.map { it.entity }
-                            .filter { it.isDropped(p, stack, judgeThreshold) }
-                    }
-                        .firstOrComplete()
+                    val playerPos = p.run { trackedPos.run { Vec3d(x, eyeY - 0.3, z) } }
+                    spawnedItemMaybe { it.isDropped(playerPos, stack, judgeThreshold) }
                 } else {
                     logger.w<LootFilter> { "failed to drop discard loot" }
                     maybeOfEmpty()
@@ -137,7 +140,7 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
 
     companion object {
         private fun ItemEntity.isDropped(
-            player: PlayerEntity,
+            playerPos: Vec3d,
             stack: ItemStack,
             judgeThreshold: Double
         ): Boolean {
@@ -154,7 +157,6 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
             // ItemEntity itemEntity = new ItemEntity(this.getWorld(), this.getX(), d, this.getZ(), stack);
 
             val pos = pos
-            val playerPos = player.trackedPos.run { Vec3d(x, eyeY - 0.3, z) }
 
             if (vecComponents.any { isErrorUnaccepted((it(pos) - it(playerPos)).absoluteValue) })
                 return false
@@ -189,9 +191,17 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
 
             val errorVec = Vec3d(0.02, 0.1, 0.02)
 
-            return vecComponents.all {
-                !isErrorUnaccepted((it(vel) - it(targetVel)).absoluteValue - it(errorVec))
+            if (
+                vecComponents.any {
+                    isErrorUnaccepted((it(vel) - it(targetVel)).absoluteValue - it(errorVec))
+                }
+            ) return false
+
+            logger.d<CaughtFish> {
+                "drop item candidate accepted, error vec: $errorVec, threshold: $judgeThreshold"
             }
+
+            return true
         }
     }
 }

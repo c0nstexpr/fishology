@@ -19,5 +19,5 @@ class RodItem(
         get() = if (slotIndex == PlayerInventory.OFF_HAND_SLOT) Hand.OFF_HAND
         else Hand.MAIN_HAND
 
-    fun isValid() = player.inventory.getStack(slotIndex).isSame(stack)
+    fun isValid() = player.getStackInHand(hand).isSame(stack)
 }
