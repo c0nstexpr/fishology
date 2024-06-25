@@ -6,6 +6,7 @@ import net.minecraft.entity.data.*;
 import net.minecraft.entity.projectile.*;
 import org.c0nstexpr.fishology.events.*;
 import org.c0nstexpr.fishology.log.*;
+import org.objectweb.asm.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
@@ -14,7 +15,7 @@ import java.util.*;
 
 @SuppressWarnings({"DataFlowIssue"})
 @Mixin(FishingBobberEntity.class)
-public abstract class FishingBobberEntityMixin {
+abstract class FishingBobberEntityMixin {
     @Final @Shadow private static TrackedData<Boolean> CAUGHT_FISH;
     @Final @Shadow private static TrackedData<Boolean> HOOK_ENTITY_ID;
     @Shadow private boolean caughtFish;

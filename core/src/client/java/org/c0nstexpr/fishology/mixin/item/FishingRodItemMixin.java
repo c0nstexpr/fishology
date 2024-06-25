@@ -13,15 +13,15 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
 @Mixin(FishingRodItem.class)
-public abstract class FishingRodItemMixin {
+abstract class FishingRodItemMixin {
     @Inject(method = "use", at = @At("HEAD"))
     private void use(
         @NotNull World world,
         PlayerEntity player,
         Hand hand,
         CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        if (!(world.isClient && player instanceof ClientPlayerEntity)) return;
+        if (!(world.isClient && player instanceof ClientPlayerEntity p)) return;
 
-        UseRodEvent.useSubject.onNext(new Arg(hand, player, player.fishHook == null));
+        UseRodEvent.useSubject.onNext(new Arg(hand, p, player.fishHook == null));
     }
 }

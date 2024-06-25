@@ -11,6 +11,8 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 
+val vecComponents = arrayOf(Vec3d::x, Vec3d::y, Vec3d::z)
+
 fun PlayerInventory.getSlotInHand(hand: Hand) = when (hand) {
     Hand.MAIN_HAND -> selectedSlot
     Hand.OFF_HAND -> PlayerInventory.OFF_HAND_SLOT
@@ -23,17 +25,10 @@ fun ItemStack.isSame(other: ItemStack?) =
 
 val Entity.trackedPos: Vec3d get() = this.trackedPosition.withDelta(0, 0, 0)
 
-fun ClientPlayerEntity.swapHand() {
-    val offHandStack = offHandStack
-
-    setStackInHand(Hand.OFF_HAND, mainHandStack)
-    setStackInHand(Hand.MAIN_HAND, offHandStack)
-
-    networkHandler.sendPacket(
-        PlayerActionC2SPacket(
-            PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND,
-            BlockPos.ORIGIN,
-            Direction.DOWN
-        )
+fun ClientPlayerEntity.swapHand() = networkHandler.sendPacket(
+    PlayerActionC2SPacket(
+        PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND,
+        BlockPos.ORIGIN,
+        Direction.DOWN
     )
-}
+)

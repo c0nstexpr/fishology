@@ -2,7 +2,7 @@ package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.observable.concatMap
+import com.badoo.reaktive.observable.concatMapMaybe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
@@ -10,6 +10,7 @@ import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.merge
 import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
+import com.badoo.reaktive.observable.switchMap
 import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
@@ -53,11 +54,13 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
                 ).firstOrComplete()
             }
             .notNull()
-            .concatMap { ItemEntitySpawnEvent.observable.map { spawnArg -> Pair(it, spawnArg) } }
-            .switchMapMaybe { (pos, spawnArg) ->
-                ItemEntityTrackerEvent.observable.map { spawnArg }
-                    .filter { it.isCaughtItem(pos) }
-                    .map { it.entity }
+            .concatMapMaybe {
+                ItemEntitySpawnEvent.observable.map { spawnArg -> Pair(it, spawnArg) }
+                    .switchMap { (pos, spawnArg) ->
+                        ItemEntityTrackerEvent.observable.map { spawnArg }
+                            .filter { it.isCaughtItem(pos) }
+                            .map { it.entity }
+                    }
                     .firstOrComplete()
             }
             .subscribe {
@@ -79,7 +82,7 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
         // double g = 0.1;
         // itemEntity.setVelocity(d * 0.1, e * 0.1 + sqrt(sqrt(d * d + e * e + f * f)) * 0.08, f * 0.1);
 
-        fun isErrorAccepted(error: Double) = if (error > judgeThreshold) {
+        fun isErrorUnaccepted(error: Double) = if (error > judgeThreshold) {
             logger.d<CaughtFish> {
                 "caught item candidate out of threshold, error: $error, threshold: $judgeThreshold"
             }
@@ -90,11 +93,11 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
 
         var relative = Vec3d(pPos.x - pos.x, 0.0, 0.0)
         var errorVec = Vec3d((relative.x * G - vel.x).absoluteValue, 0.0, 0.0)
-        if (isErrorAccepted(errorVec.x)) return false
+        if (isErrorUnaccepted(errorVec.x)) return false
 
         relative = Vec3d(relative.x, 0.0, pPos.z - pos.z)
         errorVec = Vec3d(errorVec.x, (relative.z * G - vel.z).absoluteValue, 0.0)
-        if (isErrorAccepted(errorVec.y)) return false
+        if (isErrorUnaccepted(errorVec.y)) return false
 
         relative = Vec3d(relative.x, pPos.y - pos.y, relative.z)
         errorVec = Vec3d(
@@ -102,7 +105,7 @@ class CaughtFish(private val rod: Rod) : SwitchDisposable() {
             errorVec.y,
             (relative.y * G + sqrt(relative.length()) * 0.08 - vel.y).absoluteValue
         )
-        if (isErrorAccepted(errorVec.y)) return false
+        if (isErrorUnaccepted(errorVec.y)) return false
 
         logger.d<CaughtFish> {
             "caught item candidate accepted, error vec: $errorVec, threshold: $judgeThreshold"

@@ -2,7 +2,6 @@ package org.c0nstexpr.fishology
 
 import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.disposable.scope.doOnDispose
-import com.badoo.reaktive.observable.notNull
 import com.mojang.brigadier.Command
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -13,9 +12,9 @@ import org.c0nstexpr.fishology.config.ConfigModel
 import org.c0nstexpr.fishology.interact.AutoFishing
 import org.c0nstexpr.fishology.interact.CaughtChat
 import org.c0nstexpr.fishology.interact.CaughtFish
-import org.c0nstexpr.fishology.interact.DiscardLoot
 import org.c0nstexpr.fishology.interact.FishingStatTrack
 import org.c0nstexpr.fishology.interact.HookChat
+import org.c0nstexpr.fishology.interact.LootFilter
 import org.c0nstexpr.fishology.interact.Rod
 import org.c0nstexpr.fishology.log.MCMessageWriter
 import org.c0nstexpr.fishology.log.addMCWriter
@@ -31,20 +30,20 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
 
     private val caughtFish by lazy { CaughtFish(rod).apply { enable = true }.scope() }
 
-    private val autoFish by lazy { AutoFishing(rod, caughtFish.caught).scope() }
+    private val autoFish by lazy { AutoFishing(rod, lootFilter.loot).scope() }
 
     private val hookChat by lazy { HookChat(client).apply { enable = true }.scope() }
 
     private val caughtChat by lazy {
-        CaughtChat(client, caughtFish.caught.notNull()).apply { enable = true }.scope()
+        CaughtChat(client, caughtFish.caught).apply { enable = true }.scope()
     }
 
-    private val discardLoot by lazy {
-        DiscardLoot(rod, caughtFish.caught.notNull()).apply { enable = true }.scope()
+    private val lootFilter by lazy {
+        LootFilter(rod, caughtFish.caught).apply { enable = true }.scope()
     }
 
     private val fishingStatTrack =
-        FishingStatTrack(rod, caughtFish.caught.notNull()).apply { enable = true }.scope()
+        FishingStatTrack(rod, caughtFish.caught).apply { enable = true }.scope()
 
     init {
         logger.d<Fishology> { "Initializing Fishology module" }
@@ -71,7 +70,7 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
 
             observe(ConfigModel::notifyLoots) { caughtChat.lootsFilter = it }
 
-            observe(ConfigModel::discardLoots) { discardLoot.lootsFilter = it }
+            observe(ConfigModel::discardLoots) { lootFilter.lootSet = it }
         }
 
         logger.mutableConfig.addMCWriter(client)
