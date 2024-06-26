@@ -17,7 +17,6 @@ import net.minecraft.entity.ItemEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
-import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.MOD_ID
 import org.c0nstexpr.fishology.config.FishingLoot
@@ -34,6 +33,8 @@ import org.c0nstexpr.fishology.utils.spawnedItemMaybe
 import org.c0nstexpr.fishology.utils.trackedPos
 import org.c0nstexpr.fishology.utils.vecComponents
 import kotlin.math.absoluteValue
+import kotlin.math.cos
+import kotlin.math.sin
 
 class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity>) :
     SwitchDisposable() {
@@ -126,7 +127,11 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
                     player.swingHand(Hand.MAIN_HAND)
 
                     val playerPos = player.run { trackedPos.run { Vec3d(x, eyeY - 0.3, z) } }
-                    spawnedItemMaybe { it.isDropped(playerPos, stack, judgeThreshold) }
+                    val playerPitch = player.pitch
+                    val playerYaw = player.yaw
+                    spawnedItemMaybe {
+                        it.isDropped(playerPos, playerPitch, playerYaw, stack, judgeThreshold)
+                    }
                 } else {
                     logger.w<LootFilter> { "failed to drop discard loot" }
                     maybeOfEmpty()
@@ -135,10 +140,12 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
     }
 
     companion object {
-        private val errorVec = Vec3d(0.02, 0.1, 0.02)
+        private val thresHoldVec = Vec3d(0.02, 1.0, 0.02)
 
         private fun ItemEntity.isDropped(
             playerPos: Vec3d,
+            pitch: Float,
+            yaw: Float,
             stack: ItemStack,
             judgeThreshold: Double
         ): Boolean {
@@ -153,8 +160,6 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
 
             // double d = this.getEyeY() - 0.3F;
             // ItemEntity itemEntity = new ItemEntity(this.getWorld(), this.getX(), d, this.getZ(), stack);
-
-            val pos = pos
 
             if (vecComponents.any { isErrorUnaccepted((it(pos) - it(playerPos)).absoluteValue) })
                 return false
@@ -172,29 +177,29 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
             //     (j * h * f) + Math.sin(k) * l -- 0.02
             // );
 
-            val vel = velocity
-
             val f = 0.3
-            val p = Math.PI / 180
-            val pitchPi = (pitch * p).toFloat()
-            val yawPi = (yaw * p).toFloat()
-            val h = MathHelper.cos(pitchPi)
+            var dPitch = pitch.toDouble()
+            var dYaw = yaw.toDouble()
 
-            val targetVel =
-                Vec3d(
-                    -MathHelper.sin(yawPi) * h * f,
-                    -MathHelper.sin(pitchPi) * f + 0.1,
-                    MathHelper.cos(yawPi) * h * f
-                )
+            with(Math.PI / 180) {
+                dPitch *= this
+                dYaw *= this
+            }
+
+            val h = cos(dPitch)
+
+            val targetVel = Vec3d(-sin(dYaw) * h * f, -sin(dPitch) * f + 0.1, cos(dYaw) * h * f)
+
+            val errorVec = velocity.subtract(targetVel)
 
             if (
                 vecComponents.any {
-                    isErrorUnaccepted((it(vel) - it(targetVel)).absoluteValue - it(errorVec))
+                    isErrorUnaccepted(it(errorVec).absoluteValue - it(thresHoldVec))
                 }
             ) return false
 
             logger.d<CaughtFish> {
-                "drop item candidate accepted, error vec: $errorVec, threshold: $judgeThreshold"
+                "drop item candidate accepted, error vec: $errorVec, threshold vec: $thresHoldVec, threshold: $judgeThreshold"
             }
 
             return true
