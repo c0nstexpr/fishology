@@ -17,13 +17,13 @@ import org.c0nstexpr.fishology.utils.interactItem
 class Rod(val client: MinecraftClient) : SwitchDisposable() {
     private val itemSubject = BehaviorSubject<RodItem?>(null)
 
-    val itemObservable: Observable<RodItem> = itemSubject.notNull()
-        .filter {
-            if (isUsing) false else {
-                logger.d<Rod> { "detected rod use, saving rod status" }
-                true
-            }
+    val itemObservable: Observable<RodItem> = itemSubject.notNull().filter {
+        if (isUsing) false
+        else {
+            logger.d<Rod> { "detected rod use, saving rod status" }
+            true
         }
+    }
 
     val rodItem get() = itemSubject.value
 

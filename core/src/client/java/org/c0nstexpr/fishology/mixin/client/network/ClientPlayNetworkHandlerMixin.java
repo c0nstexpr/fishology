@@ -43,9 +43,4 @@ abstract class ClientPlayNetworkHandlerMixin {
 
         ItemEntityTrackerEvent.subject.onNext(new ItemEntityTrackerEvent.Arg(item));
     }
-
-    @Inject(method = "onCooldownUpdate", at = @At("TAIL"))
-    private void onCooldownUpdate(CooldownUpdateS2CPacket packet, CallbackInfo ci) {
-        CooldownEvent.subject.onNext(new CooldownEvent.Arg(packet.item(), packet.cooldown()));
-    }
 }

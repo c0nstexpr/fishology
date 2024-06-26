@@ -3,7 +3,7 @@ package org.c0nstexpr.fishology.utils
 import com.badoo.reaktive.disposable.Disposable
 
 abstract class SwitchDisposable : Disposable {
-    private var disposable = null as Disposable?
+    private var disposable: Disposable? = null
 
     var enable
         get() = disposable != null

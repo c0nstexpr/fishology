@@ -1,8 +1,9 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.maybe.flatMap
+import com.badoo.reaktive.maybe.notNull
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.observable.concatMapMaybe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
@@ -44,9 +45,9 @@ class CaughtFish : SwitchDisposable() {
                     UseRodEvent.observable.filter { !it.isThrow }.map { it.player.trackedPos },
                     fishHookRemovedObservable().map { null }
                 ).firstOrComplete()
+                    .notNull()
+                    .flatMap { pos -> spawnedItemMaybe { it.isCaughtItem(pos) } }
             }
-            .notNull()
-            .concatMapMaybe { pos -> spawnedItemMaybe { it.isCaughtItem(pos) } }
             .subscribe {
                 it.run {
                     logger.d<CaughtFish> {

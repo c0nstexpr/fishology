@@ -39,7 +39,9 @@ class CaughtChat(client: MinecraftClient, private val caught: Observable<ItemEnt
                     Enchantment.getName(entry, EnchantmentHelper.getLevel(entry, stack)),
                     Text.translatable("$MOD_ID.comma")
                 )
-            }.flatten().dropLast(1)
+            }
+                .flatten()
+                .dropLast(1)
         )
             .plusElement(Text.translatable("$MOD_ID.right_brace"))
             .forEach(txt::append)

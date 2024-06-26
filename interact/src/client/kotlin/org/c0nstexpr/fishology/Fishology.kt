@@ -43,7 +43,7 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
     }
 
     private val fishingStatTrack =
-        FishingStatTrack(rod, caughtFish.caught).apply { enable = true }.scope()
+        FishingStatTrack(caughtFish.caught).apply { enable = true }.scope()
 
     init {
         logger.d<Fishology> { "Initializing Fishology module" }

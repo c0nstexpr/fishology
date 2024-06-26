@@ -20,7 +20,7 @@ import org.c0nstexpr.fishology.dataDir
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 import java.nio.file.Files
 
-class FishingStatTrack(val rod: Rod, val caughtItem: Observable<ItemEntity>) : SwitchDisposable() {
+class FishingStatTrack(val caughtItem: Observable<ItemEntity>) : SwitchDisposable() {
     private val stat = sortedMapOf<FishingLoot, UInt>()
 
     val statMap: Map<FishingLoot, UInt> get() = stat

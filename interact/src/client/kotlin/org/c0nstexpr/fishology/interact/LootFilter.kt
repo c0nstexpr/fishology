@@ -1,16 +1,18 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.maybe.Maybe
+import com.badoo.reaktive.maybe.flatMap
+import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.maybe.maybeOfEmpty
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.observable.concatMapMaybe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
-import com.badoo.reaktive.observable.flatMapMaybe
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.subject.publish.PublishSubject
+import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.ItemEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
@@ -52,6 +54,8 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
     var loot: Observable<Loot> = caught.map { Loot(it, false) }
         private set
 
+    private var notified = false
+
     override fun onDisable() {
         super.onDisable()
         loot = caught.map { Loot(it, false) }
@@ -59,86 +63,80 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
 
     override fun onEnable(): Disposable {
         logger.d<LootFilter> { "enable throw loot interaction" }
-
-        var notified = false
-
-        val notify = {
-            if (!notified) {
-                rod.client.msg(Text.translatable("$MOD_ID.discard_loots_notification"))
-                notified = true
-            }
-        }
-
+        notified = false
         loot = lootSubject
+        return caught.switchMapMaybe(::caughtMaybe).subscribe { lootSubject.onNext(Loot(it, true)) }
+    }
 
-        return caught.switchMapMaybe switch@{ entity ->
-            val stack = entity.stack
+    private fun caughtMaybe(entity: ItemEntity): Maybe<ItemEntity> {
+        val stack = entity.stack
 
-            if (!lootSet.contains(stack.getLoot())) {
-                lootSubject.onNext(Loot(entity, false))
-                return@switch maybeOfEmpty()
-            }
-
-            val rodItem = rod.rodItem ?: return@switch maybeOfEmpty()
-            val player = rodItem.player
-
-            if (rodItem.slotIndex == player.inventory.selectedSlot) {
-                logger.d<LootFilter> { "rod is selected, aborting" }
-                notify()
-                lootSubject.onNext(Loot(entity, false))
-                return@switch maybeOfEmpty()
-            }
-
-            val copied = stack.copy()
-
-            SlotUpdateEvent.observable.filter {
-                it.syncId == player.playerScreenHandler.syncId && it.stack.isSame(copied)
-            }
-                .map { Pair(player.playerScreenHandler.getSlot(it.slot).index, copied) }
-                .firstOrComplete()
+        if (!lootSet.contains(stack.getLoot())) {
+            lootSubject.onNext(Loot(entity, false))
+            return maybeOfEmpty()
         }
-            .concatMapMaybe concat@{ (slot, stack) ->
-                val manager = rod.client.interactionManager
-                val player = rod.player
 
-                if (player == null) {
-                    logger.w<LootFilter> { "client player is null" }
-                    lootSubject.onNext(Loot(null, false))
-                    return@concat maybeOfEmpty()
+        val player = rod.rodItem?.run {
+            if (slotIndex == player.inventory.selectedSlot) {
+                logger.d<LootFilter> { "rod is selected, aborting" }
+                if (!notified) {
+                    rod.client.msg(Text.translatable("$MOD_ID.discard_loots_notification"))
+                    notified = true
                 }
 
-                if (manager == null) {
-                    logger.w<LootFilter> { "interaction manager is null" }
-                    lootSubject.onNext(Loot(null, false))
-                    return@concat maybeOfEmpty()
-                }
-
-                manager.pickFromInventory(slot)
-
-                SelectedSlotUpdateEvent.observable.filter {
-                    stack.isSame(player.inventory.getStack(it.slot))
-                }
-                    .map { Pair(player, stack) }
-                    .firstOrComplete()
+                lootSubject.onNext(Loot(entity, false))
+                return@run null
             }
-            .flatMapMaybe { (p, stack) ->
-                if (p.dropSelectedItem(false)) {
-                    logger.d<LootFilter> { "dropped excluded loot" }
-                    p.swingHand(Hand.MAIN_HAND)
 
-                    val playerPos = p.run { trackedPos.run { Vec3d(x, eyeY - 0.3, z) } }
+            player
+        } ?: return maybeOfEmpty()
+
+        val copied = stack.copy()
+        val screenHandler = player.playerScreenHandler
+
+        return SlotUpdateEvent.observable
+            .filter { it.syncId == screenHandler.syncId && it.stack.isSame(copied) }
+            .firstOrComplete()
+            .map { screenHandler.getSlot(it.slot).index }
+            .flatMap { dropLootMaybe(it, copied, player) }
+    }
+
+    private fun dropLootMaybe(
+        slot: Int,
+        stack: ItemStack,
+        player: ClientPlayerEntity
+    ): Maybe<ItemEntity> {
+        val manager = rod.client.interactionManager
+
+        if (manager == null) {
+            logger.w<LootFilter> { "interaction manager is null" }
+            lootSubject.onNext(Loot(null, false))
+            return maybeOfEmpty()
+        }
+
+        manager.pickFromInventory(slot)
+
+        return SelectedSlotUpdateEvent.observable.filter {
+            stack.isSame(player.inventory.getStack(it.slot))
+        }
+            .firstOrComplete()
+            .flatMap {
+                if (player.dropSelectedItem(false)) {
+                    logger.d<LootFilter> { "dropped excluded loot" }
+                    player.swingHand(Hand.MAIN_HAND)
+
+                    val playerPos = player.run { trackedPos.run { Vec3d(x, eyeY - 0.3, z) } }
                     spawnedItemMaybe { it.isDropped(playerPos, stack, judgeThreshold) }
                 } else {
                     logger.w<LootFilter> { "failed to drop discard loot" }
                     maybeOfEmpty()
                 }
             }
-            .subscribe {
-                lootSubject.onNext(Loot(it, true))
-            }
     }
 
     companion object {
+        private val errorVec = Vec3d(0.02, 0.1, 0.02)
+
         private fun ItemEntity.isDropped(
             playerPos: Vec3d,
             stack: ItemStack,
@@ -188,8 +186,6 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
                     -MathHelper.sin(pitchPi) * f + 0.1,
                     MathHelper.cos(yawPi) * h * f
                 )
-
-            val errorVec = Vec3d(0.02, 0.1, 0.02)
 
             if (
                 vecComponents.any {
