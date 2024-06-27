@@ -1,29 +1,39 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.disposable.scope.disposableScope
+import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.observable.subscribe
+import com.badoo.reaktive.observable.filter
+import com.badoo.reaktive.observable.firstOrComplete
+import com.badoo.reaktive.observable.mapNotNull
+import com.badoo.reaktive.observable.switchMapMaybe
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import net.minecraft.entity.ItemEntity
-import net.minecraft.text.MutableText
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
-import org.c0nstexpr.fishology.MOD_ID
-import org.c0nstexpr.fishology.appendStyled
-import org.c0nstexpr.fishology.appendTranslatable
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
-import org.c0nstexpr.fishology.config.FishingLootType
 import org.c0nstexpr.fishology.dataDir
+import org.c0nstexpr.fishology.log.d
+import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 import java.nio.file.Files
+import kotlin.time.Duration
+import kotlin.time.TimeSource
 
-class FishingStatTrack(val caughtItem: Observable<ItemEntity>) : SwitchDisposable() {
+class FishingStatTrack(
+    private val loot: Observable<Loot>,
+    private val rodItem: Observable<RodItem>
+) : SwitchDisposable() {
     private val stat = sortedMapOf<FishingLoot, UInt>()
 
+    private val lastStat = sortedMapOf<FishingLoot, UInt>()
+
+    var fishingDuration = Duration.ZERO
+        private set
+
     val statMap: Map<FishingLoot, UInt> get() = stat
+
+    val lastStatMap: Map<FishingLoot, UInt> get() = lastStat
 
     init {
         FishingLoot.entries.forEach { stat[it] = 0u }
@@ -32,9 +42,30 @@ class FishingStatTrack(val caughtItem: Observable<ItemEntity>) : SwitchDisposabl
     override fun onEnable(): Disposable {
         load()
 
-        return caughtItem.subscribe {
-            val loot = it.stack.getLoot()
-            stat[loot] = stat.getOrDefault(loot, 0u) + 1u
+        return disposableScope {
+            loot.filter { !it.drop }.mapNotNull { it.entity?.stack?.getLoot() }.subscribeScoped {
+                stat[it] = stat.getOrDefault(it, 0u) + 1u
+                lastStat[it] = lastStat.getOrDefault(it, 0u) + 1u
+            }
+
+            rodItem.filter { it.isThrow }
+                .switchMapMaybe scope@{
+                    lastStat.clear()
+                    fishingDuration = Duration.ZERO
+                    val timeMark = TimeSource.Monotonic.markNow()
+
+                    logger.d<FishingStatTrack> {
+                        "Restart fishing stats until next user input rod event"
+                    }
+
+                    rodItem.filter { !it.isThrow }.firstOrComplete().map {
+                        logger.d<FishingStatTrack> {
+                            "Detected user input rod event, stop fishing stats"
+                        }
+                        fishingDuration = timeMark.elapsedNow()
+                    }
+                }
+                .subscribeScoped { }
         }
     }
 
@@ -45,48 +76,20 @@ class FishingStatTrack(val caughtItem: Observable<ItemEntity>) : SwitchDisposabl
 
         if (Files.exists(dir)) {
             val jsonFile = dir.resolve(STAT_JSON).toFile()
-            if (jsonFile.exists()) {
-                stat.putAll(Json.decodeFromString<Map<FishingLoot, UInt>>(jsonFile.readText()))
-            }
-        } else {
-            Files.createDirectories(dir)
-        }
+            if (jsonFile.exists()) stat.putAll(
+                Json.decodeFromString<Map<FishingLoot, UInt>>(
+                    jsonFile.readText()
+                )
+            )
+        } else Files.createDirectories(dir)
     }
 
     fun save() = dataDir.resolve(STAT_JSON).toFile().writeText(json.encodeToString(statMap))
 
     fun clear() = stat.clear()
 
-    fun printStat(): MutableText {
-        val txt =
-            Text.literal("[$MOD_ID]")
-                .appendTranslatable("$MOD_ID.stat_title")
-                .append("\n")
-
-        statMap.forEach { (loot, count) ->
-            txt.appendStyled(loot.color, loot.translate(), Text.of(" $count\n"))
-        }
-
-        return txt
-    }
-
     companion object {
         private const val STAT_JSON = "stats.json"
-
-        private val fishingLootColors =
-            FishingLootType.entries.associateWith {
-                Style.EMPTY.withColor(
-                    when (it) {
-                        FishingLootType.Treasure -> Formatting.GOLD
-                        FishingLootType.Fish -> Formatting.AQUA
-                        FishingLootType.Junk -> Formatting.WHITE
-                    }
-                )
-                    .withBold(true)
-                    .withItalic(true)
-            }
-
-        private val FishingLoot.color get() = fishingLootColors[lootType]!!
 
         private val json = Json { prettyPrint = true }
     }

@@ -7,16 +7,23 @@ import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.maybe.maybeOf
 import com.badoo.reaktive.maybe.maybeOfEmpty
 import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.observable.delay
 import com.badoo.reaktive.observable.doOnAfterSubscribe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.merge
+import com.badoo.reaktive.observable.observableOf
 import com.badoo.reaktive.observable.observableOfEmpty
 import com.badoo.reaktive.observable.subscribe
+import com.badoo.reaktive.observable.subscribeOn
 import com.badoo.reaktive.observable.switchMap
 import com.badoo.reaktive.observable.switchMapMaybe
+import com.badoo.reaktive.scheduler.createMainScheduler
+import com.badoo.reaktive.scheduler.createSingleScheduler
+import com.badoo.reaktive.scheduler.ioScheduler
+import kotlinx.coroutines.Dispatchers
 import net.minecraft.client.network.ClientPlayNetworkHandler
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.ItemEntity
@@ -39,19 +46,29 @@ import org.c0nstexpr.fishology.utils.fishHookRemovedObservable
 import org.c0nstexpr.fishology.utils.swapHand
 import org.c0nstexpr.fishology.utils.vecComponents
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.seconds
 
 class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : SwitchDisposable() {
+    var recastThreshold = 3.seconds
+
     override fun onEnable() = rod.itemObservable.filter { it.isThrow }
         .switchMap {
             CaughtFishEvent.observable.filter { it.caught }.switchMap {
-                loot.map { it.entity }.firstOrComplete().flatMapObservable {
-                    lootMaybe(it).flatMapObservable { player ->
-                        if (recast()) recastObservable(player) else observableOfEmpty()
+                createSingleScheduler()
+                Dispatchers.Default
+                merge(
+                    loot.map { it.entity },
+                    observableOf(null).delay(recastThreshold, ioScheduler).subscribeOn()
+                ).firstOrComplete()
+                    .flatMapObservable {
+                        lootMaybe(it).flatMapObservable { player ->
+                            if (recast()) recastObservable(player) else observableOfEmpty()
+                        }
                     }
-                }.doOnAfterSubscribe {
-                    logger.d<AutoFishing> { "retrieve rod" }
-                    rod.use()
-                }
+                    .doOnAfterSubscribe {
+                        logger.d<AutoFishing> { "retrieve rod" }
+                        rod.use()
+                    }
             }
         }
         .subscribe { }

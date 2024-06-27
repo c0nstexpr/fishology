@@ -17,13 +17,7 @@ import org.c0nstexpr.fishology.utils.interactItem
 class Rod(val client: MinecraftClient) : SwitchDisposable() {
     private val itemSubject = BehaviorSubject<RodItem?>(null)
 
-    val itemObservable: Observable<RodItem> = itemSubject.notNull().filter {
-        if (isUsing) false
-        else {
-            logger.d<Rod> { "detected rod use, saving rod status" }
-            true
-        }
-    }
+    val itemObservable: Observable<RodItem> = itemSubject.notNull().filter { !isUsing }
 
     val rodItem get() = itemSubject.value
 
@@ -38,6 +32,7 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
     override fun onEnable(): Disposable {
         logger.d<Rod> { "enable rod interaction" }
         return UseRodEvent.observable.subscribe {
+            logger.d<Rod> { "detected rod use, saving rod status" }
             itemSubject.onNext(RodItem(it.player, it.isThrow, it.hand))
         }
     }

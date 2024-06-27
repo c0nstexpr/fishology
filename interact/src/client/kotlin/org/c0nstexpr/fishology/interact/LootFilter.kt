@@ -163,7 +163,11 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
 
         val posErrorVec = pos.subtract(playerPos)
 
-        if (vecComponents.any { isErrorUnaccepted(it(posErrorVec).absoluteValue) }) return false
+        if (vecComponents.any { isErrorUnaccepted(it(posErrorVec).absoluteValue) }) {
+            logger.d<CaughtFish> { "pos error vec: $posErrorVec" }
+            logger.d<CaughtFish> { "threshold: $judgeThreshold" }
+            return false
+        }
 
         // float f = 0.3F;
         // float g = MathHelper.sin(pitch * Math.PI / 180.0);
@@ -197,7 +201,11 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
             vecComponents.any {
                 isErrorUnaccepted(it(velErrorVec).absoluteValue - it(velThreshold))
             }
-        ) return false
+        ) {
+            logger.d<CaughtFish> { "vel error vec: $velErrorVec    vel threshold: $velThreshold" }
+            logger.d<CaughtFish> { "threshold: $judgeThreshold" }
+            return false
+        }
 
         logger.d<CaughtFish> { "drop item candidate accepted with" }
         logger.d<CaughtFish> { "pos error vec: $posErrorVec" }

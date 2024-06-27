@@ -61,11 +61,7 @@ class CaughtFish : SwitchDisposable() {
                     }
             }
             .subscribe {
-                it.run {
-                    logger.d<CaughtFish> {
-                        "caught item: ${stack.item.name.string}, pos: $pos, tracked pos: $trackedPos"
-                    }
-                }
+                logger.d<CaughtFish> { "caught item: ${it.stack.item.name.string}" }
                 caughtSubject.onNext(it)
             }
     }
@@ -86,7 +82,11 @@ class CaughtFish : SwitchDisposable() {
             vecComponents.any {
                 isErrorUnaccepted(it(posErrorVec).absoluteValue - it(posThreshold))
             }
-        ) return false
+        ) {
+            logger.d<CaughtFish> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
+            logger.d<CaughtFish> { "threshold: $judgeThreshold" }
+            return false
+        }
 
         // double d = playerEntity.x - x;
         // double e = playerEntity.y - y;
@@ -100,7 +100,11 @@ class CaughtFish : SwitchDisposable() {
 
         val velErrorVec = velocity.subtract(targetVel)
 
-        if (vecComponents.any { isErrorUnaccepted(it(velErrorVec).absoluteValue) }) return false
+        if (vecComponents.any { isErrorUnaccepted(it(velErrorVec).absoluteValue) }) {
+            logger.d<CaughtFish> { "vel error vec: $velErrorVec" }
+            logger.d<CaughtFish> { "threshold: $judgeThreshold" }
+            return false
+        }
 
         logger.d<CaughtFish> { "caught item candidate accepted with" }
         logger.d<CaughtFish> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
