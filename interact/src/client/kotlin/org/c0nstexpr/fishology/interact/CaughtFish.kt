@@ -8,7 +8,6 @@ import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.merge
-import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.subject.publish.PublishSubject
@@ -17,11 +16,13 @@ import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.events.CaughtFishEvent
 import org.c0nstexpr.fishology.events.UseRodEvent
 import org.c0nstexpr.fishology.log.d
+import org.c0nstexpr.fishology.log.w
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 import org.c0nstexpr.fishology.utils.fishHookRemovedObservable
 import org.c0nstexpr.fishology.utils.spawnedItemMaybe
 import org.c0nstexpr.fishology.utils.trackedPos
+import org.c0nstexpr.fishology.utils.vecComponents
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
@@ -42,11 +43,22 @@ class CaughtFish : SwitchDisposable() {
         return CaughtFishEvent.observable.filter { it.caught }
             .switchMapMaybe {
                 merge(
-                    UseRodEvent.observable.filter { !it.isThrow }.map { it.player.trackedPos },
+                    UseRodEvent.observable.filter { !it.isThrow }
+                        .map {
+                            it.player.run {
+                                val hook = fishHook
+                                if (hook == null) {
+                                    logger.w<CaughtFish> { "hook is null" }
+                                    null
+                                } else Pair(trackedPos, hook.trackedPos)
+                            }
+                        },
                     fishHookRemovedObservable().map { null }
                 ).firstOrComplete()
                     .notNull()
-                    .flatMap { pos -> spawnedItemMaybe { it.isCaughtItem(pos) } }
+                    .flatMap { (playerPos, bobberPos) ->
+                        spawnedItemMaybe { it.isCaughtItem(playerPos, bobberPos) }
+                    }
             }
             .subscribe {
                 it.run {
@@ -58,48 +70,49 @@ class CaughtFish : SwitchDisposable() {
             }
     }
 
-    private fun ItemEntity.isCaughtItem(pPos: Vec3d): Boolean {
+    private fun ItemEntity.isCaughtItem(pPos: Vec3d, bobberPos: Vec3d): Boolean {
+        fun isErrorUnaccepted(error: Double) = if (error > judgeThreshold) {
+            logger.d<CaughtFish> {
+                "caught item candidate out of threshold, error: $error, threshold: $judgeThreshold"
+            }
+            true
+        } else false
+
         // FishingBobberEntity.use(ItemStack usedItem):
         // ItemEntity itemEntity = new ItemEntity(world, x, y, z, itemStack2);
+        val posErrorVec = pos.subtract(bobberPos)
+
+        if (
+            vecComponents.any {
+                isErrorUnaccepted(it(posErrorVec).absoluteValue - it(posThreshold))
+            }
+        ) return false
+
         // double d = playerEntity.x - x;
         // double e = playerEntity.y - y;
         // double f = playerEntity.z - z;
         // double g = 0.1;
         // itemEntity.setVelocity(d * 0.1, e * 0.1 + sqrt(sqrt(d * d + e * e + f * f)) * 0.08, f * 0.1);
 
-        fun isErrorUnaccepted(error: Double) = if (error > judgeThreshold) {
-            logger.d<CaughtFish> {
-                "caught item candidate out of threshold, error: $error, threshold: $judgeThreshold"
-            }
-            true
-        } else {
-            false
+        val targetVel = pPos.subtract(pos).let {
+            it.multiply(G).run { Vec3d(x, y + sqrt(it.length()) * 0.08, z) }
         }
 
-        var relative = Vec3d(pPos.x - pos.x, 0.0, 0.0)
-        var errorVec = Vec3d((relative.x * G - velocity.x).absoluteValue, 0.0, 0.0)
-        if (isErrorUnaccepted(errorVec.x)) return false
+        val velErrorVec = velocity.subtract(targetVel)
 
-        relative = Vec3d(relative.x, 0.0, pPos.z - pos.z)
-        errorVec = Vec3d(errorVec.x, (relative.z * G - velocity.z).absoluteValue, 0.0)
-        if (isErrorUnaccepted(errorVec.y)) return false
+        if (vecComponents.any { isErrorUnaccepted(it(velErrorVec).absoluteValue) }) return false
 
-        relative = Vec3d(relative.x, pPos.y - pos.y, relative.z)
-        errorVec = Vec3d(
-            errorVec.x,
-            errorVec.y,
-            (relative.y * G + sqrt(relative.length()) * 0.08 - velocity.y).absoluteValue
-        )
-        if (isErrorUnaccepted(errorVec.y)) return false
-
-        logger.d<CaughtFish> {
-            "caught item candidate accepted, error vec: $errorVec, threshold: $judgeThreshold"
-        }
+        logger.d<CaughtFish> { "caught item candidate accepted with" }
+        logger.d<CaughtFish> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
+        logger.d<CaughtFish> { "vel error vec: $velErrorVec" }
+        logger.d<CaughtFish> { "threshold: $judgeThreshold" }
 
         return true
     }
 
     companion object {
         private const val G = 0.1
+
+        private val posThreshold = Vec3d(0.0, 0.5, 0.0)
     }
 }

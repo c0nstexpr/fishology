@@ -7,6 +7,7 @@ import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.maybe.maybeOf
 import com.badoo.reaktive.maybe.maybeOfEmpty
 import com.badoo.reaktive.observable.Observable
+import com.badoo.reaktive.observable.doOnAfterSubscribe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
@@ -40,17 +41,16 @@ import org.c0nstexpr.fishology.utils.vecComponents
 import kotlin.math.abs
 
 class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : SwitchDisposable() {
-    private var isRecast: Boolean = false
-
     override fun onEnable() = rod.itemObservable.filter { it.isThrow }
         .switchMap {
             CaughtFishEvent.observable.filter { it.caught }.switchMap {
-                logger.d<AutoFishing> { "retrieve rod" }
-                rod.use()
                 loot.map { it.entity }.firstOrComplete().flatMapObservable {
                     lootMaybe(it).flatMapObservable { player ->
                         if (recast()) recastObservable(player) else observableOfEmpty()
                     }
+                }.doOnAfterSubscribe {
+                    logger.d<AutoFishing> { "retrieve rod" }
+                    rod.use()
                 }
             }
         }
@@ -74,7 +74,7 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : Sw
                 .filter {
                     isSameItem(it) &&
                         vecComponents.any { abs(it(loot.velocity)) <= 0.1 } &&
-                        loot.pos.y < player.eyeY - 0.5
+                        loot.pos.y < player.eyeY - 1
                 },
             ItemEntityRemoveEvent.observable.map { it.entity }.filter(::isSameItem)
         ).firstOrComplete().map { player }
