@@ -13,7 +13,6 @@ val modName: String by project
 println("configuring $modId fabric mod project")
 
 repositories {
-    mavenCentral()
     maven("https://maven.fabricmc.net/")
 }
 

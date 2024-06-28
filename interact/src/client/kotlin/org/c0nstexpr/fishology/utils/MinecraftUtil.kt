@@ -1,9 +1,13 @@
 package org.c0nstexpr.fishology.utils
 
+import com.badoo.reaktive.disposable.scope.DisposableScope
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.switchMap
+import com.badoo.reaktive.scheduler.Scheduler
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
@@ -18,6 +22,7 @@ import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.events.ItemEntitySpawnEvent
 import org.c0nstexpr.fishology.events.ItemEntityTrackerEvent
 import org.c0nstexpr.fishology.events.SetFishHookEvent
+import kotlin.time.Duration
 
 val vecComponents = arrayOf(Vec3d::x, Vec3d::y, Vec3d::z)
 
@@ -46,3 +51,44 @@ fun spawnedItemMaybe(p: (ItemEntity) -> Boolean) = ItemEntitySpawnEvent.observab
     .firstOrComplete()
 
 fun fishHookRemovedObservable() = SetFishHookEvent.observable.filter { it.bobber == null }
+
+class MCClientScheduler(val client: MinecraftClient = MinecraftClient.getInstance()) :
+    Scheduler,
+    DisposableScope by DisposableScope() {
+    override fun destroy() {
+        dispose()
+    }
+
+    override fun newExecutor() = object : Scheduler.Executor {
+        override var isDisposed = this@MCClientScheduler.isDisposed
+            private set
+
+        override fun cancel() {
+            isDisposed = true
+        }
+
+        override fun dispose() {
+            isDisposed = true
+        }
+
+        override fun submit(delay: Duration, period: Duration, task: () -> Unit) {
+            if (isDisposed) return
+
+            client.submit {
+                runBlocking {
+                    delay(delay)
+
+                    if (period.isInfinite()) {
+                        task()
+                        return@runBlocking
+                    }
+
+                    while (!isDisposed) {
+                        task()
+                        delay(period)
+                    }
+                }
+            }
+        }
+    }.scope()
+}

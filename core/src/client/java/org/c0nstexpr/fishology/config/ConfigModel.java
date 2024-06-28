@@ -15,8 +15,8 @@ public class ConfigModel {
     @RangeConstraint(min = 0, max = 100, decimalPlaces = 5)
     public double caughtJudgeThreshold = 0.1;
 
-    @RangeConstraint(min = Double.MIN_VALUE, max = 100, decimalPlaces = 5)
-    public double recastThreshold = 3;
+    @RangeConstraint(min = 0, max = 60000)
+    public int recastThreshold = 3000;
 
     @SectionHeader("hookNotify")
     @Nest

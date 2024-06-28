@@ -7,7 +7,6 @@ import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.subject.behavior.BehaviorSubject
 import net.minecraft.client.MinecraftClient
-import net.minecraft.item.Items
 import org.c0nstexpr.fishology.events.UseRodEvent
 import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
@@ -25,14 +24,12 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
 
     val bobber get() = player?.fishHook
 
-    val isCooldown get() = player?.itemCooldownManager?.isCoolingDown(Items.FISHING_ROD)
-
     private var isUsing = false
 
     override fun onEnable(): Disposable {
         logger.d<Rod> { "enable rod interaction" }
         return UseRodEvent.observable.subscribe {
-            logger.d<Rod> { "detected rod use, saving rod status" }
+            logger.d<Rod> { "save rod status after use rod" }
             itemSubject.onNext(RodItem(it.player, it.isThrow, it.hand))
         }
     }
@@ -42,11 +39,6 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
 
         if (item?.isValid() != true) {
             logger.d<Rod> { "invalid rod item ${item?.run { "in $hand" }}, aborting" }
-            return false
-        }
-
-        if (isCooldown == true) {
-            logger.d<Rod> { "rod is on cooldown" }
             return false
         }
 
