@@ -2,6 +2,7 @@ package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.maybe.Maybe
+import com.badoo.reaktive.maybe.doOnAfterSubscribe
 import com.badoo.reaktive.maybe.flatMap
 import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.maybe.maybeOfEmpty
@@ -128,18 +129,21 @@ class LootFilter(private val rod: Rod, private val caught: Observable<ItemEntity
         }
             .firstOrComplete()
             .flatMap {
-                if (player.dropSelectedItem(false)) {
-                    logger.d<LootFilter> { "dropped excluded loot" }
-                    player.swingHand(Hand.MAIN_HAND)
+                val playerPos = player.run { trackedPos.run { Vec3d(x, eyeY - 0.3, z) } }
+                val playerPitch = player.pitch
+                val playerYaw = player.yaw
+                var dropped = false
 
-                    val playerPos = player.run { trackedPos.run { Vec3d(x, eyeY - 0.3, z) } }
-                    val playerPitch = player.pitch
-                    val playerYaw = player.yaw
-                    spawnedItemMaybe { it.isDropped(playerPos, playerPitch, playerYaw, stack) }
-                } else {
-                    logger.w<LootFilter> { "failed to drop discard loot" }
-                    maybeOfEmpty()
+                spawnedItemMaybe {
+                    dropped && it.isDropped(playerPos, playerPitch, playerYaw, stack)
                 }
+                    .doOnAfterSubscribe {
+                        if (player.dropSelectedItem(false)) {
+                            logger.d<LootFilter> { "dropped excluded loot" }
+                            player.swingHand(Hand.MAIN_HAND)
+                            dropped = true
+                        } else logger.w<LootFilter> { "failed to drop discard loot" }
+                    }
             }
     }
 

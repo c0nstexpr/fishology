@@ -59,6 +59,8 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
         logger.d<Fishology> { "Initializing Fishology module" }
 
         config.apply {
+            autoFish.enable = enableAutoFish()
+
             caughtFish.enable = enableAutoFish()
 
             hookNotify.apply {

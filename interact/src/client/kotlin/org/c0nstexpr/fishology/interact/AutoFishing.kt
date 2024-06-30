@@ -1,26 +1,25 @@
 package org.c0nstexpr.fishology.interact
 
+import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.SerialDisposable
 import com.badoo.reaktive.maybe.Maybe
+import com.badoo.reaktive.maybe.doOnAfterSubscribe
 import com.badoo.reaktive.maybe.flatMap
 import com.badoo.reaktive.maybe.flatMapObservable
 import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.maybe.maybeOf
 import com.badoo.reaktive.maybe.maybeOfEmpty
+import com.badoo.reaktive.maybe.observeOn
 import com.badoo.reaktive.maybe.subscribe
 import com.badoo.reaktive.maybe.timeout
 import com.badoo.reaktive.observable.Observable
-import com.badoo.reaktive.observable.delay
+import com.badoo.reaktive.observable.doOnAfterSubscribe
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
-import com.badoo.reaktive.observable.flatMapMaybe
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.merge
-import com.badoo.reaktive.observable.observableOf
 import com.badoo.reaktive.observable.observableOfEmpty
-import com.badoo.reaktive.observable.observableOfNever
-import com.badoo.reaktive.observable.observeOn
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMap
 import com.badoo.reaktive.observable.switchMapMaybe
@@ -56,42 +55,41 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : Sw
 
     private val clientScheduler = MCClientScheduler(rod.client)
 
-    override fun onEnable() = rod.itemObservable.filter { it.isThrow }.switchMap { rodItem ->
-        CaughtFishEvent.observable.filter { it.caught }.switchMap {
+    override fun onEnable(): Disposable {
+        logger.d<AutoFishing> { "enable auto fishing" }
+
+        return rod.itemObservable.filter { it.isThrow }
+            .switchMap { rodItem ->
+                CaughtFishEvent.observable.filter { it.caught }.switchMap { onCaughtFish(rodItem) }
+            }
+            .subscribe { }
+    }
+
+    private fun onCaughtFish(rodItem: RodItem): Observable<Unit> = loot.map { it.entity }
+        .firstOrComplete()
+        .let {
+            if (recastThreshold.isFinite()) it.timeout(
+                recastThreshold,
+                ioScheduler,
+                swapHands(rodItem.player).observeOn(clientScheduler)
+                    .map {
+                        logger.d<AutoFishing> { "recast threshold $recastThreshold reached" }
+                        null
+                    }
+            )
+            else it
+        }
+        .flatMapObservable {
+            onGetLoot(it).flatMapObservable { player ->
+                if (recast()) onRecast(player) else observableOfEmpty()
+            }
+        }
+        .doOnAfterSubscribe {
             logger.d<AutoFishing> { "retrieve rod" }
             rod.use()
-
-            loot.map { it.entity }
-                .firstOrComplete()
-                .let {
-                    if (recastThreshold.isFinite()) it.timeout(
-                        recastThreshold,
-                        ioScheduler,
-                        discardBobberMaybe(rodItem.player).map {
-                            logger.d<AutoFishing> { "recast threshold $recastThreshold reached" }
-                            null
-                        }
-                    )
-                    else it
-                }
-                .flatMapObservable {
-                    lootMaybe(it).flatMapObservable { player ->
-                        if (recast()) recastObservable(player) else observableOfEmpty()
-                    }
-                }
         }
-    }.subscribe { }
 
-    private fun recastTimeout(player: ClientPlayerEntity) = if (recastThreshold.isFinite())
-        observableOf(null)
-            .delay(recastThreshold, ioScheduler)
-            .observeOn(clientScheduler)
-            .flatMapMaybe {
-                discardBobberMaybe(player).map { null }
-            }
-    else observableOfNever()
-
-    private fun lootMaybe(loot: ItemEntity?): Maybe<ClientPlayerEntity> {
+    private fun onGetLoot(loot: ItemEntity?): Maybe<ClientPlayerEntity> {
         val player = rod.player
 
         if (player == null) {
@@ -116,9 +114,9 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : Sw
 
     private val recastSubject = PublishSubject<Unit>()
 
-    val serialDisposable = SerialDisposable().scope()
+    private val serialDisposable = SerialDisposable().scope()
 
-    private fun recastObservable(player: ClientPlayerEntity): Observable<Unit> {
+    private fun onRecast(player: ClientPlayerEntity): Observable<Unit> {
         var retryCount = 0u
 
         fun observeRecastFailed() = serialDisposable.set(
@@ -135,38 +133,41 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : Sw
             }
         )
 
-        observeRecastFailed()
-
         return recastSubject.switchMapMaybe {
-            discardBobberMaybe(player).map { if (recast()) observeRecastFailed() }
+            swapHands(player).map { if (recast()) observeRecastFailed() }
+                .doOnAfterSubscribe { observeRecastFailed() }
         }
     }
 
-    private fun discardBobberMaybe(player: ClientPlayerEntity): Maybe<Unit> {
+    private fun swapHands(player: ClientPlayerEntity): Maybe<Unit> {
         logger.d<AutoFishing> { "try to discard bobber" }
 
         val rodItem = rod.rodItem.takeIf { it?.isValid() == true } ?: return maybeOfEmpty()
         val inv = player.inventory
         val network = player.networkHandler
         val selected = inv.selectedSlot
+        val offHandStack = player.offHandStack.copy()
+        val handler = player.playerScreenHandler
+
+        val slotObservable = SlotUpdateEvent.observable.filter {
+            it.syncId == handler.syncId && ItemStack.areEqual(it.stack, offHandStack)
+        }
+            .map { handler.getSlot(it.slot).index }
 
         if (rodItem.slotIndex == selected) return scrollHotBar(inv, network)
 
-        val offHandStack = player.offHandStack.copy()
-        val screenHandler = player.playerScreenHandler
-        val slotObservable = SlotUpdateEvent.observable.filter {
-            it.syncId == screenHandler.syncId && ItemStack.areEqual(it.stack, offHandStack)
-        }.map { screenHandler.getSlot(it.slot).index }
-
-        player.swapHand()
-
-        return slotObservable.filter { it == selected }.firstOrComplete().flatMap {
-            scrollHotBar(inv, network).flatMap {
-                player.swapHand()
-                slotObservable.filter { it == PlayerInventory.OFF_HAND_SLOT }.firstOrComplete()
-                    .map { }
+        return slotObservable.filter { it == selected }
+            .firstOrComplete()
+            .flatMap {
+                scrollHotBar(inv, network)
+                    .flatMap {
+                        slotObservable.filter { it == PlayerInventory.OFF_HAND_SLOT }
+                            .map { }
+                            .firstOrComplete()
+                            .doOnAfterSubscribe { player.swapHand() }
+                    }
             }
-        }
+            .doOnAfterSubscribe { player.swapHand() }
     }
 
     private fun scrollHotBar(inv: PlayerInventory, network: ClientPlayNetworkHandler): Maybe<Unit> {
