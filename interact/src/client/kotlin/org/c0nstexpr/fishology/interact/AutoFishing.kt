@@ -2,6 +2,7 @@ package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.disposable.SerialDisposable
+import com.badoo.reaktive.disposable.scope.doOnDispose
 import com.badoo.reaktive.maybe.Maybe
 import com.badoo.reaktive.maybe.doOnAfterSubscribe
 import com.badoo.reaktive.maybe.flatMap
@@ -9,7 +10,6 @@ import com.badoo.reaktive.maybe.flatMapObservable
 import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.maybe.maybeOf
 import com.badoo.reaktive.maybe.maybeOfEmpty
-import com.badoo.reaktive.maybe.observeOn
 import com.badoo.reaktive.maybe.subscribe
 import com.badoo.reaktive.maybe.timeout
 import com.badoo.reaktive.observable.Observable
@@ -19,11 +19,9 @@ import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.merge
-import com.badoo.reaktive.observable.observableOfEmpty
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMap
 import com.badoo.reaktive.observable.switchMapMaybe
-import com.badoo.reaktive.scheduler.ioScheduler
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.client.network.ClientPlayNetworkHandler
 import net.minecraft.client.network.ClientPlayerEntity
@@ -42,18 +40,27 @@ import org.c0nstexpr.fishology.events.SlotUpdateEvent
 import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.log.w
 import org.c0nstexpr.fishology.logger
-import org.c0nstexpr.fishology.utils.MCClientScheduler
 import org.c0nstexpr.fishology.utils.SwitchDisposable
+import org.c0nstexpr.fishology.utils.clientScheduler
 import org.c0nstexpr.fishology.utils.fishHookRemovedObservable
 import org.c0nstexpr.fishology.utils.swapHand
 import org.c0nstexpr.fishology.utils.vecComponents
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.seconds
 
-class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : SwitchDisposable() {
+class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>) :
+    SwitchDisposable() {
     var recastThreshold = 3.seconds
+        set(value) {
+            logger.d<AutoFishing> { "recast threshold set to $value" }
+            field = value
+        }
 
-    private val clientScheduler = MCClientScheduler(rod.client)
+    private val clientScheduler = clientScheduler()
+
+    init {
+        doOnDispose { clientScheduler.destroy() }
+    }
 
     override fun onEnable(): Disposable {
         logger.d<AutoFishing> { "enable auto fishing" }
@@ -65,23 +72,21 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : Sw
             .subscribe { }
     }
 
-    private fun onCaughtFish(rodItem: RodItem): Observable<Unit> = loot.map { it.entity }
-        .firstOrComplete()
+    private fun onCaughtFish(rodItem: RodItem): Observable<Unit> = loot.firstOrComplete()
         .let {
             if (recastThreshold.isFinite()) it.timeout(
                 recastThreshold,
-                ioScheduler,
-                swapHands(rodItem.player).observeOn(clientScheduler)
-                    .map {
-                        logger.d<AutoFishing> { "recast threshold $recastThreshold reached" }
-                        null
-                    }
+                clientScheduler,
+                resetRodStatus(rodItem.player).doOnAfterSubscribe {
+                    logger.d<AutoFishing> { "recast threshold $recastThreshold reached" }
+                }
+                    .map { null }
             )
             else it
         }
         .flatMapObservable {
             onGetLoot(it).flatMapObservable { player ->
-                if (recast()) onRecast(player) else observableOfEmpty()
+                onRecast(player).doOnAfterSubscribe { recast() }
             }
         }
         .doOnAfterSubscribe {
@@ -119,7 +124,7 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : Sw
     private fun onRecast(player: ClientPlayerEntity): Observable<Unit> {
         var retryCount = 0u
 
-        fun observeRecastFailed() = serialDisposable.set(
+        fun setRecastEvent() = serialDisposable.set(
             merge(
                 HookedEvent.observable.filter { it.hook != null },
                 EntityOnGroundEvent.observable.filter { it.onGround }
@@ -134,62 +139,65 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<Loot>) : Sw
         )
 
         return recastSubject.switchMapMaybe {
-            swapHands(player).map { if (recast()) observeRecastFailed() }
-                .doOnAfterSubscribe { observeRecastFailed() }
+            resetRodStatus(player).map { if (recast()) setRecastEvent() }
         }
+            .doOnAfterSubscribe { setRecastEvent() }
     }
 
-    private fun swapHands(player: ClientPlayerEntity): Maybe<Unit> {
-        logger.d<AutoFishing> { "try to discard bobber" }
-
+    private fun resetRodStatus(player: ClientPlayerEntity): Maybe<Unit> {
         val rodItem = rod.rodItem.takeIf { it?.isValid() == true } ?: return maybeOfEmpty()
         val inv = player.inventory
         val network = player.networkHandler
         val selected = inv.selectedSlot
-        val offHandStack = player.offHandStack.copy()
-        val handler = player.playerScreenHandler
 
-        val slotObservable = SlotUpdateEvent.observable.filter {
-            it.syncId == handler.syncId && ItemStack.areEqual(it.stack, offHandStack)
+        if (rodItem.slotIndex == selected) scrollHotBar(inv, network).doOnAfterSubscribe {
+            logger.d<AutoFishing> { "try to discard bobber" }
+        }
+
+        val stack = player.offHandStack.copy()
+        val handler = player.playerScreenHandler
+        val observable = SlotUpdateEvent.observable.filter {
+            it.syncId == handler.syncId && ItemStack.areEqual(it.stack, stack)
         }
             .map { handler.getSlot(it.slot).index }
 
-        if (rodItem.slotIndex == selected) return scrollHotBar(inv, network)
-
-        return slotObservable.filter { it == selected }
+        return observable.filter { it == selected }
             .firstOrComplete()
             .flatMap {
-                scrollHotBar(inv, network)
-                    .flatMap {
-                        slotObservable.filter { it == PlayerInventory.OFF_HAND_SLOT }
-                            .map { }
-                            .firstOrComplete()
-                            .doOnAfterSubscribe { player.swapHand() }
-                    }
+                scrollHotBar(inv, network).flatMap {
+                    observable.filter { it == PlayerInventory.OFF_HAND_SLOT }
+                        .firstOrComplete()
+                        .doOnAfterSubscribe { player.swapHand() }
+                        .map { }
+                }
             }
-            .doOnAfterSubscribe { player.swapHand() }
+            .doOnAfterSubscribe {
+                logger.d<AutoFishing> { "try to discard bobber" }
+                player.swapHand()
+            }
     }
 
     private fun scrollHotBar(inv: PlayerInventory, network: ClientPlayNetworkHandler): Maybe<Unit> {
-        val swappable = inv.run {
-            for (i in 0..8) {
-                val j = (selectedSlot + i) % 9
-                val stack = inv.main[j]
-                if (!stack.isOf(Items.FISHING_ROD)) return@run j
-            }
-
-            logger.d<AutoFishing> { "no swappable slot found" }
-            return maybeOfEmpty()
-        }
-
         val selected = inv.selectedSlot
-
-        inv.selectedSlot = swappable
-        network.sendPacket(UpdateSelectedSlotC2SPacket(swappable))
 
         return fishHookRemovedObservable().firstOrComplete().map {
             inv.selectedSlot = selected
             network.sendPacket(UpdateSelectedSlotC2SPacket(selected))
+        }.doOnAfterSubscribe {
+            val swappable = inv.run {
+                for (i in 0..8) {
+                    val j = (selectedSlot + i) % 9
+                    val stack = inv.main[j]
+                    if (!stack.isOf(Items.FISHING_ROD)) return@run j
+                }
+
+                logger.d<AutoFishing> { "no swappable slot found" }
+
+                return@doOnAfterSubscribe
+            }
+
+            inv.selectedSlot = swappable
+            network.sendPacket(UpdateSelectedSlotC2SPacket(swappable))
         }
     }
 

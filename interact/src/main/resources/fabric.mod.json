@@ -17,7 +17,7 @@
     "client": [
       {
         "adapter": "kotlin",
-        "value": "org.c0nstexpr.fishology.FishologyInteractModKt::init"
+        "value": "org.c0nstexpr.fishology.FishologyMod"
       }
     ]
   },

@@ -28,9 +28,6 @@ public class ConfigModel {
 
     public Set<FishingLoot> notifyLoots = Set.of();
 
-    @SectionHeader("discardLoots")
-    public Set<FishingLoot> discardLoots = Set.of();
-
     @SectionHeader("other")
     public Severity logLevel = Severity.Warn;
 

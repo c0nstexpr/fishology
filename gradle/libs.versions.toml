@@ -7,6 +7,7 @@ fabric = "0.100.3+1.21"
 owo = "0.12.10+1.21"
 modmenu = "11.0.0"
 fabric-kotlin = "1.11.0+kotlin.2.0.0"
+mc-coroutine = "2.17.0" # idea doesn't seem to recognize rich version
 
 [libraries]
 # fabric dependencies
@@ -27,12 +28,15 @@ reaktive-annotations = { module = "com.badoo.reaktive:reaktive-annotations-jvm",
 reaktive-coroutines-interop = { module = "com.badoo.reaktive:coroutines-interop-jvm", version = "latest.release" }
 kermit = { module = "co.touchlab:kermit-jvm", version = "latest.release" }
 kermit-core = { module = "co.touchlab:kermit-core-jvm", version = "latest.release" }
+mc-coroutine = { module = "com.github.shynixn.mccoroutine:mccoroutine-fabric-api", version.ref = "mc-coroutine" }
+mc-coroutine-core = { module = "com.github.shynixn.mccoroutine:mccoroutine-fabric-core", version.ref = "mc-coroutine" }
 
 [bundles]
 fabric = ["fabric-kotlin", "fabric-api", "fabric-loader"]
 
 reaktive = ["reaktive", "reaktive-utils", "reaktive-annotations", "reaktive-coroutines-interop"]
 kermit = ["kermit", "kermit-core"]
+mc-coroutine = ["mc-coroutine", "mc-coroutine-core"]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "latest.release" }

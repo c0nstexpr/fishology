@@ -8,13 +8,17 @@ import net.minecraft.util.Util
 import org.c0nstexpr.fishology.config.ConfigControl
 import org.c0nstexpr.fishology.log.LogBuilder
 import org.c0nstexpr.fishology.log.MCMessageWriter
+import org.c0nstexpr.fishology.log.addWriter
 import org.c0nstexpr.fishology.log.greeting
 import org.c0nstexpr.fishology.log.removeWriterWhere
 
 const val CORE_MOD_ID = "fishology-core"
 const val CORE_MOD_NAME = "Fishology Core"
 
-internal val CoreLogger = LogBuilder().apply { tag = CORE_MOD_ID }.build()
+internal val CoreLogger = LogBuilder().apply {
+    config.addWriter()
+    tag = CORE_MOD_ID
+}.build()
 
 internal fun init() = ClientLifecycleEvents.CLIENT_STARTED.register {
     val loggerConfig = CoreLogger.mutableConfig

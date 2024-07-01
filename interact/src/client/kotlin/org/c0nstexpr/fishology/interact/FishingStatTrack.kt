@@ -6,12 +6,10 @@ import com.badoo.reaktive.maybe.map
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
-import com.badoo.reaktive.observable.mapNotNull
 import com.badoo.reaktive.observable.switchMapMaybe
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.c0nstexpr.fishology.config.FishingLoot
-import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
 import org.c0nstexpr.fishology.dataDir
 import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
@@ -21,7 +19,7 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 class FishingStatTrack(
-    private val loot: Observable<Loot>,
+    private val loot: Observable<FishingLoot>,
     private val rodItem: Observable<RodItem>
 ) : SwitchDisposable() {
     private val stat = sortedMapOf<FishingLoot, UInt>()
@@ -43,7 +41,7 @@ class FishingStatTrack(
         load()
 
         return disposableScope {
-            loot.filter { !it.drop }.mapNotNull { it.entity?.stack?.getLoot() }.subscribeScoped {
+            loot.subscribeScoped {
                 stat[it] = stat.getOrDefault(it, 0u) + 1u
                 lastStat[it] = lastStat.getOrDefault(it, 0u) + 1u
             }

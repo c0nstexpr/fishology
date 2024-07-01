@@ -26,19 +26,19 @@ import org.c0nstexpr.fishology.utils.vecComponents
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
-class CaughtFish : SwitchDisposable() {
-    private val caughtSubject = PublishSubject<ItemEntity>()
+class LootDetect : SwitchDisposable() {
+    private val lootSubject = PublishSubject<ItemEntity>()
 
-    val caught: Observable<ItemEntity> = caughtSubject
+    val loot: Observable<ItemEntity> = lootSubject
 
     var judgeThreshold: Double = 0.1
         set(value) {
             field = value
-            logger.d<CaughtFish> { "Change caught judge threshold to $value" }
+            logger.d<LootDetect> { "Change loot judge threshold to $value" }
         }
 
     override fun onEnable(): Disposable {
-        logger.d<CaughtFish> { "enable caught fish interaction" }
+        logger.d<LootDetect> { "enable fishing loot detect" }
 
         return CaughtFishEvent.observable.filter { it.caught }
             .switchMapMaybe {
@@ -48,7 +48,7 @@ class CaughtFish : SwitchDisposable() {
                             it.player.run {
                                 val hook = fishHook
                                 if (hook == null) {
-                                    logger.w<CaughtFish> { "hook is null" }
+                                    logger.w<LootDetect> { "hook is null" }
                                     null
                                 } else Pair(trackedPos, hook.trackedPos)
                             }
@@ -57,19 +57,19 @@ class CaughtFish : SwitchDisposable() {
                 ).firstOrComplete()
                     .notNull()
                     .flatMap { (playerPos, bobberPos) ->
-                        spawnedItemMaybe { it.isCaughtItem(playerPos, bobberPos) }
+                        spawnedItemMaybe { it.isLoot(playerPos, bobberPos) }
                     }
             }
             .subscribe {
-                logger.d<CaughtFish> { "caught item: ${it.stack.item.name.string}" }
-                caughtSubject.onNext(it)
+                logger.d<LootDetect> { "fish loot item: ${it.stack.item.name.string}" }
+                lootSubject.onNext(it)
             }
     }
 
-    private fun ItemEntity.isCaughtItem(pPos: Vec3d, bobberPos: Vec3d): Boolean {
+    private fun ItemEntity.isLoot(pPos: Vec3d, bobberPos: Vec3d): Boolean {
         fun isErrorUnaccepted(error: Double) = if (error > judgeThreshold) {
-            logger.d<CaughtFish> {
-                "caught item candidate out of threshold, error: $error, threshold: $judgeThreshold"
+            logger.d<LootDetect> {
+                "loot item candidate out of threshold, error: $error, threshold: $judgeThreshold"
             }
             true
         } else false
@@ -83,8 +83,8 @@ class CaughtFish : SwitchDisposable() {
                 isErrorUnaccepted(it(posErrorVec).absoluteValue - it(posThreshold))
             }
         ) {
-            logger.d<CaughtFish> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
-            logger.d<CaughtFish> { "threshold: $judgeThreshold" }
+            logger.d<LootDetect> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
+            logger.d<LootDetect> { "threshold: $judgeThreshold" }
             return false
         }
 
@@ -101,15 +101,15 @@ class CaughtFish : SwitchDisposable() {
         val velErrorVec = velocity.subtract(targetVel)
 
         if (vecComponents.any { isErrorUnaccepted(it(velErrorVec).absoluteValue) }) {
-            logger.d<CaughtFish> { "vel error vec: $velErrorVec" }
-            logger.d<CaughtFish> { "threshold: $judgeThreshold" }
+            logger.d<LootDetect> { "vel error vec: $velErrorVec" }
+            logger.d<LootDetect> { "threshold: $judgeThreshold" }
             return false
         }
 
-        logger.d<CaughtFish> { "caught item candidate accepted with" }
-        logger.d<CaughtFish> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
-        logger.d<CaughtFish> { "vel error vec: $velErrorVec" }
-        logger.d<CaughtFish> { "threshold: $judgeThreshold" }
+        logger.d<LootDetect> { "loot item candidate accepted with" }
+        logger.d<LootDetect> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
+        logger.d<LootDetect> { "vel error vec: $velErrorVec" }
+        logger.d<LootDetect> { "threshold: $judgeThreshold" }
 
         return true
     }

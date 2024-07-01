@@ -1,6 +1,7 @@
 package org.c0nstexpr.fishology
 
 import com.badoo.reaktive.disposable.scope.DisposableScope
+import com.badoo.reaktive.observable.map
 import com.mojang.brigadier.Command
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -11,13 +12,13 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.c0nstexpr.fishology.config.ConfigModel
 import org.c0nstexpr.fishology.config.FishingLoot
+import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
 import org.c0nstexpr.fishology.config.FishingLootType
 import org.c0nstexpr.fishology.interact.AutoFishing
 import org.c0nstexpr.fishology.interact.CaughtChat
-import org.c0nstexpr.fishology.interact.CaughtFish
 import org.c0nstexpr.fishology.interact.FishingStatTrack
 import org.c0nstexpr.fishology.interact.HookChat
-import org.c0nstexpr.fishology.interact.LootFilter
+import org.c0nstexpr.fishology.interact.LootDetect
 import org.c0nstexpr.fishology.interact.Rod
 import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.utils.observe
@@ -29,30 +30,20 @@ import kotlin.time.toDuration
 class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScope() {
     private val rod by lazy { Rod(client).apply { enable = true }.scope() }
 
-    private val caughtFish by lazy {
-        CaughtFish().apply {
-            enable = true
-            judgeThreshold = config.caughtJudgeThreshold()
-        }.scope()
-    }
+    private val lootDetect by lazy { LootDetect().apply { enable = true }.scope() }
 
-    private val autoFish by lazy { AutoFishing(rod, lootFilter.loot).scope() }
+    private val autoFish by lazy { AutoFishing(rod, lootDetect.loot).scope() }
 
     private val hookChat by lazy { HookChat(client).apply { enable = true }.scope() }
 
     private val caughtChat by lazy {
-        CaughtChat(client, caughtFish.caught).apply { enable = true }.scope()
+        CaughtChat(client, lootDetect.loot).apply { enable = true }.scope()
     }
-
-    private val lootFilter by lazy {
-        LootFilter(rod, caughtFish.caught).apply {
-            enable = true
-            judgeThreshold = config.caughtJudgeThreshold()
-        }.scope()
-    }
-
     private val fishingStatTrack by lazy {
-        FishingStatTrack(lootFilter.loot, rod.itemObservable).apply { enable = true }.scope()
+        FishingStatTrack(
+            lootDetect.loot.map { it.stack.getLoot() },
+            rod.itemObservable
+        ).apply { enable = true }.scope()
     }
 
     init {
@@ -61,7 +52,7 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
         config.apply {
             autoFish.enable = enableAutoFish()
 
-            caughtFish.enable = enableAutoFish()
+            lootDetect.judgeThreshold = caughtJudgeThreshold()
 
             hookNotify.apply {
                 hookChat.apply {
@@ -75,11 +66,9 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
                     notifyLevel = level()
                     fmt = msgFmt()
                 }
+
+                lootsFilter = notifyLoots()
             }
-
-            caughtChat.lootsFilter = notifyLoots()
-
-            lootFilter.lootSet = discardLoots()
 
             recastThreshold().let {
                 autoFish.recastThreshold = if (it == 0) Duration.INFINITE
@@ -173,8 +162,7 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
                 observe(ConfigModel::enableAutoFish) { fishology?.autoFish?.enable = it }
 
                 observe(ConfigModel::caughtJudgeThreshold) {
-                    fishology?.caughtFish?.judgeThreshold = it
-                    fishology?.lootFilter?.judgeThreshold = it
+                    fishology?.lootDetect?.judgeThreshold = it
                 }
 
                 propertyOption(ConfigModel::hookNotify).run {
@@ -194,8 +182,6 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
                 }
 
                 observe(ConfigModel::notifyLoots) { fishology?.caughtChat?.lootsFilter = it }
-
-                observe(ConfigModel::discardLoots) { fishology?.lootFilter?.lootSet = it }
 
                 observe(ConfigModel::recastThreshold) {
                     fishology?.autoFish?.recastThreshold = if (it == 0) Duration.INFINITE
