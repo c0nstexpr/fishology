@@ -150,9 +150,8 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
         val network = player.networkHandler
         val selected = inv.selectedSlot
 
-        if (rodItem.slotIndex == selected) scrollHotBar(inv, network).doOnAfterSubscribe {
-            logger.d<AutoFishing> { "try to discard bobber" }
-        }
+        if (rodItem.slotIndex == selected) return scrollHotBar(inv, network)
+            .doOnAfterSubscribe { logger.d<AutoFishing> { "try to discard bobber" } }
 
         val stack = player.offHandStack.copy()
         val handler = player.playerScreenHandler

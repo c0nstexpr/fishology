@@ -14,13 +14,17 @@ class MCMessageWriter(
     val levelFmt: MutableMap<Severity, Formatting> = mutableMapOf()
 ) : LogWriter() {
     override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
-        val msg =
-            throwable?.let { "$message\nException occurred ${it.localizedMessage}" } ?: message
+        if (throwable != null) log(
+            severity,
+            "Exception occurred ${throwable.localizedMessage}",
+            tag,
+            null
+        )
 
         client.msg(
             coloredText(
                 levelFmt.getOrElse(severity) { severity.defaultFmt() },
-                AttributionFormatter.formatMessage(severity, Tag(tag), Message(msg))
+                AttributionFormatter.formatMessage(severity, Tag(tag), Message(message))
             )
         )
     }

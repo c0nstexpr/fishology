@@ -10,15 +10,19 @@ import org.c0nstexpr.fishology.config.Config
 import org.c0nstexpr.fishology.config.ConfigControl
 import org.c0nstexpr.fishology.config.ConfigModel
 import org.c0nstexpr.fishology.log.LogBuilder
+import org.c0nstexpr.fishology.log.ModLogWriter
 import org.c0nstexpr.fishology.log.addMCWriter
-import org.c0nstexpr.fishology.log.greeting
+import org.c0nstexpr.fishology.log.addWriter
 import org.c0nstexpr.fishology.utils.observe
 import java.nio.file.Path
 
 const val MOD_ID = "fishology"
 const val MOD_NAME = "Fishology"
 
-internal val logger = LogBuilder().apply { tag = MOD_ID }.build()
+internal val logger = LogBuilder().apply {
+    config.addWriter(ModLogWriter(MOD_NAME))
+    tag = MOD_NAME
+}.build()
 
 val config: Config by ConfigControl.config
 
@@ -36,7 +40,7 @@ internal object FishologyMod : ClientModInitializer {
 
         ClientLifecycleEvents.CLIENT_STARTED.register {
             logger.mutableConfig.addMCWriter(it)
-            logger.greeting()
+            logger.i("Hello, this is $MOD_NAME!")
 
             mcCoroutineConfiguration.minecraftExecutor = it
 
