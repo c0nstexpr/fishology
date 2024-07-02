@@ -15,7 +15,7 @@ public class ConfigControl {
         getCoreLogger().d(
             "initialize config %s".formatted(config.getValue()),
             null,
-            ConfigControl.class.getName());
+            ConfigControl.class.getSimpleName());
         ConfigScreen.registerProvider(
             CORE_MOD_ID,
             screen -> new Screen(Identifier.of("owo:config"), config.getValue(), screen));

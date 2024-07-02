@@ -164,6 +164,7 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
             .firstOrComplete()
             .flatMap {
                 scrollHotBar(inv, network).flatMap {
+                    ??
                     observable.filter { it == PlayerInventory.OFF_HAND_SLOT }
                         .firstOrComplete()
                         .doOnAfterSubscribe { player.swapHand() }
@@ -171,7 +172,7 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
                 }
             }
             .doOnAfterSubscribe {
-                logger.d<AutoFishing> { "try to discard bobber" }
+                logger.d<AutoFishing> { "try to discard bobber, swap off hand to main hand" }
                 player.swapHand()
             }
     }
@@ -194,6 +195,8 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
 
                 return@doOnAfterSubscribe
             }
+
+            logger.d<AutoFishing> { "scroll slot from $selected to $swappable" }
 
             inv.selectedSlot = swappable
             network.sendPacket(UpdateSelectedSlotC2SPacket(swappable))
