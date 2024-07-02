@@ -148,7 +148,7 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
         val rodItem = rod.rodItem.takeIf { it?.isValid() == true } ?: return maybeOfEmpty()
         val inv = player.inventory
         val network = player.networkHandler
-        val selected = inv.selectedSlot
+        var selected = inv.selectedSlot
 
         if (rodItem.slotIndex == selected) return scrollHotBar(inv, network)
             .doOnAfterSubscribe { logger.d<AutoFishing> { "try to discard bobber" } }
@@ -164,7 +164,6 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
             .firstOrComplete()
             .flatMap {
                 scrollHotBar(inv, network).flatMap {
-                    ??
                     observable.filter { it == PlayerInventory.OFF_HAND_SLOT }
                         .firstOrComplete()
                         .doOnAfterSubscribe { player.swapHand() }
@@ -173,6 +172,8 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
             }
             .doOnAfterSubscribe {
                 logger.d<AutoFishing> { "try to discard bobber, swap off hand to main hand" }
+                scrollToNonRodSlot(inv, network)
+                selected = inv.selectedSlot
                 player.swapHand()
             }
     }
@@ -183,24 +184,26 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
         return fishHookRemovedObservable().firstOrComplete().map {
             inv.selectedSlot = selected
             network.sendPacket(UpdateSelectedSlotC2SPacket(selected))
-        }.doOnAfterSubscribe {
-            val swappable = inv.run {
-                for (i in 0..8) {
-                    val j = (selectedSlot + i) % 9
-                    val stack = inv.main[j]
-                    if (!stack.isOf(Items.FISHING_ROD)) return@run j
-                }
+        }.doOnAfterSubscribe { scrollToNonRodSlot(inv, network) }
+    }
 
-                logger.d<AutoFishing> { "no swappable slot found" }
-
-                return@doOnAfterSubscribe
+    private fun scrollToNonRodSlot(inv: PlayerInventory, network: ClientPlayNetworkHandler) {
+        val nonRodSlot = inv.run {
+            for (i in 0..8) {
+                val j = (selectedSlot + i) % 9
+                val stack = inv.main[j]
+                if (!stack.isOf(Items.FISHING_ROD)) return@run j
             }
 
-            logger.d<AutoFishing> { "scroll slot from $selected to $swappable" }
+            logger.d<AutoFishing> { "no suitable non-rod slot found" }
 
-            inv.selectedSlot = swappable
-            network.sendPacket(UpdateSelectedSlotC2SPacket(swappable))
+            return
         }
+
+        logger.d<AutoFishing> { "scroll slot to $nonRodSlot" }
+
+        inv.selectedSlot = nonRodSlot
+        network.sendPacket(UpdateSelectedSlotC2SPacket(nonRodSlot))
     }
 
     private fun recast(): Boolean {

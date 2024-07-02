@@ -48,9 +48,17 @@ fun getLogger(modName: String): Logger {
             (LogManager.getContext(false) as LoggerContext).apply {
                 LoggerConfig(modName, Level.ALL, false).apply {
                     configuration.addLogger(modName, this)
+
                     var parent: LoggerConfig? = parent
                     while (parent != null) {
-                        parent.appenders.values.forEach { addAppender(it, Level.ALL, null) }
+                        parent.appenders.values.forEach {
+                            addAppender(
+                                it,
+                                if (name == "ServerGuiConsole" || name == "SysOut") Level.ALL
+                                else null,
+                                null
+                            )
+                        }
 
                         if (parent.isAdditive) parent = parent.parent
                         else break
