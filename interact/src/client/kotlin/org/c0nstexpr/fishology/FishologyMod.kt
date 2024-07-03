@@ -10,7 +10,7 @@ import org.c0nstexpr.fishology.config.Config
 import org.c0nstexpr.fishology.config.ConfigControl
 import org.c0nstexpr.fishology.config.ConfigModel
 import org.c0nstexpr.fishology.log.getLogger
-import org.c0nstexpr.fishology.log.getWisdom
+import org.c0nstexpr.fishology.log.spell
 import org.c0nstexpr.fishology.utils.observe
 import java.nio.file.Path
 
@@ -36,7 +36,7 @@ internal object FishologyMod : ClientModInitializer {
         }
 
         ClientLifecycleEvents.CLIENT_STARTED.register {
-            logger.i(getWisdom())
+            logger.i(spell())
 
             mcCoroutineConfiguration.minecraftExecutor = it
 

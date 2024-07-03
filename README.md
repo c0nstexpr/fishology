@@ -15,6 +15,10 @@ Mod mainly focuses on auto-fishing:
     - Adjust caught item judgement error. The smaller the value, the
       more strict the judgement, but may more likely to miss the fish. Please set the value under
       judging by client performance, network status, etc. Generally 0.1-1.0 would be fine.
+  - Auto recast and retry when failed.
+  - Adjust force recast time. Usually recast happened when loot drops down in a suitable height. But
+    mod may not find the loot every time. After retrieving, force recast if waiting for loot time
+    exceeds.
 - Notify on caught fish.
     - Configure notification level.
     - Configure notification message format, refer to
@@ -23,14 +27,11 @@ Mod mainly focuses on auto-fishing:
 - Notify on hooked entity.
     - Configure notification level.
     - Configure notification message format.
-- Discard unwanted loots.
-    - Configure list of loot items.
-    - By enabling this feature, one might encounter hooking discarded item entity when fishing. Add
-      bubble column to push away the discarded may solve the problem.
 - Fishing statistics store locally.
     - client command "/fishology stat".
     - Use print to view statistics in hud.
     - Use clear to clear statistics.
+  - Use last to view latest fishing round statistics
 
 ## License
 

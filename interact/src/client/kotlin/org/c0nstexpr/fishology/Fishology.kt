@@ -6,10 +6,17 @@ import com.mojang.brigadier.Command
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.minecraft.client.MinecraftClient
+import net.minecraft.entity.AreaEffectCloudEntity
+import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.particle.ParticleTypes
+import net.minecraft.sound.SoundCategory
+import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.world.WorldEvents
 import org.c0nstexpr.fishology.config.ConfigModel
 import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
@@ -21,6 +28,7 @@ import org.c0nstexpr.fishology.interact.HookChat
 import org.c0nstexpr.fishology.interact.LootDetect
 import org.c0nstexpr.fishology.interact.Rod
 import org.c0nstexpr.fishology.log.d
+import org.c0nstexpr.fishology.log.spell
 import org.c0nstexpr.fishology.utils.observe
 import org.c0nstexpr.fishology.utils.propertyOption
 import kotlin.time.Duration
@@ -103,7 +111,43 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
                 )
         }
 
-        d.register(literal(MOD_ID).then(statCmd))
+        val magicCmd = literal("magic").then(
+            literal("spell").executes {
+                client.msg(spell())
+
+                val blockPos = client.player?.blockPos ?: return@executes Command.SINGLE_SUCCESS
+                val world = client.world ?: return@executes Command.SINGLE_SUCCESS
+
+                AreaEffectCloudEntity(
+                    world,
+                    blockPos.x.toDouble(),
+                    blockPos.y.toDouble(),
+                    blockPos.z.toDouble()
+                ).run {
+                    particleType = ParticleTypes.DRAGON_BREATH
+                    dataTracker.set<Float>(AreaEffectCloudEntity.RADIUS, 3.0f)
+                    duration = 100
+                    addEffect(StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1))
+                    world.syncWorldEvent(WorldEvents.DRAGON_BREATH_CLOUD_SPAWNS, blockPos, 1)
+                    world.playSoundAtBlockCenter(
+                        blockPos,
+                        SoundEvents.ENTITY_DRAGON_FIREBALL_EXPLODE,
+                        SoundCategory.HOSTILE,
+                        1.0F,
+                        random.nextFloat() * 0.1F + 0.9F,
+                        false
+                    )
+                    world.spawnEntity(this)
+                }
+
+                Command.SINGLE_SUCCESS
+            }
+        )
+
+        literal(MOD_ID).run {
+            d.register(then(statCmd))
+            d.register(then(magicCmd))
+        }
     }
 
     private fun Map<FishingLoot, UInt>.printStat(duration: Double): MutableText {

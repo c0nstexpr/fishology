@@ -8,19 +8,20 @@ import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.merge
+import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
 import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.events.CaughtFishEvent
+import org.c0nstexpr.fishology.events.ItemEntitySpawnEvent
 import org.c0nstexpr.fishology.events.UseRodEvent
 import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.log.w
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 import org.c0nstexpr.fishology.utils.fishHookRemovedObservable
-import org.c0nstexpr.fishology.utils.spawnedItemMaybe
 import org.c0nstexpr.fishology.utils.trackedPos
 import org.c0nstexpr.fishology.utils.vecComponents
 import kotlin.math.absoluteValue
@@ -57,60 +58,91 @@ class LootDetect : SwitchDisposable() {
                 ).firstOrComplete()
                     .notNull()
                     .flatMap { (playerPos, bobberPos) ->
-                        spawnedItemMaybe { it.isLoot(playerPos, bobberPos) }
+                        logger.d<LootDetect> { "error threshold: $judgeThreshold" }
+                        merge(
+                            ItemEntitySpawnEvent.observable.filter {
+                                val pos = it.pos
+
+                                isLootPos(pos, bobberPos) &&
+                                    isLootVel(it.vel, playerPos.subtract(pos))
+                            }
+                                .map { it.entity },
+                            UseRodEvent.observable.map { null }
+                        )
+                            .firstOrComplete()
                     }
             }
+            .notNull()
             .subscribe {
                 logger.d<LootDetect> { "fish loot item: ${it.stack.item.name.string}" }
                 lootSubject.onNext(it)
             }
     }
 
-    private fun ItemEntity.isLoot(pPos: Vec3d, bobberPos: Vec3d): Boolean {
-        fun isErrorUnaccepted(error: Double) = if (error > judgeThreshold) {
-            logger.d<LootDetect> {
-                "loot item candidate out of threshold, error: $error, threshold: $judgeThreshold"
-            }
-            true
-        } else false
-
+    private fun isLootPos(pos: Vec3d, bobberPos: Vec3d): Boolean {
         // FishingBobberEntity.use(ItemStack usedItem):
         // ItemEntity itemEntity = new ItemEntity(world, x, y, z, itemStack2);
         val posErrorVec = pos.subtract(bobberPos)
 
+        logger.d<LootDetect> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
+
         if (
             vecComponents.any {
-                isErrorUnaccepted(it(posErrorVec).absoluteValue - it(posThreshold))
+                it(posErrorVec).absoluteValue - it(posThreshold) > judgeThreshold
             }
         ) {
-            logger.d<LootDetect> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
-            logger.d<LootDetect> { "threshold: $judgeThreshold" }
+            logger.d<LootDetect> { "candidate pos not accepted" }
             return false
         }
 
+        logger.d<LootDetect> { "candidate pos accepted" }
+        return true
+    }
+
+    private fun isLootVel(vel: Vec3d, relPos: Vec3d): Boolean {
         // double d = playerEntity.x - x;
         // double e = playerEntity.y - y;
         // double f = playerEntity.z - z;
         // double g = 0.1;
-        // itemEntity.setVelocity(d * 0.1, e * 0.1 + sqrt(sqrt(d * d + e * e + f * f)) * 0.08, f * 0.1);
+        // itemEntity.setVelocity(d * g, e * g + sqrt(sqrt(d * d + e * e + f * f)) * 0.08, f * g);
 
-        val targetVel = pPos.subtract(pos).let {
-            it.multiply(G).run { Vec3d(x, y + sqrt(it.length()) * 0.08, z) }
+        val x = relPos.x * G
+        val z = relPos.z * G
+
+        logger.d<LootDetect> { "vel x: $relPos" }
+
+        run {
+            val xError = vel.x - x
+            val zError = vel.z - z
+
+            logger.d<LootDetect> { "vel x error: $xError    z error: $zError" }
+
+            if (xError.absoluteValue > judgeThreshold || zError.absoluteValue > judgeThreshold) {
+                logger.d<LootDetect> { "candidate velocity not accepted" }
+                return false
+            }
         }
 
-        val velErrorVec = velocity.subtract(targetVel)
+        fun getY(y: Double) = y * G + sqrt(sqrt(x * x + y * y + z * z)) * 0.08
 
-        if (vecComponents.any { isErrorUnaccepted(it(velErrorVec).absoluteValue) }) {
-            logger.d<LootDetect> { "vel error vec: $velErrorVec" }
-            logger.d<LootDetect> { "threshold: $judgeThreshold" }
+        val yRng = run {
+            val y1 = getY(relPos.y - posThreshold.y)
+            val y2 = getY(relPos.y + posThreshold.y)
+
+            val minMax = if (y1 <= y2) y1 to y2 else y2 to y1
+
+            minMax.first - judgeThreshold..minMax.second + judgeThreshold
+        }
+        val velY = vel.y
+
+        logger.d<LootDetect> { "vel y rng: $yRng    candidate y: $velY" }
+
+        if (velY !in yRng) {
+            logger.d<LootDetect> { "candidate velocity not accepted" }
             return false
         }
 
-        logger.d<LootDetect> { "loot item candidate accepted with" }
-        logger.d<LootDetect> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
-        logger.d<LootDetect> { "vel error vec: $velErrorVec" }
-        logger.d<LootDetect> { "threshold: $judgeThreshold" }
-
+        logger.d<LootDetect> { "candidate velocity accepted" }
         return true
     }
 

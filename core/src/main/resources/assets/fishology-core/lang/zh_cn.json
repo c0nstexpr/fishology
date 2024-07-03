@@ -17,7 +17,7 @@
   "text.config.fishology-core.option.enableAutoFish": "启用自动钓鱼",
   "text.config.fishology-core.option.caughtJudgeThreshold": "战利品判定的误差范围",
   "text.config.fishology-core.option.recastThreshold": "在收杆后多少秒内强制抛杆（毫秒）",
-  "text.config.fishology-core.option.recastThreshold.tooltip": "收杆后超时则自动抛竿，即使没检测到钓鱼战利品。0则禁用",
+  "text.config.fishology-core.option.recastThreshold.tooltip": "收杆后等待战利品超时则自动抛竿。0则禁用",
   "text.config.fishology-core.option.logLevel": "日志等级",
   "text.config.fishology-core.category.hookNotify": "钓到实体通知",
   "text.config.fishology-core.option.hookNotify.msgFmt": "聊天信息字符串模板",

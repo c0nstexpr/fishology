@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.minotaur)
 }
 
+val modId: String by project
+
 repositories {
     maven("https://maven.wispforest.io")
     maven("https://maven.terraformersmc.com")
@@ -19,6 +21,10 @@ dependencies {
         api(it)
         include(it)
     }
+}
+
+loom {
+    accessWidenerPath.set(file("src/main/resources/$modId.accesswidener"))
 }
 
 tasks {

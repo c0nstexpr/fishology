@@ -151,7 +151,14 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
         var selected = inv.selectedSlot
 
         if (rodItem.slotIndex == selected) return scrollHotBar(inv, network)
-            .doOnAfterSubscribe { logger.d<AutoFishing> { "try to discard bobber" } }
+            .doOnAfterSubscribe { logger.d<AutoFishing> { "try to reset rod status" } }
+
+        scrollToNonRodSlot(inv, network)
+
+        if (player.mainHandStack.isOf(Items.FISHING_ROD)) {
+            logger.d<AutoFishing> { "abort reset, still have rod in main hand" }
+            return maybeOfEmpty()
+        }
 
         val stack = player.offHandStack.copy()
         val handler = player.playerScreenHandler
@@ -160,6 +167,7 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
         }
             .map { handler.getSlot(it.slot).index }
 
+        selected = inv.selectedSlot
         return observable.filter { it == selected }
             .firstOrComplete()
             .flatMap {
@@ -171,9 +179,7 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
                 }
             }
             .doOnAfterSubscribe {
-                logger.d<AutoFishing> { "try to discard bobber, swap off hand to main hand" }
-                scrollToNonRodSlot(inv, network)
-                selected = inv.selectedSlot
+                logger.d<AutoFishing> { "try reset rod status" }
                 player.swapHand()
             }
     }
@@ -189,10 +195,9 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
 
     private fun scrollToNonRodSlot(inv: PlayerInventory, network: ClientPlayNetworkHandler) {
         val nonRodSlot = inv.run {
-            for (i in 0..8) {
-                val j = (selectedSlot + i) % 9
-                val stack = inv.main[j]
-                if (!stack.isOf(Items.FISHING_ROD)) return@run j
+            for (i in 0..<PlayerInventory.getHotbarSize()) {
+                val stack = inv.main[i]
+                if (!stack.isOf(Items.FISHING_ROD)) return@run i
             }
 
             logger.d<AutoFishing> { "no suitable non-rod slot found" }

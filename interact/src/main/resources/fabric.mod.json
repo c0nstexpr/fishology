@@ -21,6 +21,7 @@
       }
     ]
   },
+  "accessWidener": "${id}.accesswidener",
   "icon": "assets/${id}/icon.png",
   "depends": {
     "fabric-language-kotlin": ">=${fabricKotlin}",
