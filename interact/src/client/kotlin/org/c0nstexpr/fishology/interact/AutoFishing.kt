@@ -44,8 +44,6 @@ import org.c0nstexpr.fishology.utils.SwitchDisposable
 import org.c0nstexpr.fishology.utils.clientScheduler
 import org.c0nstexpr.fishology.utils.fishHookRemovedObservable
 import org.c0nstexpr.fishology.utils.swapHand
-import org.c0nstexpr.fishology.utils.vecComponents
-import kotlin.math.abs
 import kotlin.time.Duration.Companion.seconds
 
 class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>) :
@@ -74,7 +72,7 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
 
     private fun onCaughtFish(rodItem: RodItem): Observable<Unit> = loot.firstOrComplete()
         .let {
-            if (recastThreshold.isFinite()) it.timeout(
+            if (recastThreshold.isFinite()) it.timeout(??
                 recastThreshold,
                 clientScheduler,
                 resetRodStatus(rodItem.player).doOnAfterSubscribe {
@@ -110,7 +108,7 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
         return merge(
             ItemEntityVelEvent.observable.map { it.entity }.filter {
                 isSameItem(it) &&
-                    vecComponents.any { abs(it(loot.velocity)) <= 0.1 } &&
+                    loot.velocity.y <= 0.1 &&
                     loot.pos.y < player.eyeY - 1
             },
             ItemEntityRemoveEvent.observable.map { it.entity }.filter(::isSameItem)

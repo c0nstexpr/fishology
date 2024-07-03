@@ -7,8 +7,6 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.AreaEffectCloudEntity
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -22,6 +20,7 @@ import org.c0nstexpr.fishology.config.FishingLoot
 import org.c0nstexpr.fishology.config.FishingLoot.Companion.getLoot
 import org.c0nstexpr.fishology.config.FishingLootType
 import org.c0nstexpr.fishology.interact.AutoFishing
+import org.c0nstexpr.fishology.interact.BobberStatus
 import org.c0nstexpr.fishology.interact.CaughtChat
 import org.c0nstexpr.fishology.interact.FishingStatTrack
 import org.c0nstexpr.fishology.interact.HookChat
@@ -36,23 +35,22 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScope() {
-    private val rod by lazy { Rod(client).apply { enable = true }.scope() }
+    private val rod = Rod(client).apply { enable = true }.scope()
 
-    private val lootDetect by lazy { LootDetect().apply { enable = true }.scope() }
+    private val lootDetect = LootDetect().apply { enable = true }.scope()
 
-    private val autoFish by lazy { AutoFishing(rod, lootDetect.loot).scope() }
+    private val hookChat = HookChat(client).apply { enable = true }.scope()
 
-    private val hookChat by lazy { HookChat(client).apply { enable = true }.scope() }
+    private val bobberStatus = BobberStatus(client).apply { enable = true }.scope()
 
-    private val caughtChat by lazy {
-        CaughtChat(client, lootDetect.loot).apply { enable = true }.scope()
-    }
-    private val fishingStatTrack by lazy {
-        FishingStatTrack(
-            lootDetect.loot.map { it.stack.getLoot() },
-            rod.itemObservable
-        ).apply { enable = true }.scope()
-    }
+    private val autoFish = AutoFishing(rod, lootDetect.loot).scope()
+
+    private val caughtChat = CaughtChat(client, lootDetect.loot).apply { enable = true }.scope()
+
+    private val fishingStatTrack = FishingStatTrack(
+        lootDetect.loot.map { it.stack.getLoot() },
+        rod.itemObservable
+    ).apply { enable = true }.scope()
 
     init {
         logger.d<Fishology> { "Initializing Fishology module" }
@@ -125,16 +123,16 @@ class Fishology(val client: MinecraftClient) : DisposableScope by DisposableScop
                     blockPos.z.toDouble()
                 ).run {
                     particleType = ParticleTypes.DRAGON_BREATH
-                    dataTracker.set<Float>(AreaEffectCloudEntity.RADIUS, 3.0f)
-                    duration = 100
-                    addEffect(StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1))
+                    dataTracker.set(AreaEffectCloudEntity.RADIUS, 16.0f)
+                    duration = 200
+                    radiusGrowth = 0.0f
                     world.syncWorldEvent(WorldEvents.DRAGON_BREATH_CLOUD_SPAWNS, blockPos, 1)
                     world.playSoundAtBlockCenter(
                         blockPos,
                         SoundEvents.ENTITY_DRAGON_FIREBALL_EXPLODE,
                         SoundCategory.HOSTILE,
                         1.0F,
-                        random.nextFloat() * 0.1F + 0.9F,
+                        0.0f,
                         false
                     )
                     world.spawnEntity(this)

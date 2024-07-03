@@ -6,5 +6,7 @@
   "fishology.right_brace": ")",
   "fishology.comma": ",",
   "fishology.total": "total count %s",
-  "fishology.item_speed": "(%.2f items/minute)"
+  "fishology.item_speed": "(%.2f items/minute)",
+  "fishology.bobber_in_open_water": "Bobber is in open water",
+  "fishology.bobber_not_in_open_water": "Bobber is not in open water"
 }
