@@ -64,21 +64,20 @@ class AutoFishing(private val rod: Rod, private val loot: Observable<ItemEntity>
         logger.d<AutoFishing> { "enable auto fishing" }
 
         return rod.itemObservable.filter { it.isThrow }
-            .switchMap { rodItem ->
-                CaughtFishEvent.observable.filter { it.caught }.switchMap { onCaughtFish(rodItem) }
+            .switchMap {
+                CaughtFishEvent.observable.filter { it.caught }.switchMap { onCaughtFish() }
             }
             .subscribe { }
     }
 
-    private fun onCaughtFish(rodItem: RodItem): Observable<Unit> = loot.firstOrComplete()
+    private fun onCaughtFish(): Observable<Unit> = loot.firstOrComplete()
         .let {
-            if (recastThreshold.isFinite()) it.timeout(??
+            if (recastThreshold.isFinite()) it.timeout(
                 recastThreshold,
                 clientScheduler,
-                resetRodStatus(rodItem.player).doOnAfterSubscribe {
+                maybeOf(null).doOnAfterSubscribe {
                     logger.d<AutoFishing> { "recast threshold $recastThreshold reached" }
                 }
-                    .map { null }
             )
             else it
         }

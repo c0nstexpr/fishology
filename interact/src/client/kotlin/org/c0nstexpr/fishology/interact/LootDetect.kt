@@ -1,20 +1,23 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.maybe.Maybe
 import com.badoo.reaktive.maybe.flatMap
+import com.badoo.reaktive.maybe.map
+import com.badoo.reaktive.maybe.maybeOfEmpty
 import com.badoo.reaktive.maybe.notNull
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.map
 import com.badoo.reaktive.observable.merge
-import com.badoo.reaktive.observable.notNull
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.subject.publish.PublishSubject
 import net.minecraft.entity.ItemEntity
 import net.minecraft.util.math.Vec3d
 import org.c0nstexpr.fishology.events.CaughtFishEvent
+import org.c0nstexpr.fishology.events.EntityTrackerUpdateEvent
 import org.c0nstexpr.fishology.events.ItemEntitySpawnEvent
 import org.c0nstexpr.fishology.events.UseRodEvent
 import org.c0nstexpr.fishology.log.d
@@ -42,40 +45,43 @@ class LootDetect : SwitchDisposable() {
         logger.d<LootDetect> { "enable fishing loot detect" }
 
         return CaughtFishEvent.observable.filter { it.caught }
-            .switchMapMaybe {
-                merge(
-                    UseRodEvent.observable.filter { !it.isThrow }
-                        .map {
-                            it.player.run {
-                                val hook = fishHook
-                                if (hook == null) {
-                                    logger.w<LootDetect> { "hook is null" }
-                                    null
-                                } else Pair(trackedPos, hook.trackedPos)
-                            }
-                        },
-                    fishHookRemovedObservable().map { null }
-                ).firstOrComplete()
-                    .notNull()
-                    .flatMap { (playerPos, bobberPos) ->
-                        logger.d<LootDetect> { "error threshold: $judgeThreshold" }
-                        merge(
-                            ItemEntitySpawnEvent.observable.filter {
-                                val pos = it.pos
-
-                                isLootPos(pos, bobberPos) &&
-                                    isLootVel(it.vel, playerPos.subtract(pos))
-                            }
-                                .map { it.entity },
-                            UseRodEvent.observable.map { null }
-                        )
-                            .firstOrComplete()
-                    }
-            }
-            .notNull()
+            .switchMapMaybe { onCaught() }
             .subscribe {
                 logger.d<LootDetect> { "fish loot item: ${it.stack.item.name.string}" }
                 lootSubject.onNext(it)
+            }
+    }
+
+    private fun onCaught() = merge(
+        UseRodEvent.observable.filter { !it.isThrow }.map {
+            it.player.run {
+                val hook = fishHook
+                if (hook == null) {
+                    logger.w<LootDetect> { "hook is null" }
+                    null
+                } else Pair(trackedPos, hook.trackedPos)
+            }
+        },
+        fishHookRemovedObservable().map { null }
+    ).firstOrComplete().notNull().flatMap { (p, b) -> onHookedRetrieved(p, b) }
+
+    private fun onHookedRetrieved(playerPos: Vec3d, bobberPos: Vec3d): Maybe<ItemEntity> {
+        logger.d<LootDetect> { "error threshold: $judgeThreshold" }
+
+        return ItemEntitySpawnEvent.observable.filter {
+            val pos = it.pos
+
+            isLootPos(pos, bobberPos) &&
+                isLootVel(it.vel, playerPos.subtract(pos))
+        }
+            .firstOrComplete()
+            .map { it.entity }
+            .flatMap spawned@{ entity ->
+                if (!entity.stack.isEmpty) return@spawned maybeOfEmpty()
+
+                EntityTrackerUpdateEvent.observable.filter { it.id == entity.id }
+                    .map { entity }
+                    .firstOrComplete()
             }
     }
 
@@ -86,8 +92,7 @@ class LootDetect : SwitchDisposable() {
 
         logger.d<LootDetect> { "pos error vec: $posErrorVec    pos threshold: $posThreshold" }
 
-        if (
-            vecComponents.any {
+        if (vecComponents.any {
                 it(posErrorVec).absoluteValue - it(posThreshold) > judgeThreshold
             }
         ) {
@@ -126,8 +131,8 @@ class LootDetect : SwitchDisposable() {
         fun getY(y: Double) = y * G + sqrt(sqrt(x * x + y * y + z * z)) * 0.08
 
         val yRng = run {
-            val y1 = getY(relPos.y - posThreshold.y)
-            val y2 = getY(relPos.y + posThreshold.y)
+            val y1 = getY(relPos.y - posThreshold.y - judgeThreshold)
+            val y2 = getY(relPos.y + posThreshold.y + judgeThreshold)
 
             val minMax = if (y1 <= y2) y1 to y2 else y2 to y1
 
@@ -149,6 +154,6 @@ class LootDetect : SwitchDisposable() {
     companion object {
         private const val G = 0.1
 
-        private val posThreshold = Vec3d(0.0, 0.5, 0.0)
+        private val posThreshold = Vec3d(0.0, 1.0, 0.0)
     }
 }

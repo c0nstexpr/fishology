@@ -32,6 +32,8 @@ Mod mainly focuses on auto-fishing:
     - Use print to view statistics in hud.
     - Use clear to clear statistics.
   - Use last to view latest fishing round statistics
+- Bobber tracking.
+    - Indicator shows whether bobber is in open water
 
 ## License
 

@@ -3,10 +3,11 @@ package org.c0nstexpr.fishology.interact
 import com.badoo.reaktive.disposable.Disposable
 import com.badoo.reaktive.observable.filter
 import com.badoo.reaktive.observable.map
-import com.badoo.reaktive.observable.mapNotNull
+import com.badoo.reaktive.observable.observableOfEmpty
 import com.badoo.reaktive.observable.subscribe
 import com.badoo.reaktive.observable.switchMap
 import net.minecraft.client.MinecraftClient
+import net.minecraft.entity.projectile.FishingBobberEntity.State.BOBBING
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -19,11 +20,15 @@ import org.c0nstexpr.fishology.utils.SwitchDisposable
 
 class BobberStatus(val client: MinecraftClient) : SwitchDisposable() {
     override fun onEnable(): Disposable {
-        var isOpenWater = false
+        var isOpenWater: Boolean
 
-        return SetFishHookEvent.observable.mapNotNull { it.bobber }
+        return SetFishHookEvent.observable.map { it.bobber }
             .switchMap { bobber ->
-                ClientTickEvent.observable.map { bobber.isOpenOrWaterAround(bobber.blockPos) }
+                isOpenWater = false
+
+                if (bobber == null) observableOfEmpty()
+                else ClientTickEvent.observable.filter { bobber.state == BOBBING }
+                    .map { bobber.isOpenOrWaterAround(bobber.blockPos) }
                     .filter { it != isOpenWater }
             }
             .subscribe {

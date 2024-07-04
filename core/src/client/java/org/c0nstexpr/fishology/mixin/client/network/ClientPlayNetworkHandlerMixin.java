@@ -36,4 +36,11 @@ abstract class ClientPlayNetworkHandlerMixin {
             new Vec3d(packet.getX(), packet.getY(), packet.getZ()),
             new Vec3d(packet.getVelocityX(), packet.getVelocityY(), packet.getVelocityZ())));
     }
+
+    @Inject(method = "onEntityTrackerUpdate", at = @At("TAIL"))
+    private void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet, CallbackInfo ci) {
+        EntityTrackerUpdateEvent.subject.onNext(new EntityTrackerUpdateEvent.Arg(
+            packet.id(),
+            packet.trackedValues()));
+    }
 }
