@@ -44,9 +44,4 @@ abstract class ClientPlayNetworkHandlerMixin {
             packet.id(),
             packet.trackedValues()));
     }
-
-    @Inject(method = "onInventory", at = @At("TAIL"))
-    private void onInventory(InventoryS2CPacket packet, CallbackInfo ci) {
-        InventoryUpdateEvent.subject.onNext(Unit.INSTANCE);
-    }
 }
