@@ -13,11 +13,17 @@ class RodItem(
     hand: Hand = Hand.MAIN_HAND
 ) {
     val slotIndex = player.inventory.getSlotInHand(hand)
-    val stack: ItemStack = player.getStackInHand(hand)
+
+    var stack: ItemStack = player.getStackInHand(hand)
+        private set
 
     val hand
         get() = if (slotIndex == PlayerInventory.OFF_HAND_SLOT) Hand.OFF_HAND
         else Hand.MAIN_HAND
 
-    fun isValid() = player.getStackInHand(hand).isSame(stack)
+    fun updateStack() {
+        stack = player.getStackInHand(hand)
+    }
+
+    fun isValid() = player.getStackInHand(hand).isSame(stack) && !stack.isEmpty
 }

@@ -1,5 +1,6 @@
 package org.c0nstexpr.fishology.mixin.client.network;
 
+import kotlin.*;
 import net.minecraft.client.network.*;
 import net.minecraft.client.world.*;
 import net.minecraft.entity.*;
@@ -42,5 +43,10 @@ abstract class ClientPlayNetworkHandlerMixin {
         EntityTrackerUpdateEvent.subject.onNext(new EntityTrackerUpdateEvent.Arg(
             packet.id(),
             packet.trackedValues()));
+    }
+
+    @Inject(method = "onInventory", at = @At("TAIL"))
+    private void onInventory(InventoryS2CPacket packet, CallbackInfo ci) {
+        InventoryUpdateEvent.subject.onNext(Unit.INSTANCE);
     }
 }

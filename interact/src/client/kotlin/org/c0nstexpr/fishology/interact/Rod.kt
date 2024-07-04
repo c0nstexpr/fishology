@@ -1,12 +1,15 @@
 package org.c0nstexpr.fishology.interact
 
 import com.badoo.reaktive.disposable.Disposable
+import com.badoo.reaktive.disposable.scope.disposableScope
 import com.badoo.reaktive.observable.Observable
 import com.badoo.reaktive.observable.filter
+import com.badoo.reaktive.observable.firstOrComplete
 import com.badoo.reaktive.observable.notNull
-import com.badoo.reaktive.observable.subscribe
+import com.badoo.reaktive.observable.switchMapMaybe
 import com.badoo.reaktive.subject.behavior.BehaviorSubject
 import net.minecraft.client.MinecraftClient
+import org.c0nstexpr.fishology.events.InventoryUpdateEvent
 import org.c0nstexpr.fishology.events.UseRodEvent
 import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
@@ -28,9 +31,18 @@ class Rod(val client: MinecraftClient) : SwitchDisposable() {
 
     override fun onEnable(): Disposable {
         logger.d<Rod> { "enable rod interaction" }
-        return UseRodEvent.observable.subscribe {
-            logger.d<Rod> { "save rod status after use rod" }
-            itemSubject.onNext(RodItem(it.player, it.isThrow, it.hand))
+        return disposableScope {
+            UseRodEvent.observable.subscribeScoped {
+                logger.d<Rod> { "save rod status after use rod" }
+                itemSubject.onNext(RodItem(it.player, it.isThrow, it.hand))
+            }
+
+            UseRodEvent.observable.filter { !it.isThrow }
+                .switchMapMaybe { InventoryUpdateEvent.observable.firstOrComplete() }
+                .subscribeScoped {
+                    logger.d<Rod> { "update rod item after inventory update" }
+                    rodItem?.updateStack()
+                }
         }
     }
 
