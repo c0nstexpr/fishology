@@ -6,11 +6,7 @@ import net.minecraft.item.Items
 import net.minecraft.util.Hand
 import org.c0nstexpr.fishology.utils.getSlotInHand
 
-class RodItem(
-    val player: ClientPlayerEntity,
-    val isThrow: Boolean = false,
-    hand: Hand = Hand.MAIN_HAND
-) {
+class RodItem(val player: ClientPlayerEntity, val isThrow: Boolean, hand: Hand) {
     val slotIndex = player.inventory.getSlotInHand(hand)
 
     val hand

@@ -15,7 +15,7 @@ import org.c0nstexpr.fishology.log.d
 import org.c0nstexpr.fishology.logger
 import org.c0nstexpr.fishology.utils.SwitchDisposable
 import java.nio.file.Files
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.TimeSource
 
 class FishingStatTrack(
@@ -26,12 +26,15 @@ class FishingStatTrack(
 
     private val lastStat = sortedMapOf<FishingLoot, UInt>()
 
-    var fishingDuration = Duration.ZERO
+    var fishingDuration = ZERO
         private set
+        get() = if (field == ZERO) timeMark?.elapsedNow() ?: ZERO else field
 
     val statMap: Map<FishingLoot, UInt> get() = stat
 
     val lastStatMap: Map<FishingLoot, UInt> get() = lastStat
+
+    private var timeMark: TimeSource.Monotonic.ValueTimeMark? = null
 
     init {
         FishingLoot.entries.forEach { stat[it] = 0u }
@@ -49,8 +52,8 @@ class FishingStatTrack(
             rodItem.filter { it.isThrow }
                 .switchMapMaybe scope@{
                     lastStat.clear()
-                    fishingDuration = Duration.ZERO
-                    val timeMark = TimeSource.Monotonic.markNow()
+                    fishingDuration = ZERO
+                    timeMark = TimeSource.Monotonic.markNow()
 
                     logger.d<FishingStatTrack> {
                         "Restart fishing stats until next user input rod event"
@@ -60,7 +63,7 @@ class FishingStatTrack(
                         logger.d<FishingStatTrack> {
                             "Detected user input rod event, stop fishing stats"
                         }
-                        fishingDuration = timeMark.elapsedNow()
+                        fishingDuration = timeMark?.elapsedNow() ?: ZERO
                     }
                 }
                 .subscribeScoped { }

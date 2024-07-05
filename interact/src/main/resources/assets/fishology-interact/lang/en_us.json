@@ -1,12 +1,13 @@
 {
-  "fishology.stat_title": "fishing loots statistics:",
+  "fishology.stat_title": "Fishing Loots Statistics:",
+  "fishology.stat_duration": "Duration Cost %s minutes",
   "fishology.caught_on_chat": "I caught a %s",
   "fishology.hooked_on_chat": "I hook a %s",
   "fishology.left_brace": "(",
   "fishology.right_brace": ")",
   "fishology.comma": ",",
-  "fishology.total": "total count %s",
-  "fishology.item_speed": "(%.2f items/minute)",
+  "fishology.total": " total count %s",
+  "fishology.item_speed": " (%s items/minute)",
   "fishology.bobber_in_open_water": "Bobber is in open water",
   "fishology.bobber_not_in_open_water": "Bobber is not in open water"
 }

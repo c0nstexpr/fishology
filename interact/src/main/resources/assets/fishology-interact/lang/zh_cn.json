@@ -1,12 +1,13 @@
 {
   "fishology.stat_title": "钓鱼战利品统计：",
+  "fishology.stat_duration": "用时%s分钟",
   "fishology.caught_on_chat": "我钓上了%s",
   "fishology.hooked_on_chat": "我钓到了%s",
   "fishology.left_brace": "（",
   "fishology.right_brace": "）",
   "fishology.comma": "，",
   "fishology.total": "总共%s件",
-  "fishology.item_speed": "（%.2f件/每分钟）",
+  "fishology.item_speed": "（%s件/每分钟）",
   "fishology.bobber_in_open_water": "浮标在开放水域",
   "fishology.bobber_not_in_open_water": "浮标不在开放水域"
 }

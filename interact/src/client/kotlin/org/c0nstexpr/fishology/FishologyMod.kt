@@ -39,19 +39,19 @@ internal object FishologyMod : ClientModInitializer {
             logger.i(spell())
 
             mcCoroutineConfiguration.minecraftExecutor = it
-
-            MCCoroutineExceptionEvent.EVENT.register(
-                object : MCCoroutineExceptionEvent {
-                    override fun onMCCoroutineException(
-                        throwable: Throwable,
-                        entryPoint: Any
-                    ): Boolean {
-                        logger.e(throwable) { "MC Coroutine exception at $entryPoint" }
-                        return true
-                    }
-                }
-            )
         }
+
+        MCCoroutineExceptionEvent.EVENT.register(
+            object : MCCoroutineExceptionEvent {
+                override fun onMCCoroutineException(
+                    throwable: Throwable,
+                    entryPoint: Any
+                ): Boolean {
+                    logger.e(throwable) { "MC Coroutine exception at $entryPoint" }
+                    return true
+                }
+            }
+        )
 
         ClientPlayConnectionEvents.JOIN.register { _, _, client ->
             if (fishology?.isDisposed != false) fishology = Fishology(client)
