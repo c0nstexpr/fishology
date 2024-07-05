@@ -3,9 +3,9 @@ jvm = "21"
 kotlin = "2.0"
 minecraft = "1.21"
 yarn = "1.21+build.2"
-fabric = "0.100.3+1.21"
+fabric = "0.100.4+1.21"
 owo = "0.12.10+1.21"
-modmenu = "11.0.0"
+modmenu = "11.0.1"
 fabric-kotlin = "1.11.0+kotlin.2.0.0"
 mc-coroutine = "2.17.0" # idea doesn't seem to recognize rich version
 
