@@ -2,7 +2,8 @@ package org.c0nstexpr.fishology.utils
 
 import com.badoo.reaktive.coroutinesinterop.asScheduler
 import com.badoo.reaktive.observable.filter
-import com.github.shynixn.mccoroutine.fabric.minecraftDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
@@ -13,7 +14,6 @@ import net.minecraft.util.Hand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
-import org.c0nstexpr.fishology.FishologyMod
 import org.c0nstexpr.fishology.events.SetFishHookEvent
 
 val vecComponents = arrayOf(Vec3d::x, Vec3d::y, Vec3d::z)
@@ -40,4 +40,8 @@ fun ClientPlayerEntity.swapHand() = networkHandler.sendPacket(
 
 fun fishHookRemovedObservable() = SetFishHookEvent.observable.filter { it.bobber == null }
 
-fun clientScheduler() = FishologyMod.minecraftDispatcher.asScheduler()
+val clientDispatcher: CoroutineDispatcher by lazy {
+    MinecraftClient.getInstance().asCoroutineDispatcher()
+}
+
+fun clientScheduler() = clientDispatcher.asScheduler()

@@ -16,11 +16,6 @@ dependencies {
 
     modApi(libs.owo)
     modClientRuntimeOnly(libs.modmenu)
-
-    libs.bundles.mc.coroutine.let {
-        api(it)
-        include(it)
-    }
 }
 
 loom {
