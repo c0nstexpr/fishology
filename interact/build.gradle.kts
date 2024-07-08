@@ -13,9 +13,6 @@ repositories {
 dependencies {
     implementation(project(":core", "namedElements"))
     include(project(":core"))
-
-    modApi(libs.owo)
-    modClientRuntimeOnly(libs.modmenu)
 }
 
 loom {
